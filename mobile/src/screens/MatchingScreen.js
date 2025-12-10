@@ -1,0 +1,1105 @@
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  ActivityIndicator,
+  Platform,
+  Animated,
+  Easing,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
+import { Picker } from '@react-native-picker/picker';
+import { useAuth } from '../context/AuthContext';
+import { mobileAPI, CITY_COORDINATES } from '../services/api';
+
+const cities = Object.keys(CITY_COORDINATES);
+
+const rasis = [
+  { english: 'Mesha', tamil: 'மேஷம்' },
+  { english: 'Vrishabha', tamil: 'ரிஷபம்' },
+  { english: 'Mithuna', tamil: 'மிதுனம்' },
+  { english: 'Kataka', tamil: 'கடகம்' },
+  { english: 'Simha', tamil: 'சிம்மம்' },
+  { english: 'Kanya', tamil: 'கன்னி' },
+  { english: 'Tula', tamil: 'துலாம்' },
+  { english: 'Vrischika', tamil: 'விருச்சிகம்' },
+  { english: 'Dhanus', tamil: 'தனுசு' },
+  { english: 'Makara', tamil: 'மகரம்' },
+  { english: 'Kumbha', tamil: 'கும்பம்' },
+  { english: 'Meena', tamil: 'மீனம்' },
+];
+
+// Animated Card Component
+const AnimatedCard = ({ children, delay = 0, style }) => {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(30)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        delay,
+        useNativeDriver: true,
+        easing: Easing.out(Easing.ease),
+      }),
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 500,
+        delay,
+        useNativeDriver: true,
+        easing: Easing.out(Easing.back(1.2)),
+      }),
+    ]).start();
+  }, []);
+
+  return (
+    <Animated.View style={[style, { opacity: fadeAnim, transform: [{ translateY }] }]}>
+      {children}
+    </Animated.View>
+  );
+};
+
+// Animated Heart for Loading
+const AnimatedHeart = () => {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(scaleAnim, { toValue: 1.2, duration: 500, useNativeDriver: true }),
+        Animated.timing(scaleAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
+      ])
+    ).start();
+  }, []);
+
+  return (
+    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+      <Ionicons name="heart" size={64} color="#ef4444" />
+    </Animated.View>
+  );
+};
+
+// Animated Progress Bar
+const AnimatedProgressBar = ({ score, color, delay = 0 }) => {
+  const widthAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(widthAnim, {
+      toValue: score,
+      duration: 800,
+      delay,
+      useNativeDriver: false,
+      easing: Easing.out(Easing.ease),
+    }).start();
+  }, [score]);
+
+  return (
+    <View style={styles.progressBar}>
+      <Animated.View
+        style={[
+          styles.progressFill,
+          {
+            backgroundColor: color,
+            width: widthAnim.interpolate({
+              inputRange: [0, 100],
+              outputRange: ['0%', '100%'],
+            }),
+          },
+        ]}
+      />
+    </View>
+  );
+};
+
+// Animated Score Circle
+const AnimatedScoreCircle = ({ score }) => {
+  const scaleAnim = useRef(new Animated.Value(0)).current;
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 5,
+        tension: 80,
+        useNativeDriver: true,
+      }),
+      Animated.timing(rotateAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+        easing: Easing.out(Easing.ease),
+      }),
+    ]).start();
+  }, []);
+
+  const rotate = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  return (
+    <Animated.View style={[styles.scoreCircle, { transform: [{ scale: scaleAnim }, { rotate }] }]}>
+      <Text style={styles.scoreCircleText}>{Math.round(score)}%</Text>
+    </Animated.View>
+  );
+};
+
+// Animated Button with pulse
+const AnimatedButton = ({ onPress, disabled, children }) => {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const glowAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!disabled) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(glowAnim, { toValue: 1, duration: 1000, useNativeDriver: true }),
+          Animated.timing(glowAnim, { toValue: 0, duration: 1000, useNativeDriver: true }),
+        ])
+      ).start();
+    }
+  }, [disabled]);
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, { toValue: 0.95, useNativeDriver: true }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, { toValue: 1, friction: 3, useNativeDriver: true }).start();
+  };
+
+  return (
+    <Animated.View style={{ transform: [{ scale: scaleAnim }], opacity: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.9, 1] }) }}>
+      <TouchableOpacity
+        style={[styles.calculateBtn, disabled && styles.disabledBtn]}
+        onPress={onPress}
+        disabled={disabled}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        activeOpacity={0.9}
+      >
+        {children}
+      </TouchableOpacity>
+    </Animated.View>
+  );
+};
+
+// Floating Hearts Animation
+const FloatingHearts = () => {
+  const hearts = [0, 1, 2, 3, 4];
+  const animations = hearts.map(() => ({
+    translateY: useRef(new Animated.Value(0)).current,
+    opacity: useRef(new Animated.Value(0)).current,
+    translateX: useRef(new Animated.Value(0)).current,
+  }));
+
+  useEffect(() => {
+    hearts.forEach((_, i) => {
+      const startAnimation = () => {
+        animations[i].translateY.setValue(0);
+        animations[i].opacity.setValue(1);
+        animations[i].translateX.setValue((Math.random() - 0.5) * 40);
+
+        Animated.parallel([
+          Animated.timing(animations[i].translateY, {
+            toValue: -100,
+            duration: 2000 + Math.random() * 1000,
+            useNativeDriver: true,
+            easing: Easing.out(Easing.ease),
+          }),
+          Animated.timing(animations[i].opacity, {
+            toValue: 0,
+            duration: 2000 + Math.random() * 1000,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          setTimeout(startAnimation, Math.random() * 2000);
+        });
+      };
+      setTimeout(startAnimation, i * 400);
+    });
+  }, []);
+
+  return (
+    <View style={styles.floatingHeartsContainer}>
+      {hearts.map((_, i) => (
+        <Animated.View
+          key={i}
+          style={{
+            position: 'absolute',
+            transform: [{ translateY: animations[i].translateY }, { translateX: animations[i].translateX }],
+            opacity: animations[i].opacity,
+          }}
+        >
+          <Ionicons name="heart" size={16 + Math.random() * 8} color={`rgba(239, 68, 68, ${0.3 + Math.random() * 0.4})`} />
+        </Animated.View>
+      ))}
+    </View>
+  );
+};
+
+// Porutham Item with Animation
+const AnimatedPoruthamItem = ({ porutham, index, isExpanded, onPress, statusStyle }) => {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+  const expandAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 400,
+        delay: index * 80,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 400,
+        delay: index * 80,
+        useNativeDriver: true,
+        easing: Easing.out(Easing.back(1.1)),
+      }),
+    ]).start();
+  }, []);
+
+  useEffect(() => {
+    Animated.timing(expandAnim, {
+      toValue: isExpanded ? 1 : 0,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
+  }, [isExpanded]);
+
+  return (
+    <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+      <TouchableOpacity
+        style={[styles.poruthamItem, { backgroundColor: statusStyle.bg, borderColor: statusStyle.border }]}
+        onPress={onPress}
+        activeOpacity={0.7}
+      >
+        <View style={styles.poruthamHeader}>
+          <View style={styles.poruthamLeft}>
+            <Ionicons
+              name={porutham.matched ? 'checkmark-circle' : 'close-circle'}
+              size={18}
+              color={porutham.matched ? '#16a34a' : '#dc2626'}
+            />
+            <Text style={styles.poruthamName}>{porutham.name}</Text>
+            <Text style={styles.poruthamEnglish}>({porutham.english})</Text>
+          </View>
+          <View style={styles.poruthamRight}>
+            <Text style={[styles.poruthamScore, { color: statusStyle.text }]}>{porutham.score}%</Text>
+            <Ionicons name={isExpanded ? 'chevron-up' : 'chevron-down'} size={16} color="#9ca3af" />
+          </View>
+        </View>
+
+        <AnimatedProgressBar score={porutham.score} color={statusStyle.text} delay={index * 80 + 200} />
+
+        {isExpanded && (
+          <View style={styles.poruthamExpanded}>
+            <Text style={styles.poruthamDesc}>{porutham.description}</Text>
+            {porutham.remedy && (
+              <View style={styles.remedyBox}>
+                <Ionicons name="sparkles" size={12} color="#ea580c" />
+                <Text style={styles.remedyText}>பரிகாரம்: {porutham.remedy}</Text>
+              </View>
+            )}
+          </View>
+        )}
+      </TouchableOpacity>
+    </Animated.View>
+  );
+};
+
+export default function MatchingScreen() {
+  const { userProfile } = useAuth();
+  const insets = useSafeAreaInsets();
+  const bottomPadding = Platform.OS === 'android' ? Math.max(insets.bottom, 80) : insets.bottom + 80;
+
+  // Animation refs
+  const headerFadeAnim = useRef(new Animated.Value(0)).current;
+  const headerSlideAnim = useRef(new Animated.Value(-20)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(headerFadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
+      Animated.timing(headerSlideAnim, { toValue: 0, duration: 500, useNativeDriver: true, easing: Easing.out(Easing.ease) }),
+    ]).start();
+  }, []);
+
+  const [step, setStep] = useState('input'); // 'input' | 'loading' | 'result'
+  const [groomData, setGroomData] = useState({
+    name: '',
+    birthDate: '',
+    birthTime: '',
+    birthPlace: 'Chennai',
+    rasi: '',
+  });
+  const [brideData, setBrideData] = useState({
+    name: '',
+    birthDate: '',
+    birthTime: '',
+    birthPlace: 'Chennai',
+    rasi: '',
+  });
+  const [matchResult, setMatchResult] = useState(null);
+  const [error, setError] = useState(null);
+  const [expandedPorutham, setExpandedPorutham] = useState(null);
+
+  useEffect(() => {
+    if (userProfile) {
+      setGroomData({
+        name: userProfile.name || '',
+        birthDate: userProfile.birthDate || '',
+        birthTime: userProfile.birthTime || '',
+        birthPlace: userProfile.birthPlace || 'Chennai',
+        rasi: '',
+      });
+    }
+  }, [userProfile]);
+
+  const handleCalculate = async () => {
+    setStep('loading');
+    setError(null);
+
+    try {
+      const groomCoords = CITY_COORDINATES[groomData.birthPlace] || CITY_COORDINATES['Chennai'];
+      const brideCoords = CITY_COORDINATES[brideData.birthPlace] || CITY_COORDINATES['Chennai'];
+
+      const payload = {
+        groom: {
+          name: groomData.name,
+          birth_date: groomData.birthDate,
+          birth_time: groomData.birthTime,
+          birth_place: groomData.birthPlace,
+          latitude: groomCoords.lat,
+          longitude: groomCoords.lon,
+          rasi: groomData.rasi || null,
+        },
+        bride: {
+          name: brideData.name,
+          birth_date: brideData.birthDate,
+          birth_time: brideData.birthTime,
+          birth_place: brideData.birthPlace,
+          latitude: brideCoords.lat,
+          longitude: brideCoords.lon,
+          rasi: brideData.rasi || null,
+        }
+      };
+
+      const result = await mobileAPI.calculateMatching(payload);
+      setMatchResult(result);
+      setStep('result');
+    } catch (err) {
+      console.error('Matching error:', err);
+      setError('பொருத்தம் கணக்கிடுவதில் பிழை. மீண்டும் முயற்சிக்கவும்.');
+      setStep('input');
+    }
+  };
+
+  const resetForm = () => {
+    setStep('input');
+    setMatchResult(null);
+    setExpandedPorutham(null);
+  };
+
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case 'excellent': return { bg: '#f0fdf4', border: '#bbf7d0', text: '#15803d' };
+      case 'good': return { bg: '#eff6ff', border: '#bfdbfe', text: '#1d4ed8' };
+      case 'warning': return { bg: '#fefce8', border: '#fef08a', text: '#a16207' };
+      case 'critical': return { bg: '#fef2f2', border: '#fecaca', text: '#dc2626' };
+      default: return { bg: '#f9fafb', border: '#e5e7eb', text: '#6b7280' };
+    }
+  };
+
+  // Input Form
+  if (step === 'input') {
+    return (
+      <View style={styles.container}>
+        <LinearGradient colors={['#fff7ed', '#ffffff', '#fff7ed']} style={styles.gradient}>
+          <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]}>
+            <LinearGradient
+              colors={['#ef4444', '#ec4899', '#ef4444']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.headerBar}
+            />
+
+            <Animated.View style={[styles.header, { opacity: headerFadeAnim, transform: [{ translateY: headerSlideAnim }] }]}>
+              <View style={styles.headerRow}>
+                <Ionicons name="heart" size={20} color="#ef4444" />
+                <Text style={styles.headerTitle}>திருமண பொருத்தம்</Text>
+              </View>
+              <Text style={styles.headerSubtitle}>10 பொருத்த பகுப்பாய்வு</Text>
+            </Animated.View>
+
+            {error && (
+              <View style={styles.errorBox}>
+                <Ionicons name="alert-circle" size={16} color="#dc2626" />
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            )}
+
+            {/* Groom Details */}
+            <AnimatedCard delay={100} style={[styles.card, styles.groomCard]}>
+              <View style={styles.cardHeader}>
+                <Ionicons name="person" size={16} color="#2563eb" />
+                <Text style={[styles.cardTitle, { color: '#1e40af' }]}>மணமகன் விவரங்கள்</Text>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>பெயர் *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={groomData.name}
+                  onChangeText={(text) => setGroomData({ ...groomData, name: text })}
+                  placeholder="பெயர் உள்ளிடவும்"
+                />
+              </View>
+
+              <View style={styles.row}>
+                <View style={styles.halfInput}>
+                  <Text style={styles.label}>பிறந்த தேதி *</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={groomData.birthDate}
+                    onChangeText={(text) => setGroomData({ ...groomData, birthDate: text })}
+                    placeholder="YYYY-MM-DD"
+                    keyboardType="numbers-and-punctuation"
+                  />
+                </View>
+                <View style={styles.halfInput}>
+                  <Text style={styles.label}>பிறந்த நேரம் *</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={groomData.birthTime}
+                    onChangeText={(text) => setGroomData({ ...groomData, birthTime: text })}
+                    placeholder="HH:MM"
+                    keyboardType="numbers-and-punctuation"
+                  />
+                </View>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>பிறந்த இடம் *</Text>
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={groomData.birthPlace}
+                    onValueChange={(value) => setGroomData({ ...groomData, birthPlace: value })}
+                    style={styles.picker}
+                  >
+                    {cities.map((city) => (
+                      <Picker.Item key={city} label={city} value={city} />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>ராசி (விரும்பினால்)</Text>
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={groomData.rasi}
+                    onValueChange={(value) => setGroomData({ ...groomData, rasi: value })}
+                    style={styles.picker}
+                  >
+                    <Picker.Item label="தானாக கணக்கிடு" value="" />
+                    {rasis.map((r) => (
+                      <Picker.Item key={r.english} label={r.tamil} value={r.english} />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+            </AnimatedCard>
+
+            {/* Bride Details */}
+            <AnimatedCard delay={200} style={[styles.card, styles.brideCard]}>
+              <View style={styles.cardHeader}>
+                <Ionicons name="person" size={16} color="#db2777" />
+                <Text style={[styles.cardTitle, { color: '#be185d' }]}>மணமகள் விவரங்கள்</Text>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>பெயர் *</Text>
+                <TextInput
+                  style={[styles.input, styles.brideInput]}
+                  value={brideData.name}
+                  onChangeText={(text) => setBrideData({ ...brideData, name: text })}
+                  placeholder="பெயர் உள்ளிடவும்"
+                />
+              </View>
+
+              <View style={styles.row}>
+                <View style={styles.halfInput}>
+                  <Text style={styles.label}>பிறந்த தேதி *</Text>
+                  <TextInput
+                    style={[styles.input, styles.brideInput]}
+                    value={brideData.birthDate}
+                    onChangeText={(text) => setBrideData({ ...brideData, birthDate: text })}
+                    placeholder="YYYY-MM-DD"
+                    keyboardType="numbers-and-punctuation"
+                  />
+                </View>
+                <View style={styles.halfInput}>
+                  <Text style={styles.label}>பிறந்த நேரம் *</Text>
+                  <TextInput
+                    style={[styles.input, styles.brideInput]}
+                    value={brideData.birthTime}
+                    onChangeText={(text) => setBrideData({ ...brideData, birthTime: text })}
+                    placeholder="HH:MM"
+                    keyboardType="numbers-and-punctuation"
+                  />
+                </View>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>பிறந்த இடம் *</Text>
+                <View style={[styles.pickerContainer, styles.bridePicker]}>
+                  <Picker
+                    selectedValue={brideData.birthPlace}
+                    onValueChange={(value) => setBrideData({ ...brideData, birthPlace: value })}
+                    style={styles.picker}
+                  >
+                    {cities.map((city) => (
+                      <Picker.Item key={city} label={city} value={city} />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>ராசி (விரும்பினால்)</Text>
+                <View style={[styles.pickerContainer, styles.bridePicker]}>
+                  <Picker
+                    selectedValue={brideData.rasi}
+                    onValueChange={(value) => setBrideData({ ...brideData, rasi: value })}
+                    style={styles.picker}
+                  >
+                    <Picker.Item label="தானாக கணக்கிடு" value="" />
+                    {rasis.map((r) => (
+                      <Picker.Item key={r.english} label={r.tamil} value={r.english} />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+            </AnimatedCard>
+
+            {/* Calculate Button */}
+            <AnimatedCard delay={300}>
+              <AnimatedButton
+                onPress={handleCalculate}
+                disabled={!groomData.name || !groomData.birthDate || !groomData.birthTime ||
+                         !brideData.name || !brideData.birthDate || !brideData.birthTime}
+              >
+                <LinearGradient
+                  colors={['#ef4444', '#ec4899']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.calculateBtnGradient}
+                >
+                  <Ionicons name="heart" size={20} color="#fff" />
+                  <Text style={styles.calculateBtnText}>பொருத்தம் கணக்கிடு</Text>
+                </LinearGradient>
+              </AnimatedButton>
+            </AnimatedCard>
+          </ScrollView>
+        </LinearGradient>
+      </View>
+    );
+  }
+
+  // Loading
+  if (step === 'loading') {
+    return (
+      <View style={styles.loadingContainer}>
+        <FloatingHearts />
+        <AnimatedHeart />
+        <ActivityIndicator size="large" color="#ec4899" style={{ marginTop: 16 }} />
+        <Text style={styles.loadingText}>10 பொருத்தங்களை கணக்கிடுகிறது...</Text>
+        <Text style={styles.loadingSubtext}>உங்கள் ஜோதிட பொருத்தத்தை ஆராய்கிறோம்</Text>
+      </View>
+    );
+  }
+
+  // Results
+  if (!matchResult) return null;
+
+  const poruthams = matchResult.poruthams || [];
+  const overallScore = matchResult.overall_score || 0;
+  const matchedCount = poruthams.filter(p => p.matched).length;
+
+  return (
+    <View style={styles.container}>
+      <LinearGradient colors={['#fff7ed', '#ffffff', '#fff7ed']} style={styles.gradient}>
+        <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]}>
+          <LinearGradient
+            colors={['#ef4444', '#ec4899', '#ef4444']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.headerBar}
+          />
+
+          <Animated.View style={[styles.header, { opacity: headerFadeAnim, transform: [{ translateY: headerSlideAnim }] }]}>
+            <View style={styles.headerRow}>
+              <Ionicons name="heart" size={20} color="#ef4444" />
+              <Text style={styles.headerTitle}>திருமண பொருத்தம்</Text>
+            </View>
+            <TouchableOpacity onPress={resetForm} style={styles.resetBtn}>
+              <Ionicons name="refresh" size={20} color="#ea580c" />
+            </TouchableOpacity>
+          </Animated.View>
+
+          {/* Couple Names */}
+          <AnimatedCard delay={0} style={styles.card}>
+            <View style={styles.coupleRow}>
+              <View style={styles.personBox}>
+                <View style={[styles.personAvatar, { backgroundColor: '#3b82f6' }]}>
+                  <Text style={styles.personAvatarText}>{groomData.name?.charAt(0) || 'அ'}</Text>
+                </View>
+                <Text style={styles.personName}>{groomData.name}</Text>
+              </View>
+              <AnimatedHeart />
+              <View style={styles.personBox}>
+                <View style={[styles.personAvatar, { backgroundColor: '#ec4899' }]}>
+                  <Text style={styles.personAvatarText}>{brideData.name?.charAt(0) || 'ப'}</Text>
+                </View>
+                <Text style={styles.personName}>{brideData.name}</Text>
+              </View>
+            </View>
+          </AnimatedCard>
+
+          {/* Overall Score */}
+          <AnimatedCard delay={100} style={styles.card}>
+            <View style={styles.scoreRow}>
+              <View>
+                <Text style={styles.scoreLabel}>ஒட்டுமொத்த பொருத்தம்</Text>
+                <View style={styles.scoreValueRow}>
+                  <Text style={styles.scoreNumber}>{overallScore.toFixed(1)}</Text>
+                  <Text style={styles.scoreMax}>/100</Text>
+                </View>
+                <View style={styles.matchInfo}>
+                  <View style={styles.matchBadge}>
+                    <Ionicons name="checkmark-circle" size={14} color="#16a34a" />
+                    <Text style={styles.matchBadgeText}>{matchedCount}/10 பொருந்தும்</Text>
+                  </View>
+                </View>
+              </View>
+              <AnimatedScoreCircle score={overallScore} />
+            </View>
+
+            {/* AI Verdict */}
+            <View style={[styles.verdictBox, { backgroundColor: overallScore >= 70 ? '#f0fdf4' : '#fef3c7' }]}>
+              <Ionicons name="sparkles" size={16} color={overallScore >= 70 ? '#16a34a' : '#d97706'} />
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.verdictTitle, { color: overallScore >= 70 ? '#15803d' : '#a16207' }]}>
+                  AI தீர்ப்பு: {overallScore >= 70 ? 'நல்ல பொருத்தம்' : 'கவனிக்க வேண்டும்'}
+                </Text>
+                <Text style={styles.verdictText}>{matchResult.ai_verdict?.explanation || 'விரிவான பகுப்பாய்வு கீழே உள்ளது.'}</Text>
+              </View>
+            </View>
+          </AnimatedCard>
+
+          {/* 10 Poruthams */}
+          <AnimatedCard delay={200} style={styles.card}>
+            <View style={styles.cardHeader}>
+              <Text style={styles.poruthamTitle}>॥ 10 பொருத்தங்கள் ॥</Text>
+            </View>
+
+            {poruthams.map((p, i) => {
+              const statusStyle = getStatusStyle(p.status);
+              const isExpanded = expandedPorutham === i;
+
+              return (
+                <AnimatedPoruthamItem
+                  key={i}
+                  porutham={p}
+                  index={i}
+                  isExpanded={isExpanded}
+                  onPress={() => setExpandedPorutham(isExpanded ? null : i)}
+                  statusStyle={statusStyle}
+                />
+              );
+            })}
+          </AnimatedCard>
+
+          {/* Action Buttons */}
+          <AnimatedCard delay={300} style={styles.actionRow}>
+            <TouchableOpacity style={styles.newMatchBtn} onPress={resetForm} activeOpacity={0.7}>
+              <Ionicons name="people" size={20} color="#ea580c" />
+              <Text style={styles.newMatchBtnText}>புதிய பொருத்தம்</Text>
+            </TouchableOpacity>
+          </AnimatedCard>
+        </ScrollView>
+      </LinearGradient>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  gradient: {
+    flex: 1,
+  },
+  scrollContent: {
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff7ed',
+  },
+  loadingText: {
+    marginTop: 16,
+    color: '#6b7280',
+    fontSize: 14,
+  },
+  loadingSubtext: {
+    marginTop: 8,
+    color: '#9ca3af',
+    fontSize: 12,
+  },
+  floatingHeartsContainer: {
+    position: 'absolute',
+    width: 100,
+    height: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerBar: {
+    height: 4,
+  },
+  header: {
+    padding: 16,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#fed7aa',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#be123c',
+  },
+  headerSubtitle: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 2,
+  },
+  resetBtn: {
+    padding: 8,
+    backgroundColor: '#fff7ed',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#fed7aa',
+  },
+  errorBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginHorizontal: 16,
+    marginTop: 16,
+    padding: 12,
+    backgroundColor: '#fef2f2',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#fecaca',
+  },
+  errorText: {
+    flex: 1,
+    color: '#dc2626',
+    fontSize: 13,
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 16,
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: '#fed7aa',
+  },
+  cardHeader: {
+    marginBottom: 12,
+  },
+  cardTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  groomCard: {
+    borderColor: '#bfdbfe',
+  },
+  brideCard: {
+    borderColor: '#fbcfe8',
+  },
+  inputGroup: {
+    marginBottom: 12,
+  },
+  label: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginBottom: 6,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 14,
+  },
+  brideInput: {
+    borderColor: '#fbcfe8',
+  },
+  row: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 12,
+  },
+  halfInput: {
+    flex: 1,
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  bridePicker: {
+    borderColor: '#fbcfe8',
+  },
+  picker: {
+    height: 50,
+  },
+  calculateBtn: {
+    marginHorizontal: 16,
+    marginTop: 24,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  calculateBtnGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 16,
+  },
+  calculateBtnText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  disabledBtn: {
+    opacity: 0.5,
+  },
+  coupleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 16,
+  },
+  personBox: {
+    alignItems: 'center',
+  },
+  personAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  personAvatarText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  personName: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#374151',
+    marginTop: 8,
+  },
+  scoreRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  scoreLabel: {
+    fontSize: 12,
+    color: '#6b7280',
+  },
+  scoreValueRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginTop: 4,
+  },
+  scoreNumber: {
+    fontSize: 42,
+    fontWeight: 'bold',
+    color: '#ef4444',
+  },
+  scoreMax: {
+    fontSize: 18,
+    color: '#9ca3af',
+    marginLeft: 4,
+  },
+  matchInfo: {
+    marginTop: 8,
+  },
+  matchBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  matchBadgeText: {
+    fontSize: 12,
+    color: '#16a34a',
+  },
+  scoreCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#fef2f2',
+    borderWidth: 4,
+    borderColor: '#ef4444',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  scoreCircleText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#ef4444',
+  },
+  verdictBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    marginTop: 16,
+    padding: 12,
+    borderRadius: 12,
+  },
+  verdictTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  verdictText: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 4,
+    lineHeight: 18,
+  },
+  poruthamTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    textAlign: 'center',
+  },
+  poruthamItem: {
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 12,
+    marginTop: 8,
+  },
+  poruthamHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  poruthamLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  poruthamName: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#374151',
+  },
+  poruthamEnglish: {
+    fontSize: 11,
+    color: '#9ca3af',
+  },
+  poruthamRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  poruthamScore: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  progressBar: {
+    height: 4,
+    backgroundColor: '#e5e7eb',
+    borderRadius: 2,
+    marginTop: 8,
+  },
+  progressFill: {
+    height: 4,
+    borderRadius: 2,
+  },
+  poruthamExpanded: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+  },
+  poruthamDesc: {
+    fontSize: 12,
+    color: '#6b7280',
+    lineHeight: 18,
+  },
+  remedyBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
+    marginTop: 8,
+    padding: 8,
+    backgroundColor: '#fff7ed',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#fed7aa',
+  },
+  remedyText: {
+    flex: 1,
+    fontSize: 11,
+    color: '#9a3412',
+  },
+  actionRow: {
+    marginHorizontal: 16,
+    marginTop: 16,
+  },
+  newMatchBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    padding: 16,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#fed7aa',
+  },
+  newMatchBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+  },
+});
