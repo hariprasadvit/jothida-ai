@@ -21,6 +21,7 @@ class ChatRequest(BaseModel):
     user_id: str
     conversation_id: Optional[str] = None
     context: Optional[dict] = None  # User's birth details for personalization
+    language: Optional[str] = "ta"  # Language code: ta (Tamil), en (English), kn (Kannada)
 
 class ChatResponse(BaseModel):
     message: str
@@ -52,7 +53,8 @@ async def send_message(request: Request, chat: ChatRequest):
         message=chat.message,
         user_id=chat.user_id,
         conversation_id=chat.conversation_id,
-        context=chat.context
+        context=chat.context,
+        language=chat.language
     )
 
 @router.get("/quick-questions")

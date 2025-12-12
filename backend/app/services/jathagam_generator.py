@@ -8,6 +8,7 @@ from typing import Dict, List, Optional
 import math
 
 from app.services.ephemeris import EphemerisService, NAKSHATRAS, RASIS, PLANETS
+from app.services.panchangam_calculator import PanchangamCalculator
 import swisseph as swe
 
 
@@ -68,6 +69,7 @@ class JathagamGenerator:
 
     def __init__(self, ephemeris: EphemerisService):
         self.ephemeris = ephemeris
+        self.panchangam = PanchangamCalculator(ephemeris)
 
     def get_coordinates(self, place: str) -> Dict:
         """Get coordinates for a place name"""
@@ -133,6 +135,9 @@ class JathagamGenerator:
         # Calculate overall strength
         overall_strength = sum(p["strength"] for p in planets) / len(planets)
 
+        # Calculate Panchagam for birth date
+        panchagam_data = self.panchangam.calculate(birth_date.date(), lat, lon)
+
         # Format planets for response
         formatted_planets = []
         for p in planets:
@@ -177,7 +182,17 @@ class JathagamGenerator:
             "navamsa_chart": navamsa_chart,
             "dasha": dasha,
             "overall_strength": round(overall_strength, 1),
-            "yogas": yogas
+            "yogas": yogas,
+            "panchagam": {
+                "tithi": panchagam_data["tithi"]["tamil"],
+                "vaaram": panchagam_data["vaaram"],
+                "nakshatra": panchagam_data["nakshatra"]["tamil"],
+                "yogam": panchagam_data["yoga"]["tamil"],
+                "karanam": panchagam_data["karana"]["tamil"],
+                "tamil_month": panchagam_data["tamil_month"],
+                "tamil_date": panchagam_data["tamil_date"],
+                "paksha": panchagam_data["tithi"]["paksha"]
+            }
         }
 
     def _calculate_lagna(self, jd: float, lat: float, lon: float) -> Dict:

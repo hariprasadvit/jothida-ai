@@ -179,11 +179,12 @@ export const mobileAPI = {
   },
 
   // Chat
-  sendChatMessage: async (message, userProfile = {}) => {
+  sendChatMessage: async (message, userProfile = {}, language = 'en') => {
     try {
       const response = await api.post('/api/chat/message', {
         message: message,
         user_id: userProfile?.phone || 'anonymous',
+        language: language,
         context: {
           rasi: userProfile?.rasi,
           nakshatra: userProfile?.nakshatra,
@@ -292,7 +293,7 @@ export const mobileAPI = {
   },
 
   // Life Areas (Dynamic calculation based on birth chart)
-  getLifeAreas: async (birthDetails) => {
+  getLifeAreas: async (birthDetails, language = 'ta') => {
     try {
       const coords = getCityCoordinates(birthDetails.birthPlace);
       const response = await api.post('/api/forecast/life-areas', {
@@ -302,6 +303,7 @@ export const mobileAPI = {
         birth_place: birthDetails.birthPlace,
         latitude: coords.lat,
         longitude: coords.lon,
+        language: language,
       });
       return response.data;
     } catch (error) {
@@ -310,7 +312,7 @@ export const mobileAPI = {
     }
   },
 
-  getFutureProjections: async (birthDetails) => {
+  getFutureProjections: async (birthDetails, language = 'ta') => {
     try {
       const coords = getCityCoordinates(birthDetails.birthPlace);
       const response = await api.post('/api/forecast/future-projections', {
@@ -320,6 +322,7 @@ export const mobileAPI = {
         birth_place: birthDetails.birthPlace,
         latitude: coords.lat,
         longitude: coords.lon,
+        language: language,
       });
       return response.data;
     } catch (error) {

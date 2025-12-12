@@ -19,120 +19,123 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { mobileAPI } from '../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Clipboard from 'expo-clipboard';
 
 const { width } = Dimensions.get('window');
 
-// Expanded question categories with Tamil content
-const questionCategories = [
+// Get localized question categories
+const getQuestionCategories = (t) => [
   {
     id: 'daily',
-    name: 'தினசரி',
+    name: t('daily') || 'Daily',
     icon: 'sunny',
     color: '#f97316',
     questions: [
-      { icon: 'time', text: 'இன்று நல்ல நேரம் எப்போது?', category: 'time' },
-      { icon: 'calendar', text: 'இன்றைய ராசிபலன் என்ன?', category: 'horoscope' },
-      { icon: 'star', text: 'இன்று எந்த கிரகம் பலமாக உள்ளது?', category: 'planets' },
-      { icon: 'alert-circle', text: 'இன்று தவிர்க்க வேண்டியவை என்ன?', category: 'avoid' },
+      { icon: 'time', text: t('q_good_time_today') || 'When is the best time today?', category: 'time' },
+      { icon: 'calendar', text: t('q_daily_horoscope') || "What's today's horoscope?", category: 'horoscope' },
+      { icon: 'star', text: t('q_strong_planet') || 'Which planet is strong today?', category: 'planets' },
+      { icon: 'alert-circle', text: t('q_what_to_avoid') || 'What to avoid today?', category: 'avoid' },
     ],
   },
   {
     id: 'career',
-    name: 'தொழில்',
+    name: t('careerLabel') || 'Career',
     icon: 'briefcase',
     color: '#3b82f6',
     questions: [
-      { icon: 'trending-up', text: 'தொழில் முன்னேற்றம் எப்போது?', category: 'career' },
-      { icon: 'cash', text: 'பணவரவு எப்படி இருக்கும்?', category: 'finance' },
-      { icon: 'business', text: 'புதிய வேலை கிடைக்குமா?', category: 'job' },
-      { icon: 'bulb', text: 'சொந்த தொழில் செய்யலாமா?', category: 'business' },
+      { icon: 'trending-up', text: t('q_career_progress') || 'When will career progress?', category: 'career' },
+      { icon: 'cash', text: t('q_financial_flow') || 'How will finances be?', category: 'finance' },
+      { icon: 'business', text: t('q_new_job') || 'Will I get a new job?', category: 'job' },
+      { icon: 'bulb', text: t('q_own_business') || 'Should I start my own business?', category: 'business' },
     ],
   },
   {
     id: 'love',
-    name: 'காதல்',
+    name: t('love') || 'Love',
     icon: 'heart',
     color: '#ec4899',
     questions: [
-      { icon: 'heart', text: 'என் காதல் வாழ்க்கை எப்படி?', category: 'love' },
-      { icon: 'people', text: 'திருமணம் எப்போது நடக்கும்?', category: 'marriage' },
-      { icon: 'home', text: 'இல்லறவாழ்க்கை சிறப்பாக இருக்குமா?', category: 'family' },
-      { icon: 'happy', text: 'உறவுகள் சீராக இருக்குமா?', category: 'relationship' },
+      { icon: 'heart', text: t('q_love_life') || 'How is my love life?', category: 'love' },
+      { icon: 'people', text: t('q_when_marriage') || 'When will I get married?', category: 'marriage' },
+      { icon: 'home', text: t('q_married_life') || 'Will married life be good?', category: 'family' },
+      { icon: 'happy', text: t('q_relationships') || 'Will relationships be harmonious?', category: 'relationship' },
     ],
   },
   {
     id: 'health',
-    name: 'உடல்நலம்',
+    name: t('healthLabel') || 'Health',
     icon: 'fitness',
     color: '#22c55e',
     questions: [
-      { icon: 'medkit', text: 'உடல்நிலை எப்படி இருக்கும்?', category: 'health' },
-      { icon: 'nutrition', text: 'என்ன உணவு சாப்பிடலாம்?', category: 'food' },
-      { icon: 'fitness', text: 'உடற்பயிற்சி செய்ய நல்ல நேரம்?', category: 'exercise' },
-      { icon: 'medical', text: 'ஆரோக்கிய பரிகாரங்கள் என்ன?', category: 'remedies' },
+      { icon: 'medkit', text: t('q_health_condition') || 'How will my health be?', category: 'health' },
+      { icon: 'nutrition', text: t('q_what_to_eat') || 'What food should I eat?', category: 'food' },
+      { icon: 'fitness', text: t('q_exercise_time') || 'Best time for exercise?', category: 'exercise' },
+      { icon: 'medical', text: t('q_health_remedies') || 'What are the health remedies?', category: 'remedies' },
     ],
   },
   {
     id: 'education',
-    name: 'கல்வி',
+    name: t('education') || 'Education',
     icon: 'school',
     color: '#8b5cf6',
     questions: [
-      { icon: 'book', text: 'படிப்பு எப்படி இருக்கும்?', category: 'study' },
-      { icon: 'trophy', text: 'தேர்வில் வெற்றி கிடைக்குமா?', category: 'exam' },
-      { icon: 'globe', text: 'வெளிநாடு செல்ல வாய்ப்பு உண்டா?', category: 'abroad' },
-      { icon: 'ribbon', text: 'உயர்கல்வி வாய்ப்பு என்ன?', category: 'higher_education' },
+      { icon: 'book', text: t('q_study_progress') || 'How will my studies go?', category: 'study' },
+      { icon: 'trophy', text: t('q_exam_success') || 'Will I succeed in exams?', category: 'exam' },
+      { icon: 'globe', text: t('q_abroad_opportunity') || 'Is there opportunity to go abroad?', category: 'abroad' },
+      { icon: 'ribbon', text: t('q_higher_education') || 'What about higher education?', category: 'higher_education' },
     ],
   },
   {
     id: 'spiritual',
-    name: 'ஆன்மீகம்',
+    name: t('spiritual') || 'Spiritual',
     icon: 'flame',
     color: '#f59e0b',
     questions: [
-      { icon: 'leaf', text: 'என் ஆன்மீக வளர்ச்சி எப்படி?', category: 'spiritual' },
-      { icon: 'star', text: 'எந்த தெய்வத்தை வழிபடுவது?', category: 'worship' },
-      { icon: 'moon', text: 'பரிகாரங்கள் என்ன செய்யலாம்?', category: 'remedies' },
-      { icon: 'compass', text: 'யோகம் இருக்கிறதா?', category: 'yoga' },
+      { icon: 'leaf', text: t('q_spiritual_growth') || 'How is my spiritual growth?', category: 'spiritual' },
+      { icon: 'star', text: t('q_which_deity') || 'Which deity to worship?', category: 'worship' },
+      { icon: 'moon', text: t('q_what_remedies') || 'What remedies can I do?', category: 'remedies' },
+      { icon: 'compass', text: t('q_yoga_present') || 'Is there any yoga?', category: 'yoga' },
     ],
   },
 ];
 
-// Get all questions flat
-const getAllQuestions = () => {
+// Get localized follow-up suggestions
+const getFollowUpSuggestions = (category, t) => {
+  const suggestions = {
+    time: [t('followup_tomorrow_time') || 'Best time tomorrow?', t('followup_best_day') || 'Best day this week?'],
+    horoscope: [t('followup_month_horoscope') || "This month's horoscope?", t('followup_next_week') || 'How is next week?'],
+    career: [t('followup_best_field') || 'Best field for me?', t('followup_salary_hike') || 'Will I get salary hike?'],
+    love: [t('followup_marriage_date') || 'Marriage date?', t('followup_partner_nature') || 'How will my partner be?'],
+    health: [t('followup_remedy_suggest') || 'What remedy to do?', t('followup_yoga_help') || 'Will yoga help?'],
+    finance: [t('followup_save_money') || 'How to save money?', t('followup_invest') || 'Should I invest?'],
+    default: [t('ask_more') || 'Ask more', t('other_question') || 'Any other question?'],
+  };
+  return suggestions[category] || suggestions.default;
+};
+
+// Get welcome message
+const getWelcomeMessage = (t) => ({
+  type: 'ai',
+  text: t('chat_welcome') || 'Welcome! I am your Jothida AI assistant. Ask any question - daily predictions, career, love, health, education, spiritual - I will answer all.',
+  time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+  insight: t('chat_welcome_hint') || 'Tap the categories below to quickly ask questions!',
+});
+
+// Get all questions flat (needs t function)
+const getAllQuestions = (t) => {
   const questions = [];
-  questionCategories.forEach(cat => {
+  const categories = getQuestionCategories(t);
+  categories.forEach(cat => {
     cat.questions.forEach(q => questions.push({ ...q, categoryColor: cat.color }));
   });
   return questions;
 };
 
-// Follow-up suggestions based on response category
-const getFollowUpSuggestions = (category) => {
-  const suggestions = {
-    time: ['நாளை நல்ல நேரம் என்ன?', 'இந்த வாரம் சிறந்த நாள் எது?'],
-    horoscope: ['இந்த மாத பலன் என்ன?', 'அடுத்த வாரம் எப்படி?'],
-    career: ['எந்த துறையில் சிறப்பு?', 'சம்பள உயர்வு கிடைக்குமா?'],
-    love: ['திருமண நாள் எப்போது?', 'வாழ்க்கைத்துணை எப்படி இருப்பார்?'],
-    health: ['என்ன பரிகாரம் செய்யலாம்?', 'யோகா உதவுமா?'],
-    finance: ['பணம் சேமிக்க வழி என்ன?', 'முதலீடு செய்யலாமா?'],
-    default: ['மேலும் கேளுங்கள்', 'வேறு கேள்வி உள்ளதா?'],
-  };
-  return suggestions[category] || suggestions.default;
-};
-
-const welcomeMessage = {
-  type: 'ai',
-  text: 'வணக்கம்! நான் உங்கள் ஜோதிட AI உதவியாளர். எந்த கேள்வியும் கேளுங்கள் - தினசரி பலன், தொழில், காதல், உடல்நலம், கல்வி, ஆன்மீகம் என அனைத்தும் பதில் தருவேன்.',
-  time: new Date().toLocaleTimeString('ta-IN', { hour: '2-digit', minute: '2-digit' }),
-  insight: 'கீழே உள்ள பிரிவுகளை தொடர்ந்து விரைவாக கேள்வி கேளுங்கள்!',
-};
-
 // Animated Message Bubble
-const AnimatedMessageBubble = ({ msg, isNew, onLongPress, onRetry }) => {
+const AnimatedMessageBubble = ({ msg, isNew, onLongPress, onRetry, t }) => {
   const fadeAnim = useRef(new Animated.Value(isNew ? 0 : 1)).current;
   const scaleAnim = useRef(new Animated.Value(isNew ? 0.8 : 1)).current;
   const translateY = useRef(new Animated.Value(isNew ? 20 : 0)).current;
@@ -179,11 +182,11 @@ const AnimatedMessageBubble = ({ msg, isNew, onLongPress, onRetry }) => {
         <View style={[styles.messageBubble, msg.type === 'user' ? styles.userBubble : styles.aiBubble]}>
           <Text style={[styles.messageText, msg.type === 'user' && styles.userText]}>{msg.text}</Text>
 
-          {msg.data && <MessageData data={msg.data} />}
+          {msg.data && <MessageData data={msg.data} t={t} />}
 
           {msg.predictions && <PredictionData predictions={msg.predictions} />}
 
-          {msg.remedies && <RemediesData remedies={msg.remedies} />}
+          {msg.remedies && <RemediesData remedies={msg.remedies} t={t} />}
 
           {msg.insight && (
             <View style={styles.insightBox}>
@@ -194,7 +197,7 @@ const AnimatedMessageBubble = ({ msg, isNew, onLongPress, onRetry }) => {
 
           {msg.followUp && msg.followUp.length > 0 && (
             <View style={styles.followUpContainer}>
-              <Text style={styles.followUpTitle}>தொடர்ந்து கேளுங்கள்:</Text>
+              <Text style={styles.followUpTitle}>{t('followUpTitle')}</Text>
               {msg.followUp.map((suggestion, i) => (
                 <TouchableOpacity key={i} style={styles.followUpPill}>
                   <Ionicons name="arrow-forward" size={12} color="#ea580c" />
@@ -207,7 +210,7 @@ const AnimatedMessageBubble = ({ msg, isNew, onLongPress, onRetry }) => {
           {msg.isError && onRetry && (
             <TouchableOpacity style={styles.retryBtn} onPress={onRetry}>
               <Ionicons name="refresh" size={16} color="#ef4444" />
-              <Text style={styles.retryText}>மீண்டும் முயற்சி</Text>
+              <Text style={styles.retryText}>{t('retryAgain')}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -240,14 +243,14 @@ const PredictionData = ({ predictions }) => {
 };
 
 // Remedies Data Component
-const RemediesData = ({ remedies }) => {
+const RemediesData = ({ remedies, t }) => {
   if (!remedies) return null;
 
   return (
     <View style={styles.remediesContainer}>
       <View style={styles.remediesHeader}>
         <Ionicons name="leaf" size={16} color="#16a34a" />
-        <Text style={styles.remediesTitle}>பரிகாரங்கள்</Text>
+        <Text style={styles.remediesTitle}>{t('remediesTitle')}</Text>
       </View>
       {remedies.map((remedy, i) => (
         <View key={i} style={styles.remedyItem}>
@@ -383,7 +386,7 @@ const AnimatedQuickPill = ({ question, onPress }) => {
 };
 
 // Animated Typing Indicator
-const TypingIndicator = () => {
+const TypingIndicator = ({ t }) => {
   const dot1 = useRef(new Animated.Value(0)).current;
   const dot2 = useRef(new Animated.Value(0)).current;
   const dot3 = useRef(new Animated.Value(0)).current;
@@ -430,7 +433,7 @@ const TypingIndicator = () => {
             <Animated.View style={[styles.typingDot, dotStyle(dot2)]} />
             <Animated.View style={[styles.typingDot, dotStyle(dot3)]} />
           </View>
-          <Text style={styles.typingText}>AI சிந்திக்கிறது...</Text>
+          <Text style={styles.typingText}>{t('aiThinking')}</Text>
         </View>
       </View>
     </Animated.View>
@@ -456,14 +459,14 @@ const PulsingStatusDot = () => {
 };
 
 // Message Data Component
-const MessageData = ({ data }) => {
+const MessageData = ({ data, t }) => {
   if (!data) return null;
 
   if (data.type === 'time_slots') {
     return (
       <View style={styles.dataContainer}>
         {data.slots?.map((slot, i) => (
-          <AnimatedTimeSlot key={i} slot={slot} index={i} />
+          <AnimatedTimeSlot key={i} slot={slot} index={i} t={t} />
         ))}
       </View>
     );
@@ -472,7 +475,7 @@ const MessageData = ({ data }) => {
   if (data.type === 'horoscope') {
     return (
       <View style={styles.dataContainer}>
-        <AnimatedHoroscopeScore data={data} />
+        <AnimatedHoroscopeScore data={data} t={t} />
       </View>
     );
   }
@@ -498,7 +501,7 @@ const MessageData = ({ data }) => {
 };
 
 // Animated Time Slot
-const AnimatedTimeSlot = ({ slot, index }) => {
+const AnimatedTimeSlot = ({ slot, index, t }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const translateX = useRef(new Animated.Value(-20)).current;
 
@@ -513,7 +516,7 @@ const AnimatedTimeSlot = ({ slot, index }) => {
     <Animated.View style={[styles.timeSlot, { opacity: fadeAnim, transform: [{ translateX }] }]}>
       <View style={styles.timeSlotLeft}>
         <Text style={styles.timeSlotTime}>{slot.start}</Text>
-        <Text style={styles.timeSlotSep}>முதல்</Text>
+        <Text style={styles.timeSlotSep}>{t('from')}</Text>
         <Text style={styles.timeSlotTime}>{slot.end}</Text>
       </View>
       <View style={styles.timeSlotRight}>
@@ -525,7 +528,7 @@ const AnimatedTimeSlot = ({ slot, index }) => {
 };
 
 // Animated Horoscope Score
-const AnimatedHoroscopeScore = ({ data }) => {
+const AnimatedHoroscopeScore = ({ data, t }) => {
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
@@ -543,7 +546,7 @@ const AnimatedHoroscopeScore = ({ data }) => {
 
   return (
     <Animated.View style={[styles.horoscopeScore, { transform: [{ scale: scaleAnim }] }]}>
-      <Text style={styles.horoscopeLabel}>இன்றைய மதிப்பெண்</Text>
+      <Text style={styles.horoscopeLabel}>{t('todayScore')}</Text>
       <Animated.View style={{ transform: [{ rotate }] }}>
         <LinearGradient colors={['#7c3aed', '#a855f7']} style={styles.horoscopeCircle}>
           <Text style={styles.horoscopeValue}>{data.overall_score}%</Text>
@@ -599,7 +602,7 @@ const AnimatedSendButton = ({ onPress, disabled }) => {
 };
 
 // Clear Chat Modal
-const ClearChatModal = ({ visible, onClose, onConfirm }) => {
+const ClearChatModal = ({ visible, onClose, onConfirm, t }) => {
   return (
     <Modal transparent visible={visible} animationType="fade">
       <View style={styles.modalOverlay}>
@@ -607,14 +610,14 @@ const ClearChatModal = ({ visible, onClose, onConfirm }) => {
           <View style={styles.modalIcon}>
             <Ionicons name="trash" size={32} color="#ef4444" />
           </View>
-          <Text style={styles.modalTitle}>அரட்டையை அழிக்கவா?</Text>
-          <Text style={styles.modalText}>அனைத்து செய்திகளும் நீக்கப்படும். இது மீண்டும் மாற்ற முடியாது.</Text>
+          <Text style={styles.modalTitle}>{t('clearChatTitle')}</Text>
+          <Text style={styles.modalText}>{t('clearChatDesc')}</Text>
           <View style={styles.modalButtons}>
             <TouchableOpacity style={styles.modalCancelBtn} onPress={onClose}>
-              <Text style={styles.modalCancelText}>வேண்டாம்</Text>
+              <Text style={styles.modalCancelText}>{t('no')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.modalConfirmBtn} onPress={onConfirm}>
-              <Text style={styles.modalConfirmText}>அழி</Text>
+              <Text style={styles.modalConfirmText}>{t('delete')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -624,19 +627,19 @@ const ClearChatModal = ({ visible, onClose, onConfirm }) => {
 };
 
 // Message Action Modal
-const MessageActionModal = ({ visible, onClose, onCopy, onShare }) => {
+const MessageActionModal = ({ visible, onClose, onCopy, onShare, t }) => {
   return (
     <Modal transparent visible={visible} animationType="fade">
       <TouchableOpacity style={styles.actionModalOverlay} onPress={onClose} activeOpacity={1}>
         <View style={styles.actionModalContent}>
           <TouchableOpacity style={styles.actionItem} onPress={onCopy}>
             <Ionicons name="copy" size={22} color="#374151" />
-            <Text style={styles.actionText}>நகல் எடு</Text>
+            <Text style={styles.actionText}>{t('copy')}</Text>
           </TouchableOpacity>
           <View style={styles.actionDivider} />
           <TouchableOpacity style={styles.actionItem} onPress={onShare}>
             <Ionicons name="share-social" size={22} color="#374151" />
-            <Text style={styles.actionText}>பகிர்</Text>
+            <Text style={styles.actionText}>{t('share')}</Text>
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -646,7 +649,13 @@ const MessageActionModal = ({ visible, onClose, onCopy, onShare }) => {
 
 export default function ChatScreen() {
   const { userProfile } = useAuth();
-  const [messages, setMessages] = useState([welcomeMessage]);
+  const { t, language } = useLanguage();
+
+  // Memoize question categories based on language
+  const questionCategories = React.useMemo(() => getQuestionCategories(t), [language, t]);
+  const welcomeMessage = React.useMemo(() => getWelcomeMessage(t), [language, t]);
+
+  const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [newMessageIndex, setNewMessageIndex] = useState(-1);
@@ -662,6 +671,11 @@ export default function ChatScreen() {
   // Header animation
   const headerFadeAnim = useRef(new Animated.Value(0)).current;
   const headerSlideAnim = useRef(new Animated.Value(-20)).current;
+
+  // Initialize messages with welcome message
+  useEffect(() => {
+    setMessages([welcomeMessage]);
+  }, [welcomeMessage]);
 
   // Load chat history on mount
   useEffect(() => {
@@ -745,19 +759,19 @@ export default function ChatScreen() {
     setLastFailedMessage(messageText);
 
     try {
-      const response = await mobileAPI.sendChatMessage(messageText, userProfile);
+      const response = await mobileAPI.sendChatMessage(messageText, userProfile, language);
       setIsTyping(false);
       setLastFailedMessage(null);
 
       // Determine follow-up suggestions based on response
-      const followUp = response.category ? getFollowUpSuggestions(response.category) : null;
+      const followUp = response.category ? getFollowUpSuggestions(response.category, t) : null;
 
       setMessages(prev => {
         setNewMessageIndex(prev.length);
         return [...prev, {
           type: 'ai',
           text: response.message,
-          time: new Date().toLocaleTimeString('ta-IN', { hour: '2-digit', minute: '2-digit' }),
+          time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
           data: response.data,
           predictions: response.predictions,
           remedies: response.remedies,
@@ -773,10 +787,10 @@ export default function ChatScreen() {
         setNewMessageIndex(prev.length);
         return [...prev, {
           type: 'ai',
-          text: 'மன்னிக்கவும், தற்போது சேவையில் சிக்கல். மீண்டும் முயற்சிக்கவும்.',
-          time: new Date().toLocaleTimeString('ta-IN', { hour: '2-digit', minute: '2-digit' }),
+          text: t('chatError'),
+          time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
           isError: true,
-          insight: 'இணைப்பை சரிபார்த்து மீண்டும் முயற்சிக்கவும்.',
+          insight: t('checkConnection'),
         }];
       });
     }
@@ -803,7 +817,7 @@ export default function ChatScreen() {
     if (selectedMessage) {
       try {
         await Clipboard.setStringAsync(selectedMessage.text);
-        Alert.alert('நகல் எடுக்கப்பட்டது', 'செய்தி நகல் எடுக்கப்பட்டது!');
+        Alert.alert(t('copied'), t('messageCopied'));
       } catch (e) {
         // Fallback - just close modal
       }
@@ -815,7 +829,7 @@ export default function ChatScreen() {
     if (selectedMessage) {
       try {
         await Share.share({
-          message: `ஜோதிட AI பதில்:\n\n${selectedMessage.text}${selectedMessage.insight ? `\n\n💡 ${selectedMessage.insight}` : ''}`,
+          message: `${t('jothidaAIReply')}:\n\n${selectedMessage.text}${selectedMessage.insight ? `\n\n💡 ${selectedMessage.insight}` : ''}`,
         });
       } catch (e) {
         // User cancelled
@@ -826,7 +840,7 @@ export default function ChatScreen() {
 
   const currentQuestions = activeCategory
     ? questionCategories.find(c => c.id === activeCategory)?.questions || []
-    : getAllQuestions().slice(0, 8);
+    : getAllQuestions(t).slice(0, 8);
 
   const currentCategoryColor = activeCategory
     ? questionCategories.find(c => c.id === activeCategory)?.color || '#f97316'
@@ -860,10 +874,10 @@ export default function ChatScreen() {
               <Ionicons name="sparkles" size={24} color="#fff" />
             </LinearGradient>
             <View>
-              <Text style={styles.headerTitle}>ஜோதிட AI</Text>
+              <Text style={styles.headerTitle}>{t('jothidaAI')}</Text>
               <View style={styles.statusRow}>
                 <PulsingStatusDot />
-                <Text style={styles.statusText}>ஆன்லைன் • எல்லா கேள்விகளுக்கும் பதில்</Text>
+                <Text style={styles.statusText}>{t('online')} • {t('answersAll')}</Text>
               </View>
             </View>
           </View>
@@ -880,7 +894,7 @@ export default function ChatScreen() {
           contentContainerStyle={styles.categoryTabsContent}
         >
           <AnimatedCategoryTab
-            category={{ id: 'all', name: 'அனைத்தும்', icon: 'apps', color: '#f97316' }}
+            category={{ id: 'all', name: t('all'), icon: 'apps', color: '#f97316' }}
             isActive={activeCategory === null}
             onPress={() => setActiveCategory(null)}
             index={0}
@@ -937,10 +951,11 @@ export default function ChatScreen() {
               isNew={i === newMessageIndex}
               onLongPress={handleLongPressMessage}
               onRetry={msg.isError ? handleRetry : null}
+              t={t}
             />
           ))}
 
-          {isTyping && <TypingIndicator />}
+          {isTyping && <TypingIndicator t={t} />}
         </ScrollView>
 
         {/* Quick Pills - Always visible */}
@@ -950,7 +965,7 @@ export default function ChatScreen() {
           style={styles.quickPillsRow}
           contentContainerStyle={styles.quickPillsContent}
         >
-          {getAllQuestions().slice(0, 6).map((q, i) => (
+          {getAllQuestions(t).slice(0, 6).map((q, i) => (
             <AnimatedQuickPill
               key={i}
               question={q}
@@ -964,7 +979,7 @@ export default function ChatScreen() {
             style={styles.input}
             value={inputText}
             onChangeText={setInputText}
-            placeholder="தமிழில் எந்த கேள்வியும் கேளுங்கள்..."
+            placeholder={t('askQuestionPlaceholder')}
             placeholderTextColor="#9ca3af"
             multiline
             onSubmitEditing={() => handleSend()}
@@ -977,6 +992,7 @@ export default function ChatScreen() {
         visible={showClearModal}
         onClose={() => setShowClearModal(false)}
         onConfirm={clearChatHistory}
+        t={t}
       />
 
       <MessageActionModal
@@ -984,6 +1000,7 @@ export default function ChatScreen() {
         onClose={() => setShowActionModal(false)}
         onCopy={handleCopyMessage}
         onShare={handleShareMessage}
+        t={t}
       />
     </KeyboardAvoidingView>
   );

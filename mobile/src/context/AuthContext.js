@@ -67,12 +67,19 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await storage.deleteItem('authToken');
-      await storage.deleteItem('userProfile');
+      // First update state to trigger UI change immediately
       setIsAuthenticated(false);
       setUserProfile(null);
+
+      // Then clear storage (non-blocking for UI)
+      await storage.deleteItem('authToken');
+      await storage.deleteItem('userProfile');
+
+      console.log('Logout successful - storage cleared');
     } catch (error) {
       console.error('Logout error:', error);
+      // Even if storage fails, keep the user logged out in UI
+      // They will need to re-login on app restart anyway
     }
   };
 

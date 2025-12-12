@@ -23,6 +23,116 @@ import { useLanguage, languageOptions } from '../context/LanguageContext';
 import { mobileAPI } from '../services/api';
 import { generateComprehensivePDFHTML } from '../services/reportGenerator';
 
+// Tamil to translation key mappings for ProfileScreen
+const TAMIL_PLANET_MAP = {
+  'சூரியன்': 'sun_planet', 'சந்திரன்': 'moon_planet', 'செவ்வாய்': 'mars',
+  'புதன்': 'mercury', 'குரு': 'jupiter', 'சுக்கிரன்': 'venus',
+  'சனி': 'saturn', 'ராகு': 'rahu', 'கேது': 'ketu',
+};
+
+const ENGLISH_PLANET_MAP = {
+  'Sun': 'sun_planet', 'Moon': 'moon_planet', 'Mars': 'mars',
+  'Mercury': 'mercury', 'Jupiter': 'jupiter', 'Venus': 'venus',
+  'Saturn': 'saturn', 'Rahu': 'rahu', 'Ketu': 'ketu',
+};
+
+const TAMIL_RASI_MAP = {
+  'மேஷம்': 'aries', 'ரிஷபம்': 'taurus', 'மிதுனம்': 'gemini',
+  'கடகம்': 'cancer', 'சிம்மம்': 'leo', 'கன்னி': 'virgo',
+  'துலாம்': 'libra', 'விருச்சிகம்': 'scorpio', 'தனுசு': 'sagittarius',
+  'மகரம்': 'capricorn', 'கும்பம்': 'aquarius', 'மீனம்': 'pisces',
+};
+
+const ENGLISH_RASI_MAP = {
+  'Aries': 'aries', 'Taurus': 'taurus', 'Gemini': 'gemini',
+  'Cancer': 'cancer', 'Leo': 'leo', 'Virgo': 'virgo',
+  'Libra': 'libra', 'Scorpio': 'scorpio', 'Sagittarius': 'sagittarius',
+  'Capricorn': 'capricorn', 'Aquarius': 'aquarius', 'Pisces': 'pisces',
+};
+
+const TAMIL_NAKSHATRA_MAP = {
+  'அஸ்வினி': 'ashwini', 'பரணி': 'bharani', 'கார்த்திகை': 'krittika',
+  'ரோகிணி': 'rohini', 'மிருகசீரிடம்': 'mrigashira', 'திருவாதிரை': 'ardra',
+  'புனர்பூசம்': 'punarvasu', 'பூசம்': 'pushya', 'ஆயில்யம்': 'ashlesha',
+  'மகம்': 'magha', 'பூரம்': 'purvaPhalguni', 'உத்திரம்': 'uttaraPhalguni',
+  'ஹஸ்தம்': 'hasta', 'சித்திரை': 'chitra', 'சுவாதி': 'swati',
+  'விசாகம்': 'vishakha', 'அனுஷம்': 'anuradha', 'கேட்டை': 'jyeshtha',
+  'மூலம்': 'moola', 'பூராடம்': 'purvaAshadha', 'உத்திராடம்': 'uttaraAshadha',
+  'திருவோணம்': 'shravana', 'அவிட்டம்': 'dhanishta', 'சதயம்': 'shatabhisha',
+  'பூரட்டாதி': 'purvaBhadrapada', 'உத்திரட்டாதி': 'uttaraBhadrapada', 'ரேவதி': 'revati',
+};
+
+// Yoga effect translations (Tamil to English)
+const YOGA_EFFECT_ENGLISH = {
+  'புகழ், செல்வம், நல்ல பேச்சு திறன்': 'Fame, wealth, and good speaking skills',
+  'நல்ல புத்திசாலித்தனம், தொழிலில் வெற்றி': 'Good intelligence, success in business',
+  'செல்வம், துணிச்சல், தொழில் வெற்றி': 'Wealth, courage, and business success',
+  'ஆன்மீக சிந்தனை, கல்வி, நல்ல குணம்': 'Spiritual thinking, education, good character',
+  'செல்வம், அழகு, இல்லற சுகம்': 'Wealth, beauty, and domestic happiness',
+  'சராசரி வாழ்க்கை': 'Average life',
+  'குரு சந்திரனிலிருந்து கேந்திரத்தில் உள்ளார்': 'Jupiter is in kendra from Moon',
+  'சூரியனும் புதனும் ஒரே ராசியில்': 'Sun and Mercury are in the same sign',
+  'சந்திரனும் செவ்வாயும் சேர்க்கை': 'Moon and Mars conjunction',
+  'குரு கேந்திரத்தில் பலமாக உள்ளார்': 'Jupiter is strong in kendra',
+  'சுக்கிரன் சுபஸ்தானத்தில் பலமாக': 'Venus is strong in auspicious house',
+  'பெரிய யோகங்கள் இல்லை': 'No major yogas present',
+};
+
+// Yoga effect translations (Tamil to Kannada)
+const YOGA_EFFECT_KANNADA = {
+  'புகழ், செல்வம், நல்ல பேச்சு திறன்': 'ಖ್ಯಾತಿ, ಸಂಪತ್ತು ಮತ್ತು ಉತ್ತಮ ಮಾತನಾಡುವ ಕೌಶಲ್ಯ',
+  'நல்ல புத்திசாலித்தனம், தொழிலில் வெற்றி': 'ಉತ್ತಮ ಬುದ್ಧಿವಂತಿಕೆ, ವ್ಯಾಪಾರದಲ್ಲಿ ಯಶಸ್ಸು',
+  'செல்வம், துணிச்சல், தொழில் வெற்றி': 'ಸಂಪತ್ತು, ಧೈರ್ಯ ಮತ್ತು ವ್ಯಾಪಾರ ಯಶಸ್ಸು',
+  'ஆன்மீக சிந்தனை, கல்வி, நல்ல குணம்': 'ಆಧ್ಯಾತ್ಮಿಕ ಚಿಂತನೆ, ಶಿಕ್ಷಣ, ಉತ್ತಮ ಗುಣ',
+  'செல்வம், அழகு, இல்லற சுகம்': 'ಸಂಪತ್ತು, ಸೌಂದರ್ಯ ಮತ್ತು ಗೃಹ ಸುಖ',
+  'சராசரி வாழ்க்கை': 'ಸರಾಸರಿ ಜೀವನ',
+  'குரு சந்திரனிலிருந்து கேந்திரத்தில் உள்ளார்': 'ಗುರು ಚಂದ್ರನಿಂದ ಕೇಂದ್ರದಲ್ಲಿದ್ದಾರೆ',
+  'சூரியனும் புதனும் ஒரே ராசியில்': 'ಸೂರ್ಯ ಮತ್ತು ಬುಧ ಒಂದೇ ರಾಶಿಯಲ್ಲಿದ್ದಾರೆ',
+  'சந்திரனும் செவ்வாயும் சேர்க்கை': 'ಚಂದ್ರ ಮತ್ತು ಮಂಗಳ ಸಂಯೋಗ',
+  'குரு கேந்திரத்தில் பலமாக உள்ளார்': 'ಗುರು ಕೇಂದ್ರದಲ್ಲಿ ಬಲಶಾಲಿಯಾಗಿದ್ದಾರೆ',
+  'சுக்கிரன் சுபஸ்தானத்தில் பலமாக': 'ಶುಕ್ರ ಶುಭ ಸ್ಥಾನದಲ್ಲಿ ಬಲಶಾಲಿ',
+  'பெரிய யோகங்கள் இல்லை': 'ಯಾವುದೇ ಪ್ರಮುಖ ಯೋಗಗಳಿಲ್ಲ',
+};
+
+// Helper function to translate yoga effect
+const translateYogaEffect = (effect, language) => {
+  if (!effect) return effect;
+  if (language === 'ta') return effect;
+  if (language === 'kn') {
+    return YOGA_EFFECT_KANNADA[effect] || effect;
+  }
+  return YOGA_EFFECT_ENGLISH[effect] || effect;
+};
+
+// Helper functions for translation
+const translatePlanetName = (planetName, language, t) => {
+  if (!planetName) return planetName;
+  if (language === 'ta') return planetName;
+  const tamilKey = TAMIL_PLANET_MAP[planetName];
+  if (tamilKey) return t(tamilKey);
+  const englishKey = ENGLISH_PLANET_MAP[planetName];
+  if (englishKey) return t(englishKey);
+  return planetName;
+};
+
+const translateRasiName = (rasiName, language, t) => {
+  if (!rasiName) return rasiName;
+  if (language === 'ta') return rasiName;
+  const tamilKey = TAMIL_RASI_MAP[rasiName];
+  if (tamilKey) return t(tamilKey);
+  const englishKey = ENGLISH_RASI_MAP[rasiName];
+  if (englishKey) return t(englishKey);
+  return rasiName;
+};
+
+const translateNakshatraName = (nakshatraName, language, t) => {
+  if (!nakshatraName) return nakshatraName;
+  if (language === 'ta') return nakshatraName;
+  const key = TAMIL_NAKSHATRA_MAP[nakshatraName];
+  if (key) return t(key);
+  return nakshatraName;
+};
+
 // Animated Card Component
 const AnimatedCard = ({ children, delay = 0, style }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -89,7 +199,7 @@ const AnimatedAvatar = ({ initial }) => {
 };
 
 // Animated Planet Row
-const AnimatedPlanetRow = ({ planet, index }) => {
+const AnimatedPlanetRow = ({ planet, index, language, t }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
 
@@ -111,23 +221,25 @@ const AnimatedPlanetRow = ({ planet, index }) => {
     ]).start();
   }, []);
 
+  const retrogradeLabel = language === 'ta' ? 'வ' : language === 'kn' ? 'ವ' : 'R';
+
   return (
     <Animated.View style={[styles.tableRow, { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }]}>
       <View style={[styles.planetNameCell, { flex: 1.5 }]}>
         <Text style={styles.planetSymbol}>{planet.symbol}</Text>
         <Text style={[styles.planetName, planet.is_retrograde && styles.retrogradeText]}>
-          {planet.tamil_name}{planet.is_retrograde && ' (வ)'}
+          {translatePlanetName(planet.tamil_name || planet.planet, language, t)}{planet.is_retrograde && ` (${retrogradeLabel})`}
         </Text>
       </View>
-      <Text style={styles.tableCell}>{planet.rasi_tamil}</Text>
-      <Text style={styles.tableCell}>{planet.nakshatra}</Text>
+      <Text style={styles.tableCell}>{translateRasiName(planet.rasi_tamil || planet.rasi, language, t)}</Text>
+      <Text style={styles.tableCell}>{translateNakshatraName(planet.nakshatra, language, t)}</Text>
       <Text style={[styles.tableCell, { flex: 0.5 }]}>{planet.nakshatra_pada}</Text>
     </Animated.View>
   );
 };
 
 // Animated Yoga Item
-const AnimatedYogaItem = ({ yoga, index }) => {
+const AnimatedYogaItem = ({ yoga, index, language }) => {
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -149,21 +261,25 @@ const AnimatedYogaItem = ({ yoga, index }) => {
     ]).start();
   }, []);
 
+  // Use English version if available and language is not Tamil
+  const yogaName = language === 'ta' ? (yoga.tamil_name || yoga.name) : (yoga.name || yoga.tamil_name);
+  const yogaEffect = translateYogaEffect(yoga.effect || yoga.description, language);
+
   return (
     <Animated.View style={[styles.yogaItem, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}>
       <View style={styles.yogaHeader}>
-        <Text style={styles.yogaName}>{yoga.tamil_name || yoga.name}</Text>
+        <Text style={styles.yogaName}>{yogaName}</Text>
         <View style={styles.yogaStrength}>
           <Text style={styles.yogaStrengthText}>{yoga.strength}%</Text>
         </View>
       </View>
-      <Text style={styles.yogaEffect}>{yoga.effect || yoga.description}</Text>
+      <Text style={styles.yogaEffect}>{yogaEffect}</Text>
     </Animated.View>
   );
 };
 
 // Animated Dasha Period
-const AnimatedDashaPeriod = ({ period, index, isCurrent }) => {
+const AnimatedDashaPeriod = ({ period, index, isCurrent, language, t }) => {
   const scaleAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -180,7 +296,7 @@ const AnimatedDashaPeriod = ({ period, index, isCurrent }) => {
     <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
       <View style={[styles.dashaPeriod, isCurrent && styles.dashaPeriodCurrent]}>
         <Text style={[styles.dashaPeriodLord, isCurrent && styles.dashaPeriodCurrentText]}>
-          {period.tamil_lord}
+          {translatePlanetName(period.tamil_lord || period.lord, language, t)}
         </Text>
         <Text style={[styles.dashaPeriodYears, isCurrent && styles.dashaPeriodCurrentText]}>
           {period.years}y
@@ -191,7 +307,7 @@ const AnimatedDashaPeriod = ({ period, index, isCurrent }) => {
 };
 
 // Animated Download Button
-const AnimatedDownloadButton = ({ onPress, loading }) => {
+const AnimatedDownloadButton = ({ onPress, loading, t }) => {
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -226,7 +342,7 @@ const AnimatedDownloadButton = ({ onPress, loading }) => {
         ) : (
           <>
             <Ionicons name="download" size={20} color="#fff" />
-            <Text style={styles.downloadBtnText}>ஜாதகம் PDF பதிவிறக்கம்</Text>
+            <Text style={styles.downloadBtnText}>{t('downloadPDF')}</Text>
           </>
         )}
       </TouchableOpacity>
@@ -243,14 +359,49 @@ const rasiSymbols = {
   'தனுசு': '♐', 'மகரம்': '♑', 'கும்பம்': '♒', 'மீனம்': '♓'
 };
 
-// Planet abbreviations
-const PLANET_ABBR = {
+// Planet abbreviations - language specific
+const PLANET_ABBR_TAMIL = {
   'சூரியன்': 'சூ', 'சந்திரன்': 'சந்', 'செவ்வாய்': 'செ',
   'புதன்': 'பு', 'குரு': 'கு', 'சுக்கிரன்': 'சு',
   'சனி': 'ச', 'ராகு': 'ரா', 'கேது': 'கே',
   'Sun': 'சூ', 'Moon': 'சந்', 'Mars': 'செ',
   'Mercury': 'பு', 'Jupiter': 'கு', 'Venus': 'சு',
   'Saturn': 'ச', 'Rahu': 'ரா', 'Ketu': 'கே'
+};
+
+const PLANET_ABBR_ENGLISH = {
+  'சூரியன்': 'Su', 'சந்திரன்': 'Mo', 'செவ்வாய்': 'Ma',
+  'புதன்': 'Me', 'குரு': 'Ju', 'சுக்கிரன்': 'Ve',
+  'சனி': 'Sa', 'ராகு': 'Ra', 'கேது': 'Ke',
+  'Sun': 'Su', 'Moon': 'Mo', 'Mars': 'Ma',
+  'Mercury': 'Me', 'Jupiter': 'Ju', 'Venus': 'Ve',
+  'Saturn': 'Sa', 'Rahu': 'Ra', 'Ketu': 'Ke'
+};
+
+const PLANET_ABBR_KANNADA = {
+  'சூரியன்': 'ಸೂ', 'சந்திரன்': 'ಚಂ', 'செவ்வாய்': 'ಮಂ',
+  'புதன்': 'ಬು', 'குரு': 'ಗು', 'சுக்கிரன்': 'ಶು',
+  'சனி': 'ಶ', 'ராகு': 'ರಾ', 'கேது': 'ಕೇ',
+  'Sun': 'ಸೂ', 'Moon': 'ಚಂ', 'Mars': 'ಮಂ',
+  'Mercury': 'ಬು', 'Jupiter': 'ಗು', 'Venus': 'ಶು',
+  'Saturn': 'ಶ', 'Rahu': 'ರಾ', 'Ketu': 'ಕೇ'
+};
+
+// Helper to get planet abbreviation based on language
+const getPlanetAbbr = (planetName, language) => {
+  if (language === 'kn') {
+    return PLANET_ABBR_KANNADA[planetName] || planetName?.substring(0, 2);
+  } else if (language === 'en') {
+    return PLANET_ABBR_ENGLISH[planetName] || planetName?.substring(0, 2);
+  }
+  return PLANET_ABBR_TAMIL[planetName] || planetName?.substring(0, 2);
+};
+
+// Lagna abbreviation based on language
+const getLagnaAbbr = (language) => {
+  if (language === 'kn') return 'ಲ';
+  if (language === 'en') return 'As';
+  return 'லக்';
 };
 
 const rasiNames = ['மீனம்', 'மேஷம்', 'ரிஷபம்', 'மிதுனம்', 'கும்பம்', '', 'மகரம்', 'சிம்மம்', 'தனுசு', 'விருச்சிகம்', 'துலாம்', 'கன்னி'];
@@ -269,7 +420,7 @@ const houseToRasiIndex = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 const rasiOrder = ['Pisces', 'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Capricorn', 'Aquarius', 'Sagittarius', 'Scorpio', 'Libra', 'Virgo'];
 
 // South Indian Chart Component - Styled like the reference image
-function SouthIndianChart({ chartData, title, planets, lagna, isNavamsa = false }) {
+function SouthIndianChart({ chartData, title, planets, lagna, isNavamsa = false, language, t }) {
   const cellSize = (CHART_SIZE - 4) / 4;
 
   // Build house data from planets
@@ -281,12 +432,15 @@ function SouthIndianChart({ chartData, title, planets, lagna, isNavamsa = false 
     'Sagittarius': 8, 'Scorpio': 9, 'Libra': 10, 'Virgo': 11
   };
 
+  // Rasi names array mapped to translation keys for chart display
+  const rasiKeysForChart = ['pisces', 'aries', 'taurus', 'gemini', 'aquarius', 'cancer', 'capricorn', 'leo', 'sagittarius', 'scorpio', 'libra', 'virgo'];
+
   if (planets) {
     planets.forEach(planet => {
       const houseIdx = rasiToHouse[planet.rasi];
       if (houseIdx !== undefined) {
         houses[houseIdx].push({
-          abbr: PLANET_ABBR[planet.planet] || PLANET_ABBR[planet.tamil_name] || planet.planet.substring(0, 2),
+          abbr: getPlanetAbbr(planet.planet, language) || getPlanetAbbr(planet.tamil_name, language) || planet.planet.substring(0, 2),
           retrograde: planet.is_retrograde
         });
       }
@@ -294,10 +448,11 @@ function SouthIndianChart({ chartData, title, planets, lagna, isNavamsa = false 
   }
 
   // Add Lagna marker
+  const lagnaAbbr = getLagnaAbbr(language);
   if (lagna) {
     const lagnaHouse = rasiToHouse[lagna.rasi];
-    if (lagnaHouse !== undefined && !houses[lagnaHouse].find(p => p.abbr === 'லக்')) {
-      houses[lagnaHouse].unshift({ abbr: 'லக்', isLagna: true });
+    if (lagnaHouse !== undefined && !houses[lagnaHouse].find(p => p.isLagna)) {
+      houses[lagnaHouse].unshift({ abbr: lagnaAbbr, isLagna: true });
     }
   }
 
@@ -305,7 +460,8 @@ function SouthIndianChart({ chartData, title, planets, lagna, isNavamsa = false 
     if (houseIndex === null) return null;
 
     const planetList = houses[houseIndex] || [];
-    const rasiName = rasiNames[houseIndex];
+    const rasiKey = rasiKeysForChart[houseIndex];
+    const rasiName = t ? t(rasiKey) : rasiNames[houseIndex];
     const isCenter = (row === 1 || row === 2) && (col === 1 || col === 2);
 
     if (isCenter) return null;
@@ -354,7 +510,7 @@ function SouthIndianChart({ chartData, title, planets, lagna, isNavamsa = false 
         <View style={styles.chartRow}>
           {renderCell(4, 1, 0)}
           <View style={[styles.centerCell, { width: cellSize * 2, height: cellSize }]}>
-            <Text style={styles.centerText}>{isNavamsa ? 'அம்சம்' : 'ராசி'}</Text>
+            <Text style={styles.centerText}>{isNavamsa ? (t ? t('navamsam') : 'அம்சம்') : (t ? t('rasiLabel') : 'ராசி')}</Text>
           </View>
           {renderCell(5, 1, 3)}
         </View>
@@ -451,7 +607,7 @@ export default function ProfileScreen({ navigation }) {
 
   const generatePDF = async () => {
     if (!chartData) {
-      Alert.alert('பிழை', 'ஜாதக தரவு இல்லை');
+      Alert.alert(t('error'), t('noChartData'));
       return;
     }
 
@@ -467,15 +623,15 @@ export default function ProfileScreen({ navigation }) {
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(uri, {
           mimeType: 'application/pdf',
-          dialogTitle: 'ஜாதகம் PDF பதிவிறக்கம்',
+          dialogTitle: t('downloadPDF'),
           UTI: 'com.adobe.pdf'
         });
       } else {
-        Alert.alert('வெற்றி', 'PDF உருவாக்கப்பட்டது: ' + uri);
+        Alert.alert(t('pdfSuccess'), t('pdfCreated') + ': ' + uri);
       }
     } catch (err) {
       console.error('PDF generation error:', err);
-      Alert.alert('பிழை', 'PDF உருவாக்கத்தில் பிழை');
+      Alert.alert(t('error'), t('pdfError'));
     } finally {
       setPdfLoading(false);
     }
@@ -698,11 +854,27 @@ export default function ProfileScreen({ navigation }) {
 
   const handleLogout = () => {
     Alert.alert(
-      'வெளியேறு',
-      'நிச்சயமாக வெளியேற விரும்புகிறீர்களா?',
+      t('logoutConfirm'),
+      t('logoutMessage'),
       [
-        { text: 'ரத்து', style: 'cancel' },
-        { text: 'ஆம்', onPress: logout, style: 'destructive' },
+        { text: t('cancel'), style: 'cancel' },
+        {
+          text: t('yes'),
+          onPress: () => {
+            // Use setTimeout to ensure the alert closes first
+            setTimeout(async () => {
+              try {
+                console.log('Logging out...');
+                await logout();
+                console.log('Logout completed');
+              } catch (error) {
+                console.error('Logout error:', error);
+                Alert.alert('Error', 'Failed to logout. Please try again.');
+              }
+            }, 100);
+          },
+          style: 'destructive'
+        },
       ]
     );
   };
@@ -720,13 +892,13 @@ export default function ProfileScreen({ navigation }) {
             style={styles.headerBar}
           />
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>சுயவிவரம்</Text>
-            <Text style={styles.headerSubtitle}>உங்கள் ஜாதக விவரங்கள்</Text>
+            <Text style={styles.headerTitle}>{t('profileTitle')}</Text>
+            <Text style={styles.headerSubtitle}>{t('profileSubtitle')}</Text>
           </View>
           <View style={styles.emptyCard}>
             <Ionicons name="person-circle-outline" size={80} color="#fed7aa" />
-            <Text style={styles.emptyTitle}>புதிய பதிவு தேவை</Text>
-            <Text style={styles.emptyText}>தயவுசெய்து உள்நுழையவும்</Text>
+            <Text style={styles.emptyTitle}>{t('newRegRequired')}</Text>
+            <Text style={styles.emptyText}>{t('pleaseLogin')}</Text>
           </View>
         </LinearGradient>
       </View>
@@ -747,8 +919,8 @@ export default function ProfileScreen({ navigation }) {
           {/* Header */}
           <Animated.View style={[styles.header, { opacity: headerFadeAnim, transform: [{ translateY: headerSlideAnim }] }]}>
             <View>
-              <Text style={styles.headerTitle}>சுயவிவரம்</Text>
-              <Text style={styles.headerSubtitle}>உங்கள் ஜாதக விவரங்கள்</Text>
+              <Text style={styles.headerTitle}>{t('profileTitle')}</Text>
+              <Text style={styles.headerSubtitle}>{t('profileSubtitle')}</Text>
             </View>
           </Animated.View>
 
@@ -778,27 +950,27 @@ export default function ProfileScreen({ navigation }) {
           <AnimatedCard delay={100} style={styles.card}>
             <View style={styles.cardHeader}>
               <Ionicons name="sunny" size={16} color="#ea580c" />
-              <Text style={styles.cardTitle}>பிறப்பு விவரங்கள்</Text>
+              <Text style={styles.cardTitle}>{t('birthDetails')}</Text>
             </View>
             <View style={styles.birthDetailsGrid}>
               <View style={styles.birthDetailItem}>
                 <Ionicons name="calendar" size={20} color="#ea580c" />
                 <View>
-                  <Text style={styles.birthDetailLabel}>பிறந்த தேதி</Text>
+                  <Text style={styles.birthDetailLabel}>{t('birthDate')}</Text>
                   <Text style={styles.birthDetailValue}>{userProfile.birthDate || '-'}</Text>
                 </View>
               </View>
               <View style={styles.birthDetailItem}>
                 <Ionicons name="time" size={20} color="#ea580c" />
                 <View>
-                  <Text style={styles.birthDetailLabel}>பிறந்த நேரம்</Text>
+                  <Text style={styles.birthDetailLabel}>{t('birthTime')}</Text>
                   <Text style={styles.birthDetailValue}>{userProfile.birthTime || '-'}</Text>
                 </View>
               </View>
               <View style={[styles.birthDetailItem, styles.birthDetailFull]}>
                 <Ionicons name="location" size={20} color="#ea580c" />
                 <View>
-                  <Text style={styles.birthDetailLabel}>பிறந்த இடம்</Text>
+                  <Text style={styles.birthDetailLabel}>{t('birthPlace')}</Text>
                   <Text style={styles.birthDetailValue}>{userProfile.birthPlace || '-'}</Text>
                 </View>
               </View>
@@ -810,15 +982,15 @@ export default function ProfileScreen({ navigation }) {
             <AnimatedCard delay={200} style={styles.panchagamCard}>
               <View style={styles.cardHeader}>
                 <Ionicons name="calendar" size={16} color="#ea580c" />
-                <Text style={styles.cardTitle}>பஞ்சாங்கம்</Text>
+                <Text style={styles.cardTitle}>{t('panchagam')}</Text>
               </View>
               <View style={styles.panchagamGrid}>
                 {[
-                  { label: 'திதி', value: chartData?.panchagam?.tithi || 'சுக்ல பஞ்சமி' },
-                  { label: 'வாரம்', value: chartData?.panchagam?.vaaram || 'செவ்வாய்' },
-                  { label: 'நட்சத்திரம்', value: chartData?.moon_sign?.nakshatra || '-' },
-                  { label: 'யோகம்', value: chartData?.panchagam?.yogam || 'சித்த யோகம்' },
-                  { label: 'கரணம்', value: chartData?.panchagam?.karanam || 'பவ கரணம்' },
+                  { label: t('tithi'), value: chartData?.panchagam?.tithi || '-' },
+                  { label: t('vaaram'), value: chartData?.panchagam?.vaaram || '-' },
+                  { label: t('nakshatram'), value: translateNakshatraName(chartData?.moon_sign?.nakshatra, language, t) || '-' },
+                  { label: t('yogam'), value: chartData?.panchagam?.yogam || '-' },
+                  { label: t('karanam'), value: chartData?.panchagam?.karanam || '-' },
                 ].map((item, i) => (
                   <View key={i} style={styles.panchagamItem}>
                     <Text style={styles.panchagamLabel}>{item.label}</Text>
@@ -833,7 +1005,7 @@ export default function ProfileScreen({ navigation }) {
           <AnimatedCard delay={300} style={styles.card}>
             <View style={styles.cardHeader}>
               <Ionicons name="grid" size={16} color="#ea580c" />
-              <Text style={styles.cardTitle}>ஜாதக கட்டம்</Text>
+              <Text style={styles.cardTitle}>{t('jathagamChart')}</Text>
             </View>
 
             {loading ? (
@@ -843,21 +1015,25 @@ export default function ProfileScreen({ navigation }) {
             ) : chartData?.planets ? (
               <View style={styles.chartsRow}>
                 <SouthIndianChart
-                  title="ராசி கட்டம்"
+                  title={t('rasiChart')}
                   planets={chartData.planets}
                   lagna={chartData.lagna}
+                  language={language}
+                  t={t}
                 />
                 <SouthIndianChart
-                  title="அம்சம் கட்டம்"
+                  title={t('navamsaChart')}
                   planets={chartData.planets}
                   lagna={chartData.lagna}
                   isNavamsa={true}
+                  language={language}
+                  t={t}
                 />
               </View>
             ) : (
               <View style={styles.noDataContainer}>
                 <Text style={styles.noDataSymbol}>{rasiSymbol}</Text>
-                <Text style={styles.noDataText}>பிறப்பு விவரங்களை முழுமையாக நிரப்பவும்</Text>
+                <Text style={styles.noDataText}>{t('fillBirthDetails')}</Text>
               </View>
             )}
           </AnimatedCard>
@@ -867,17 +1043,17 @@ export default function ProfileScreen({ navigation }) {
             <AnimatedCard delay={400} style={styles.card}>
               <View style={styles.cardHeader}>
                 <Ionicons name="planet" size={16} color="#ea580c" />
-                <Text style={styles.cardTitle}>கிரக நிலை</Text>
+                <Text style={styles.cardTitle}>{t('planetPositions')}</Text>
               </View>
               <View style={styles.planetTable}>
                 <View style={styles.tableHeader}>
-                  <Text style={[styles.tableHeaderText, { flex: 1.5 }]}>கிரகம்</Text>
-                  <Text style={styles.tableHeaderText}>ராசி</Text>
-                  <Text style={styles.tableHeaderText}>நட்சத்திரம்</Text>
-                  <Text style={[styles.tableHeaderText, { flex: 0.5 }]}>பாதம்</Text>
+                  <Text style={[styles.tableHeaderText, { flex: 1.5 }]}>{t('planet')}</Text>
+                  <Text style={styles.tableHeaderText}>{t('rasi')}</Text>
+                  <Text style={styles.tableHeaderText}>{t('nakshatra')}</Text>
+                  <Text style={[styles.tableHeaderText, { flex: 0.5 }]}>{t('pada')}</Text>
                 </View>
                 {chartData.planets.map((planet, i) => (
-                  <AnimatedPlanetRow key={i} planet={planet} index={i} />
+                  <AnimatedPlanetRow key={i} planet={planet} index={i} language={language} t={t} />
                 ))}
               </View>
             </AnimatedCard>
@@ -888,26 +1064,26 @@ export default function ProfileScreen({ navigation }) {
             <AnimatedCard delay={500} style={styles.card}>
               <View style={styles.cardHeader}>
                 <Ionicons name="moon" size={16} color="#7c3aed" />
-                <Text style={[styles.cardTitle, { color: '#6b21a8' }]}>தசா புக்தி</Text>
+                <Text style={[styles.cardTitle, { color: '#6b21a8' }]}>{t('dashaTitle')}</Text>
               </View>
               <View style={styles.dashaGrid}>
                 <View style={styles.dashaItem}>
-                  <Text style={styles.dashaLabel}>மகா தசை</Text>
+                  <Text style={styles.dashaLabel}>{t('mahaDasha')}</Text>
                   <Text style={styles.dashaValue}>
-                    {chartData.dasha.current_mahadasha?.tamil_lord || chartData.dasha.mahadasha_tamil || '-'}
+                    {translatePlanetName(chartData.dasha.current_mahadasha?.tamil_lord || chartData.dasha.mahadasha_tamil, language, t) || '-'}
                   </Text>
                 </View>
                 <View style={styles.dashaItem}>
-                  <Text style={styles.dashaLabel}>காலம்</Text>
+                  <Text style={styles.dashaLabel}>{t('period')}</Text>
                   <Text style={styles.dashaValue}>
-                    {chartData.dasha.current_mahadasha?.years || 18} வருடம்
+                    {chartData.dasha.current_mahadasha?.years || 18} {t('years')}
                   </Text>
                 </View>
               </View>
               {/* Dasha Timeline */}
               {chartData.dasha.all_periods && (
                 <View style={styles.dashaTimeline}>
-                  <Text style={styles.dashaTimelineTitle}>தசா வரிசை:</Text>
+                  <Text style={styles.dashaTimelineTitle}>{t('dashaSequence')}</Text>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                     <View style={styles.dashaTimelineRow}>
                       {chartData.dasha.all_periods.map((period, i) => (
@@ -916,6 +1092,8 @@ export default function ProfileScreen({ navigation }) {
                           period={period}
                           index={i}
                           isCurrent={period.is_current}
+                          language={language}
+                          t={t}
                         />
                       ))}
                     </View>
@@ -930,10 +1108,10 @@ export default function ProfileScreen({ navigation }) {
             <AnimatedCard delay={600} style={styles.card}>
               <View style={styles.cardHeader}>
                 <Ionicons name="star" size={16} color="#16a34a" />
-                <Text style={[styles.cardTitle, { color: '#166534' }]}>யோகங்கள்</Text>
+                <Text style={[styles.cardTitle, { color: '#166534' }]}>{t('yogasTitle')}</Text>
               </View>
               {chartData.yogas.map((yoga, i) => (
-                <AnimatedYogaItem key={i} yoga={yoga} index={i} />
+                <AnimatedYogaItem key={i} yoga={yoga} index={i} language={language} />
               ))}
             </AnimatedCard>
           )}
@@ -941,7 +1119,7 @@ export default function ProfileScreen({ navigation }) {
           {/* Download PDF Button */}
           {chartData && (
             <AnimatedCard delay={700}>
-              <AnimatedDownloadButton onPress={generatePDF} loading={pdfLoading} />
+              <AnimatedDownloadButton onPress={generatePDF} loading={pdfLoading} t={t} />
             </AnimatedCard>
           )}
 

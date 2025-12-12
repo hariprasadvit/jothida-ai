@@ -37,31 +37,228 @@ const planetTranslationKeys = {
   'Ketu': 'ketu',
 };
 
-// Tamil month names
-const tamilMonths = [
-  'சித்திரை', 'வைகாசி', 'ஆனி', 'ஆடி', 'ஆவணி', 'புரட்டாசி',
-  'ஐப்பசி', 'கார்த்திகை', 'மார்கழி', 'தை', 'மாசி', 'பங்குனி'
-];
-
-const getTamilDay = (dayIndex) => {
-  const days = ['ஞாயிறு', 'திங்கள்', 'செவ்வாய்', 'புதன்', 'வியாழன்', 'வெள்ளி', 'சனி'];
-  return days[dayIndex];
+// Month name mapping for translation from Tamil to translation keys
+const TAMIL_MONTH_MAP = {
+  'ஜனவரி': 'january', 'பிப்ரவரி': 'february', 'மார்ச்': 'march',
+  'ஏப்ரல்': 'april', 'மே': 'may', 'ஜூன்': 'june',
+  'ஜூலை': 'july', 'ஆகஸ்ட்': 'august', 'செப்டம்பர்': 'september',
+  'அக்டோபர்': 'october', 'நவம்பர்': 'november', 'டிசம்பர்': 'december',
 };
 
-// Format date in Tamil style
-const formatTamilDate = (date) => {
-  const d = new Date(date);
-  const day = d.getDate();
-  const month = d.getMonth();
-  const year = d.getFullYear();
-  const dayName = getTamilDay(d.getDay());
+// Tamil planet name to translation key mapping
+const TAMIL_PLANET_MAP = {
+  'சூரியன்': 'sun_planet', 'சந்திரன்': 'moon_planet', 'செவ்வாய்': 'mars',
+  'புதன்': 'mercury', 'குரு': 'jupiter', 'சுக்கிரன்': 'venus',
+  'சனி': 'saturn', 'ராகு': 'rahu', 'கேது': 'ketu',
+};
 
-  const tamilMonthNames = [
-    'ஜனவரி', 'பிப்ரவரி', 'மார்ச்', 'ஏப்ரல்', 'மே', 'ஜூன்',
-    'ஜூலை', 'ஆகஸ்ட்', 'செப்டம்பர்', 'அக்டோபர்', 'நவம்பர்', 'டிசம்பர்'
-  ];
+// Tamil Rasi (zodiac) name to translation key mapping
+const TAMIL_RASI_MAP = {
+  'மேஷம்': 'aries', 'ரிஷபம்': 'taurus', 'மிதுனம்': 'gemini',
+  'கடகம்': 'cancer', 'சிம்மம்': 'leo', 'கன்னி': 'virgo',
+  'துலாம்': 'libra', 'விருச்சிகம்': 'scorpio', 'தனுசு': 'sagittarius',
+  'மகரம்': 'capricorn', 'கும்பம்': 'aquarius', 'மீனம்': 'pisces',
+};
 
-  return `${dayName}, ${day} ${tamilMonthNames[month]} ${year}`;
+// English Rasi name to translation key mapping
+const ENGLISH_RASI_MAP = {
+  'Aries': 'aries', 'Taurus': 'taurus', 'Gemini': 'gemini',
+  'Cancer': 'cancer', 'Leo': 'leo', 'Virgo': 'virgo',
+  'Libra': 'libra', 'Scorpio': 'scorpio', 'Sagittarius': 'sagittarius',
+  'Capricorn': 'capricorn', 'Aquarius': 'aquarius', 'Pisces': 'pisces',
+};
+
+// Tamil Nakshatra name to translation key mapping
+const TAMIL_NAKSHATRA_MAP = {
+  'அஸ்வினி': 'ashwini', 'பரணி': 'bharani', 'கார்த்திகை': 'krittika',
+  'ரோகிணி': 'rohini', 'மிருகசீரிடம்': 'mrigashira', 'திருவாதிரை': 'ardra',
+  'புனர்பூசம்': 'punarvasu', 'பூசம்': 'pushya', 'ஆயில்யம்': 'ashlesha',
+  'மகம்': 'magha', 'பூரம்': 'purvaPhalguni', 'உத்திரம்': 'uttaraPhalguni',
+  'ஹஸ்தம்': 'hasta', 'சித்திரை': 'chitra', 'சுவாதி': 'swati',
+  'விசாகம்': 'vishakha', 'அனுஷம்': 'anuradha', 'கேட்டை': 'jyeshtha',
+  'மூலம்': 'moola', 'பூராடம்': 'purvaAshadha', 'உத்திராடம்': 'uttaraAshadha',
+  'திருவோணம்': 'shravana', 'அவிட்டம்': 'dhanishta', 'சதயம்': 'shatabhisha',
+  'பூரட்டாதி': 'purvaBhadrapada', 'உத்திரட்டாதி': 'uttaraBhadrapada', 'ரேவதி': 'revati',
+};
+
+// Tamil Month (Panchangam) name to translation key mapping
+const TAMIL_PANCHANGAM_MONTH_MAP = {
+  'சித்திரை': 'chithirai', 'வைகாசி': 'vaikasi', 'ஆனி': 'aani',
+  'ஆடி': 'aadi', 'ஆவணி': 'aavani', 'புரட்டாசி': 'purattasi',
+  'ஐப்பசி': 'aippasi', 'கார்த்திகை': 'karthigai', 'மார்கழி': 'margazhi',
+  'தை': 'thai', 'மாசி': 'maasi', 'பங்குனி': 'panguni',
+};
+
+// Tamil Moon phase to translation key mapping
+const TAMIL_MOON_PHASE_MAP = {
+  'அமாவாசை': 'newMoon', 'வளர்பிறை': 'waxingCrescent', 'பௌர்ணமி': 'fullMoon',
+  'தேய்பிறை': 'waningCrescent', 'சுக்ல பட்சம்': 'waxingCrescent',
+  'கிருஷ்ண பட்சம்': 'waningCrescent',
+};
+
+// Tamil Aura level to translation key mapping
+const TAMIL_AURA_MAP = {
+  'வலிமையான ஒளி': 'strongAura', 'மிதமான ஒளி': 'moderateAura',
+  'பலவீனமான ஒளி': 'weakAura',
+};
+
+// Tamil Life Trend direction to translation key mapping
+const TAMIL_DIRECTION_MAP = {
+  'ஏற்றம்': 'ascending', 'இறக்கம்': 'descending', 'நிலையான நிலை': 'stable',
+  'உயர்வு': 'ascending', 'தாழ்வு': 'descending', 'சமநிலை': 'stable',
+};
+
+// Tamil Dasha planet name to translation key mapping (for timeline)
+const TAMIL_DASHA_MAP = {
+  'சூரியன்': 'sun_planet', 'சந்திரன்': 'moon_planet', 'செவ்வாய்': 'mars',
+  'புதன்': 'mercury', 'குரு': 'jupiter', 'சுக்கிரன்': 'venus',
+  'சனி': 'saturn', 'ராகு': 'rahu', 'கேது': 'ketu',
+  // Also short forms
+  'சூரி': 'sun_planet', 'சந்': 'moon_planet', 'செவ்': 'mars',
+  'புத': 'mercury', 'குரு': 'jupiter', 'சுக்': 'venus',
+  'சனி': 'saturn', 'ராகு': 'rahu', 'கேது': 'ketu',
+};
+
+// English Dasha names mapping
+const ENGLISH_DASHA_MAP = {
+  'Sun': 'sun_planet', 'Moon': 'moon_planet', 'Mars': 'mars',
+  'Mercury': 'mercury', 'Jupiter': 'jupiter', 'Venus': 'venus',
+  'Saturn': 'saturn', 'Rahu': 'rahu', 'Ketu': 'ketu',
+};
+
+// Helper to translate month name from API response to user's language
+const translateMonthName = (monthName, t) => {
+  if (!monthName) return monthName;
+  // Check if it's a Tamil month name that needs translation
+  const monthKey = TAMIL_MONTH_MAP[monthName];
+  if (monthKey) {
+    return t(monthKey);
+  }
+  // Check if it matches English month names (API might return English)
+  const englishMonths = ['January', 'February', 'March', 'April', 'May', 'June',
+                         'July', 'August', 'September', 'October', 'November', 'December'];
+  const monthIndex = englishMonths.findIndex(m => m.toLowerCase() === monthName.toLowerCase());
+  if (monthIndex !== -1) {
+    const keys = ['january', 'february', 'march', 'april', 'may', 'june',
+                  'july', 'august', 'september', 'october', 'november', 'december'];
+    return t(keys[monthIndex]);
+  }
+  return monthName;
+};
+
+// Helper to get planet name based on language
+const getPlanetName = (planet, language, t) => {
+  if (!planet) return '';
+  // If language is Tamil, use the Tamil name directly from API
+  if (language === 'ta') {
+    return planet.tamil || planet.name;
+  }
+  // For other languages, use translation
+  const planetKey = TAMIL_PLANET_MAP[planet.tamil] || planetTranslationKeys[planet.name];
+  if (planetKey) {
+    return t(planetKey);
+  }
+  // Fallback to English name
+  return planet.name || planet.tamil;
+};
+
+// Helper to translate Rasi (zodiac sign) name
+const translateRasiName = (rasiName, t) => {
+  if (!rasiName) return rasiName;
+  // Check Tamil rasi names
+  const tamilKey = TAMIL_RASI_MAP[rasiName];
+  if (tamilKey) return t(tamilKey);
+  // Check English rasi names
+  const englishKey = ENGLISH_RASI_MAP[rasiName];
+  if (englishKey) return t(englishKey);
+  return rasiName;
+};
+
+// Helper to translate Nakshatra name
+const translateNakshatraName = (nakshatraName, t) => {
+  if (!nakshatraName) return nakshatraName;
+  const key = TAMIL_NAKSHATRA_MAP[nakshatraName];
+  if (key) return t(key);
+  return nakshatraName;
+};
+
+// Helper to translate Tamil month (Panchangam)
+const translatePanchangamMonth = (monthName, t) => {
+  if (!monthName) return monthName;
+  const key = TAMIL_PANCHANGAM_MONTH_MAP[monthName];
+  if (key) return t(key);
+  return monthName;
+};
+
+// Helper to translate moon phase
+const translateMoonPhase = (phase, t) => {
+  if (!phase) return phase;
+  const key = TAMIL_MOON_PHASE_MAP[phase];
+  if (key) return t(key);
+  return phase;
+};
+
+// Helper to translate aura level
+const translateAuraLevel = (auraLabel, t) => {
+  if (!auraLabel) return auraLabel;
+  const key = TAMIL_AURA_MAP[auraLabel];
+  if (key) return t(key);
+  return auraLabel;
+};
+
+// Helper to translate planet name from string (for dominant/challenged planets)
+const translatePlanetString = (planetName, language, t) => {
+  if (!planetName) return planetName;
+  if (language === 'ta') return planetName;
+  const key = TAMIL_PLANET_MAP[planetName];
+  if (key) return t(key);
+  return planetName;
+};
+
+// Helper to translate life trend direction
+const translateDirection = (directionTamil, t) => {
+  if (!directionTamil) return directionTamil;
+  const key = TAMIL_DIRECTION_MAP[directionTamil];
+  if (key) return t(key);
+  return directionTamil;
+};
+
+// Helper to translate Dasha planet name
+const translateDashaName = (dashaName, language, t) => {
+  if (!dashaName) return dashaName;
+  if (language === 'ta') return dashaName;
+  // Check Tamil dasha names
+  const tamilKey = TAMIL_DASHA_MAP[dashaName];
+  if (tamilKey) return t(tamilKey);
+  // Check English dasha names
+  const englishKey = ENGLISH_DASHA_MAP[dashaName];
+  if (englishKey) return t(englishKey);
+  // Check if it's a partial Tamil name (e.g., first 3 chars)
+  for (const [tamil, key] of Object.entries(TAMIL_DASHA_MAP)) {
+    if (tamil.startsWith(dashaName) || dashaName.startsWith(tamil.substring(0, 3))) {
+      return t(key);
+    }
+  }
+  return dashaName;
+};
+
+// Helper to construct retrograde message in user's language
+const getRetrogradeMessage = (retro, language, t) => {
+  if (!retro) return '';
+  if (language === 'ta') return retro.message || '';
+  // Construct message from data
+  const planetName = translatePlanetString(retro.tamil, language, t);
+  if (retro.days_remaining) {
+    return `${planetName} ${t('retrograde')} - ${retro.days_remaining} ${t('daysRemaining')}`;
+  }
+  return `${planetName} ${t('retrograde')}`;
+};
+
+// Helper to translate event labels
+const translateEventLabel = (event, language, t) => {
+  if (!event) return '';
+  if (language === 'ta') return event.label_tamil || event.label;
+  return event.label || event.label_tamil;
 };
 
 // Animated Card Component
@@ -610,7 +807,7 @@ const ScoreJustificationModal = ({ visible, onClose, data, t }) => {
 };
 
 // Timeline Year Detail Modal (Enhanced)
-const TimelineYearModal = ({ visible, onClose, data, language }) => {
+const TimelineYearModal = ({ visible, onClose, data, language, t }) => {
   if (!data) return null;
 
   const scores = data.scores || {};
@@ -643,7 +840,7 @@ const TimelineYearModal = ({ visible, onClose, data, language }) => {
               <View style={{ flex: 1 }}>
                 <Text style={styles.modalTitle}>{data.year} - {t('age')} {data.age}</Text>
                 <Text style={{ fontSize: 12, color: '#8b5cf6', marginTop: 2 }}>
-                  {data.dasha_tamil || data.dasha} {t('dasha')}
+                  {translateDashaName(data.dasha_tamil || data.dasha, language, t)} {t('dasha')}
                 </Text>
               </View>
               <TouchableOpacity style={styles.modalCloseBtn} onPress={onClose}>
@@ -741,7 +938,7 @@ const TimelineYearModal = ({ visible, onClose, data, language }) => {
                     <View key={i} style={[styles.tlmEventChip, { backgroundColor: event.color + '20', borderColor: event.color }]}>
                       <Ionicons name={event.icon} size={14} color={event.color} />
                       <Text style={[styles.tlmEventText, { color: event.color }]} numberOfLines={1}>
-                        {event.label_tamil || event.label}
+                        {translateEventLabel(event, language, t)}
                       </Text>
                     </View>
                   ))}
@@ -813,7 +1010,7 @@ export default function DashboardScreen({ navigation }) {
 
   useEffect(() => {
     fetchData();
-  }, [userProfile]);
+  }, [userProfile, language]); // Re-fetch when language changes
 
   const fetchData = async () => {
     try {
@@ -863,13 +1060,13 @@ export default function DashboardScreen({ navigation }) {
             console.error('Transits Map API error:', err);
             return null;
           }),
-          // Life Areas
-          mobileAPI.getLifeAreas(birthDetails).catch(err => {
+          // Life Areas - pass language for translated content
+          mobileAPI.getLifeAreas(birthDetails, language).catch(err => {
             console.error('Life Areas API error:', err);
             return null;
           }),
-          // Future Projections
-          mobileAPI.getFutureProjections(birthDetails).catch(err => {
+          // Future Projections - pass language for translated content
+          mobileAPI.getFutureProjections(birthDetails, language).catch(err => {
             console.error('Future Projections API error:', err);
             return null;
           }),
@@ -1003,7 +1200,7 @@ export default function DashboardScreen({ navigation }) {
     if (dynamicProjections?.projections?.monthly) {
       console.log('Using DYNAMIC monthly projections from API');
       return dynamicProjections.projections.monthly.map((m, i) => ({
-        name: m.name,
+        name: translateMonthName(m.name, t), // Translate month name to user's language
         monthIndex: m.month - 1,
         year: m.year,
         score: m.score,
@@ -1222,7 +1419,7 @@ export default function DashboardScreen({ navigation }) {
                 <View style={styles.userInfo}>
                   <Text style={styles.greeting}>{t('greeting')}, {userProfile.name}</Text>
                   {userProfile.rasi && (
-                    <Text style={styles.rasiInfo}>{userProfile.rasi} • {userProfile.nakshatra}</Text>
+                    <Text style={styles.rasiInfo}>{translateRasiName(userProfile.rasi, t)} • {translateNakshatraName(userProfile.nakshatra, t)}</Text>
                   )}
                 </View>
               )}
@@ -1313,7 +1510,7 @@ export default function DashboardScreen({ navigation }) {
             <View style={styles.panchangamGrid}>
               <View style={styles.panchangamItem}>
                 <Text style={styles.panchangamLabel}>{t('month')}</Text>
-                <Text style={styles.panchangamValue}>{panchangam?.tamil_month || '-'}</Text>
+                <Text style={styles.panchangamValue}>{translatePanchangamMonth(panchangam?.tamil_month, t) || '-'}</Text>
               </View>
               <View style={styles.panchangamItem}>
                 <Text style={styles.panchangamLabel}>{t('tithi')}</Text>
@@ -1321,7 +1518,7 @@ export default function DashboardScreen({ navigation }) {
               </View>
               <View style={styles.panchangamItem}>
                 <Text style={styles.panchangamLabel}>{t('nakshatra')}</Text>
-                <Text style={styles.panchangamValue}>{panchangam?.nakshatra?.tamil || '-'}</Text>
+                <Text style={styles.panchangamValue}>{translateNakshatraName(panchangam?.nakshatra?.tamil, t) || '-'}</Text>
               </View>
               <View style={styles.panchangamItem}>
                 <Text style={styles.panchangamLabel}>{t('yoga')}</Text>
@@ -1519,7 +1716,7 @@ export default function DashboardScreen({ navigation }) {
                         </View>
                       </View>
                       <Text style={styles.pastYearDasha}>
-                        {yearData.dasha_tamil || yearData.dasha} {t('dasha')}
+                        {translateDashaName(yearData.dasha_tamil || yearData.dasha, language, t)} {t('dasha')}
                       </Text>
                       <View style={styles.pastYearBar}>
                         <View style={[styles.pastYearBarFill, { width: `${yearData.overall_score}%`, backgroundColor: scoreColor }]} />
@@ -1619,7 +1816,7 @@ export default function DashboardScreen({ navigation }) {
                                  lifeTimeline.life_trend.direction === 'descending' ? '#ef4444' : '#3b82f6'
                         }
                       ]}>
-                        {lifeTimeline.life_trend.direction_tamil}
+                        {translateDirection(lifeTimeline.life_trend.direction_tamil, t)}
                       </Text>
                     </View>
                     <Text style={styles.trendAvg}>
@@ -1723,7 +1920,7 @@ export default function DashboardScreen({ navigation }) {
                           {yearData.age}{language === 'ta' ? 'வ' : language === 'kn' ? 'ವ' : 'y'}
                         </Text>
                         <Text style={styles.timelineDasha} numberOfLines={1}>
-                          {yearData.dasha_tamil?.substring(0, 3) || yearData.dasha?.substring(0, 3)}
+                          {translateDashaName(yearData.dasha_tamil || yearData.dasha, language, t)?.substring(0, 3)}
                         </Text>
 
                         {/* Event Indicators */}
@@ -1756,7 +1953,7 @@ export default function DashboardScreen({ navigation }) {
                           </View>
                           <Text style={styles.majorEventYear}>{event.year}</Text>
                           <Text style={styles.majorEventLabel} numberOfLines={1}>
-                            {event.label_tamil}
+                            {translateEventLabel(event, language, t)}
                           </Text>
                         </View>
                       ))}
@@ -1807,7 +2004,7 @@ export default function DashboardScreen({ navigation }) {
                 <View style={styles.auraOverview}>
                   <View style={[styles.auraLevelBadge, { backgroundColor: planetAura.overall?.aura_color + '20' }]}>
                     <Text style={[styles.auraLevelText, { color: planetAura.overall?.aura_color }]}>
-                      {planetAura.overall?.aura_tamil || planetAura.overall?.aura_label}
+                      {translateAuraLevel(planetAura.overall?.aura_tamil, t) || planetAura.overall?.aura_label}
                     </Text>
                   </View>
                   <View style={styles.auraStats}>
@@ -1884,7 +2081,7 @@ export default function DashboardScreen({ navigation }) {
                       onPress={() => setSelectedPlanet(selectedPlanet?.name === planet.name ? null : planet)}
                     >
                       <View style={[styles.auraLegendDot, { backgroundColor: planet.color }]} />
-                      <Text style={styles.auraLegendName}>{planet.tamil}</Text>
+                      <Text style={styles.auraLegendName}>{getPlanetName(planet, language, t)}</Text>
                       <Text style={[styles.auraLegendScore, { color: planet.color }]}>{planet.strength}</Text>
                       {planet.transit_effect === 'favorable' && (
                         <Ionicons name="trending-up" size={12} color="#22c55e" />
@@ -1902,14 +2099,14 @@ export default function DashboardScreen({ navigation }) {
                     <View style={styles.auraPlanetDetailHeader}>
                       <Text style={styles.auraPlanetDetailSymbol}>{selectedPlanet.symbol}</Text>
                       <View>
-                        <Text style={styles.auraPlanetDetailName}>{selectedPlanet.tamil}</Text>
+                        <Text style={styles.auraPlanetDetailName}>{getPlanetName(selectedPlanet, language, t)}</Text>
                         <Text style={styles.auraPlanetDetailDomain}>{selectedPlanet.domain}</Text>
                       </View>
                       <View style={[styles.auraPlanetDetailScore, { backgroundColor: selectedPlanet.color }]}>
                         <Text style={styles.auraPlanetDetailScoreText}>{selectedPlanet.strength}%</Text>
                       </View>
                     </View>
-                    <Text style={styles.auraPlanetDetailInsight}>{selectedPlanet.insight}</Text>
+                    <Text style={styles.auraPlanetDetailInsight}>{language === 'ta' ? selectedPlanet.insight : (selectedPlanet.insight_en || selectedPlanet.insight)}</Text>
                     <View style={styles.auraPlanetDetailTags}>
                       {selectedPlanet.keywords?.slice(0, 3).map((kw, i) => (
                         <View key={i} style={[styles.auraKeywordTag, { backgroundColor: selectedPlanet.color + '20' }]}>
@@ -1924,7 +2121,7 @@ export default function DashboardScreen({ navigation }) {
                 {planetAura.transit_summary && (
                   <View style={styles.auraTransitSummary}>
                     <Ionicons name="pulse" size={14} color="#a78bfa" />
-                    <Text style={styles.auraTransitText}>{planetAura.transit_summary}</Text>
+                    <Text style={styles.auraTransitText}>{language === 'ta' ? planetAura.transit_summary : (planetAura.transit_summary_en || planetAura.transit_summary)}</Text>
                   </View>
                 )}
 
@@ -1937,7 +2134,7 @@ export default function DashboardScreen({ navigation }) {
                       </Text>
                       <View style={styles.auraDominantList}>
                         {planetAura.dominant_planets.slice(0, 2).map((p, i) => (
-                          <Text key={i} style={styles.auraDominantPlanet}>{p.tamil}</Text>
+                          <Text key={i} style={styles.auraDominantPlanet}>{translatePlanetString(p.tamil, language, t)}</Text>
                         ))}
                       </View>
                     </View>
@@ -1945,11 +2142,11 @@ export default function DashboardScreen({ navigation }) {
                   {planetAura.challenged_planets?.length > 0 && (
                     <View style={styles.auraDominantSection}>
                       <Text style={styles.auraDominantLabel}>
-                        🙏 {t('remedy')}
+                        🙏 {t('needsRemedy')}
                       </Text>
                       <View style={styles.auraDominantList}>
                         {planetAura.challenged_planets.slice(0, 2).map((p, i) => (
-                          <Text key={i} style={[styles.auraDominantPlanet, { color: '#f97316' }]}>{p.tamil}</Text>
+                          <Text key={i} style={[styles.auraDominantPlanet, { color: '#f97316' }]}>{translatePlanetString(p.tamil, language, t)}</Text>
                         ))}
                       </View>
                     </View>
@@ -2007,9 +2204,9 @@ export default function DashboardScreen({ navigation }) {
                           {t('moonSign')}
                         </Text>
                         <Text style={styles.moonHeroSign}>
-                          {transitsMap.moon_transit.current_sign_symbol} {transitsMap.moon_transit.current_sign_name}
+                          {transitsMap.moon_transit.current_sign_symbol} {translateRasiName(transitsMap.moon_transit.current_sign_name, t)}
                         </Text>
-                        <Text style={styles.moonHeroPhase}>{transitsMap.moon_transit.phase}</Text>
+                        <Text style={styles.moonHeroPhase}>{translateMoonPhase(transitsMap.moon_transit.phase, t)}</Text>
                       </View>
                       {transitsMap.moon_transit.energy && (
                         <LinearGradient
@@ -2018,7 +2215,7 @@ export default function DashboardScreen({ navigation }) {
                         >
                           <Text style={styles.moonEnergyEmoji}>{transitsMap.moon_transit.energy.icon}</Text>
                           <Text style={[styles.moonEnergyMood, { color: transitsMap.moon_transit.energy.color }]}>
-                            {transitsMap.moon_transit.energy.mood}
+                            {language === 'ta' ? transitsMap.moon_transit.energy.mood : (transitsMap.moon_transit.energy.mood_en || transitsMap.moon_transit.energy.mood)}
                           </Text>
                         </LinearGradient>
                       )}
@@ -2047,7 +2244,7 @@ export default function DashboardScreen({ navigation }) {
                       <View style={styles.nextSignRow}>
                         <Ionicons name="arrow-forward-circle" size={18} color="#a78bfa" />
                         <Text style={styles.nextSignText}>
-                          {transitsMap.moon_transit.next_sign_symbol} {transitsMap.moon_transit.next_sign_name}
+                          {transitsMap.moon_transit.next_sign_symbol} {translateRasiName(transitsMap.moon_transit.next_sign_name, t)}
                         </Text>
                       </View>
                     </View>
@@ -2056,7 +2253,7 @@ export default function DashboardScreen({ navigation }) {
                     {transitsMap.moon_transit.transit_message && (
                       <View style={styles.alertMessageBox}>
                         <Ionicons name="notifications" size={16} color="#fbbf24" />
-                        <Text style={styles.alertMessageText}>{transitsMap.moon_transit.transit_message}</Text>
+                        <Text style={styles.alertMessageText}>{language === 'ta' ? transitsMap.moon_transit.transit_message : (transitsMap.moon_transit.transit_message_en || transitsMap.moon_transit.transit_message)}</Text>
                       </View>
                     )}
                   </LinearGradient>
@@ -2125,12 +2322,12 @@ export default function DashboardScreen({ navigation }) {
                         <View style={[styles.planetCardIconBg, { backgroundColor: planet.color + '30' }]}>
                           <Text style={styles.planetCardSymbol}>{planet.symbol}</Text>
                         </View>
-                        <Text style={styles.planetCardName}>{planet.tamil}</Text>
+                        <Text style={styles.planetCardName}>{translatePlanetString(planet.tamil, language, t)}</Text>
                         <View style={styles.planetCardSignRow}>
                           <Text style={[styles.planetCardSign, { color: planet.color }]}>
                             {planet.sign_symbol}
                           </Text>
-                          <Text style={styles.planetCardSignName}>{planet.sign_name}</Text>
+                          <Text style={styles.planetCardSignName}>{translateRasiName(planet.sign_name, t)}</Text>
                         </View>
                         <Text style={styles.planetCardDegree}>{planet.degree_display}</Text>
                         {planet.is_retrograde && (
@@ -2161,7 +2358,7 @@ export default function DashboardScreen({ navigation }) {
                         <View style={styles.retroAlertCardHeader}>
                           <Text style={styles.retroAlertSymbol}>{retro.symbol}</Text>
                           <View style={styles.retroAlertInfo}>
-                            <Text style={styles.retroAlertName}>{retro.tamil}</Text>
+                            <Text style={styles.retroAlertName}>{translatePlanetString(retro.tamil, language, t)}</Text>
                             <View style={[
                               styles.retroStatusPill,
                               { backgroundColor: retro.status === 'retrograde' ? '#ef444440' : '#f59e0b40' }
@@ -2170,7 +2367,7 @@ export default function DashboardScreen({ navigation }) {
                                 styles.retroStatusText,
                                 { color: retro.status === 'retrograde' ? '#fca5a5' : '#fcd34d' }
                               ]}>
-                                {retro.status_tamil}
+                                {t('retrograde')}
                               </Text>
                             </View>
                           </View>
@@ -2181,7 +2378,7 @@ export default function DashboardScreen({ navigation }) {
                             </View>
                           )}
                         </View>
-                        <Text style={styles.retroAlertMessage}>{retro.message}</Text>
+                        <Text style={styles.retroAlertMessage}>{getRetrogradeMessage(retro, language, t)}</Text>
                       </LinearGradient>
                     ))}
                   </View>
@@ -2199,11 +2396,11 @@ export default function DashboardScreen({ navigation }) {
                           <Text style={styles.upcomingIcon}>{transit.symbol}</Text>
                         </View>
                         <View style={styles.upcomingDetails}>
-                          <Text style={styles.upcomingPlanet}>{transit.tamil}</Text>
+                          <Text style={styles.upcomingPlanet}>{translatePlanetString(transit.tamil, language, t)}</Text>
                           <View style={styles.upcomingArrowRow}>
-                            <Text style={styles.upcomingFrom}>{transit.from_sign_name}</Text>
+                            <Text style={styles.upcomingFrom}>{translateRasiName(transit.from_sign_name, t)}</Text>
                             <Ionicons name="arrow-forward" size={12} color="#6366f1" />
-                            <Text style={styles.upcomingTo}>{transit.to_sign_symbol} {transit.to_sign_name}</Text>
+                            <Text style={styles.upcomingTo}>{transit.to_sign_symbol} {translateRasiName(transit.to_sign_name, t)}</Text>
                           </View>
                         </View>
                         <View style={styles.upcomingTimeBox}>
@@ -2223,7 +2420,7 @@ export default function DashboardScreen({ navigation }) {
                   >
                     <Ionicons name="sparkles" size={16} color={transitsMap.auspicious_time.color} />
                     <Text style={[styles.auspiciousText, { color: transitsMap.auspicious_time.color }]}>
-                      {transitsMap.auspicious_time.name}
+                      {language === 'ta' ? transitsMap.auspicious_time.name : (transitsMap.auspicious_time.name_en || transitsMap.auspicious_time.name)}
                     </Text>
                   </LinearGradient>
                 )}
@@ -2250,6 +2447,7 @@ export default function DashboardScreen({ navigation }) {
         }}
         data={selectedTimelineYear}
         language={language}
+        t={t}
       />
     </View>
   );
