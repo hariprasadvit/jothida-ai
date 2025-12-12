@@ -12,11 +12,19 @@ from datetime import datetime, date, timedelta
 from typing import Dict, List, Optional
 import math
 
-# Import Astro-Percent Engine
+# Import Astro-Percent Engine and V6.0 TimeAdaptiveEngine
 try:
     from .astro_percent_engine import AstroPercentEngine
 except ImportError:
     AstroPercentEngine = None
+
+# V6.0: Prefer TimeAdaptiveEngine for more positive output
+try:
+    from .time_adaptive_engine import TimeAdaptiveEngine
+    V60_ENGINE_AVAILABLE = True
+except ImportError:
+    TimeAdaptiveEngine = None
+    V60_ENGINE_AVAILABLE = False
 
 # Dasha periods and their general effects
 DASHA_EFFECTS = {
@@ -325,11 +333,16 @@ class LifeTimelineService:
     def _generate_year_with_engine(
         self, year: int, age: int, active_dasha: str, dasha_effects: Dict, jathagam: Dict
     ) -> Dict:
-        """Generate year prediction using South Indian Astro-Percent Engine v3.0"""
+        """Generate year prediction using V6.0 TimeAdaptiveEngine (strongly positive output)"""
         target_date = date(year, 6, 15)  # Mid-year
 
-        # Initialize engine with jathagam
-        engine = AstroPercentEngine(jathagam)
+        # V6.0: Use TimeAdaptiveEngine for more positive output
+        if V60_ENGINE_AVAILABLE and TimeAdaptiveEngine:
+            engine = TimeAdaptiveEngine(jathagam)
+            engine_version = "6.0"
+        else:
+            engine = AstroPercentEngine(jathagam)
+            engine_version = "3.0"
 
         # Calculate scores for each life area
         life_areas = {
@@ -358,7 +371,7 @@ class LifeTimelineService:
             if calculation_trace is None and result.get('calculation_trace'):
                 calculation_trace = result['calculation_trace']
 
-        # Use v3.0 methods for enhanced detail
+        # Use v3.0 methods for enhanced detail (if available)
         try:
             # v3.0 Transit scoring with detailed tables
             transit_v3 = engine.calculate_transit_score_v3(target_date, 'general')
@@ -382,10 +395,12 @@ class LifeTimelineService:
             area_scores['health'] * 0.20
         )
 
-        # Determine period type
-        if overall_score >= 70:
+        # V6.0: Adjust thresholds for more positive output
+        # "high" now includes scores >= 60 (was 70)
+        # "low" only for scores < 40 (was 45)
+        if overall_score >= 60:
             period_type = "high"
-        elif overall_score < 45:
+        elif overall_score < 40:
             period_type = "low"
         else:
             period_type = "normal"

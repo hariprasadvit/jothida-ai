@@ -1,9 +1,11 @@
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import Splash from './pages/Splash';
 import Dashboard from './pages/Dashboard';
 import Matching from './pages/Matching';
 import Chat from './pages/Chat';
+import Stories from './pages/Stories';
 import Muhurtham from './pages/Muhurtham';
 import Profile from './pages/Profile';
 import Onboarding from './pages/Onboarding';
@@ -29,13 +31,14 @@ function ProtectedRoute({ children }) {
 
 function AppContent() {
   const location = useLocation();
-  const hideNav = ['/', '/onboarding', '/auth/callback', '/complete-profile'].includes(location.pathname);
+  const hideNav = ['/', '/onboarding', '/auth/callback', '/complete-profile', '/login'].includes(location.pathname);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-orange-50">
       <Routes>
         {/* Public routes */}
-        <Route path="/" element={<MobileLogin />} />
+        <Route path="/" element={<Splash />} />
+        <Route path="/login" element={<MobileLogin />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/complete-profile" element={<CompleteProfile />} />
@@ -45,6 +48,7 @@ function AppContent() {
         <Route path="/matching" element={<ProtectedRoute><Matching /></ProtectedRoute>} />
         <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
         <Route path="/muhurtham" element={<ProtectedRoute><Muhurtham /></ProtectedRoute>} />
+        <Route path="/stories" element={<ProtectedRoute><Stories /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       </Routes>
       {!hideNav && <BottomNav />}

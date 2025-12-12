@@ -1,8 +1,188 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, ChevronLeft, Sparkles, Sun, Moon, Star, Loader2 } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Sparkles, Sun, Moon, Star, Loader2, Grid, Heart, Users, Calendar, Clock, MessageCircle, Rocket, CheckCircle } from 'lucide-react';
 import { userAPI } from '../services/api';
+
+// Get onboarding intro data by language
+const getOnboardingIntro = (language) => {
+  if (language === 'en') {
+    return [
+      {
+        id: '1',
+        Icon: Sun,
+        IconSecondary: Moon,
+        title: 'Jothida AI',
+        subtitle: 'Your Life Guide',
+        description: 'We combine the ancient wisdom of Tamil astrology with modern AI technology to provide you accurate predictions.',
+        gradient: ['#f97316', '#ef4444'],
+        features: ['Accurate Rasi Predictions', 'AI Analysis', 'Full English Support'],
+      },
+      {
+        id: '2',
+        Icon: Grid,
+        IconSecondary: Star,
+        title: 'Rasi & Navamsa Chart',
+        subtitle: 'Detailed Horoscope Analysis',
+        description: 'We calculate accurate Rasi chart, Navamsa chart, and planetary positions based on your birth time and place.',
+        gradient: ['#8b5cf6', '#6366f1'],
+        features: ['Rasi Chart', 'Navamsa Chart', 'Planet Positions'],
+      },
+      {
+        id: '3',
+        Icon: Heart,
+        IconSecondary: Users,
+        title: 'Marriage Matching',
+        subtitle: '10 Porutham Analysis',
+        description: 'We analyze all 10 poruthams including Dinam, Ganam, Mahendram, Stree Deergham, Yoni, Rasi, Rasi Athipathi, Vasiyam, Rajju, and Vedai.',
+        gradient: ['#ec4899', '#f43f5e'],
+        features: ['10 Porutham', 'AI Recommendation', 'Remedies'],
+      },
+      {
+        id: '4',
+        Icon: Calendar,
+        IconSecondary: Clock,
+        title: 'Muhurtham Finder',
+        subtitle: 'Auspicious Time Selection',
+        description: 'Find the right muhurtham time for important events like marriage, housewarming, business start, and travel.',
+        gradient: ['#10b981', '#14b8a6'],
+        features: ['Auspicious Time', 'Rahu Kalam', 'Panchang'],
+      },
+      {
+        id: '5',
+        Icon: MessageCircle,
+        IconSecondary: Sparkles,
+        title: 'AI Astrology Assistant',
+        subtitle: 'Ask in Your Language',
+        description: 'Ask any question about your horoscope. Our AI will provide detailed answers in your preferred language.',
+        gradient: ['#f97316', '#fbbf24'],
+        features: ['24/7 Support', 'Multi-language', 'Personalized Advice'],
+      },
+    ];
+  } else {
+    // Tamil (default)
+    return [
+      {
+        id: '1',
+        Icon: Sun,
+        IconSecondary: Moon,
+        title: 'ஜோதிட AI',
+        subtitle: 'உங்கள் வாழ்க்கை வழிகாட்டி',
+        description: 'தமிழ் ஜோதிடத்தின் பண்டைய ஞானத்தை நவீன AI தொழில்நுட்பத்துடன் இணைத்து உங்களுக்கு துல்லியமான பலன்களை வழங்குகிறோம்.',
+        gradient: ['#f97316', '#ef4444'],
+        features: ['துல்லியமான ராசி பலன்', 'AI பகுப்பாய்வு', 'தமிழில் முழு ஆதரவு'],
+      },
+      {
+        id: '2',
+        Icon: Grid,
+        IconSecondary: Star,
+        title: 'ராசி & நவாம்ச கட்டம்',
+        subtitle: 'விரிவான ஜாதக பகுப்பாய்வு',
+        description: 'உங்கள் பிறந்த நேரம் மற்றும் இடத்தின் அடிப்படையில் துல்லியமான ராசி கட்டம், நவாம்ச கட்டம், மற்றும் கிரக நிலைகளை கணக்கிடுகிறோம்.',
+        gradient: ['#8b5cf6', '#6366f1'],
+        features: ['ராசி கட்டம்', 'நவாம்ச கட்டம்', 'கிரக நிலைகள்'],
+      },
+      {
+        id: '3',
+        Icon: Heart,
+        IconSecondary: Users,
+        title: 'திருமண பொருத்தம்',
+        subtitle: '10 பொருத்த பகுப்பாய்வு',
+        description: 'தினம், கணம், மகேந்திரம், ஸ்திரி தீர்க்கம், யோனி, ராசி, ராசி அதிபதி, வசியம், ரஜ்ஜூ, வேதை ஆகிய 10 பொருத்தங்களை பகுப்பாய்வு செய்கிறோம்.',
+        gradient: ['#ec4899', '#f43f5e'],
+        features: ['10 பொருத்தம்', 'AI பரிந்துரை', 'பரிகாரங்கள்'],
+      },
+      {
+        id: '4',
+        Icon: Calendar,
+        IconSecondary: Clock,
+        title: 'முகூர்த்தம் கண்டறிதல்',
+        subtitle: 'சுப நேரம் தேர்வு',
+        description: 'திருமணம், கிரக பிரவேசம், தொழில் ஆரம்பம், பயணம் போன்ற முக்கிய நிகழ்வுகளுக்கு சரியான முகூர்த்த நேரத்தை கண்டறியுங்கள்.',
+        gradient: ['#10b981', '#14b8a6'],
+        features: ['சுப நேரம்', 'ராகு காலம்', 'பஞ்சாங்கம்'],
+      },
+      {
+        id: '5',
+        Icon: MessageCircle,
+        IconSecondary: Sparkles,
+        title: 'AI ஜோதிட உதவியாளர்',
+        subtitle: 'தமிழில் கேளுங்கள்',
+        description: 'உங்கள் ஜாதகம் பற்றிய எந்த கேள்வியையும் தமிழில் கேளுங்கள். எங்கள் AI உங்களுக்கு விரிவான பதில்களை தரும்.',
+        gradient: ['#f97316', '#fbbf24'],
+        features: ['24/7 ஆதரவு', 'தமிழில் பதில்', 'தனிப்பயன் ஆலோசனை'],
+      },
+    ];
+  }
+};
+
+// Translations
+const translations = {
+  ta: {
+    skip: 'தவிர்',
+    next: 'அடுத்து',
+    getStarted: 'தொடங்கு',
+    basicDetails: 'அடிப்படை விவரங்கள்',
+    nameAndGender: 'உங்கள் பெயர் மற்றும் பாலினம்',
+    birthDetails: 'பிறந்த தகவல்கள்',
+    birthInfo: 'பிறந்த தேதி, நேரம் மற்றும் இடம்',
+    astroDetails: 'ஜாதக விவரங்கள்',
+    nakshatraRasi: 'நட்சத்திரம் மற்றும் ராசி (தெரிந்தால்)',
+    yourName: 'உங்கள் பெயர்',
+    enterName: 'பெயரை உள்ளிடவும்',
+    gender: 'பாலினம்',
+    male: 'ஆண்',
+    female: 'பெண்',
+    birthDate: 'பிறந்த தேதி',
+    birthTime: 'பிறந்த நேரம்',
+    timeHint: 'சரியான நேரம் தெரியவில்லை என்றால் தோராயமாக உள்ளிடவும்',
+    birthPlace: 'பிறந்த இடம்',
+    selectPlace: 'இடத்தை தேர்வு செய்யவும்',
+    optionalInfo: 'இந்த தகவல்கள் விருப்பமானவை. தெரியவில்லை என்றால் காலியாக விடலாம் - AI கணக்கிடும்',
+    nakshatra: 'நட்சத்திரம்',
+    selectNakshatra: 'நட்சத்திரத்தை தேர்வு செய்யவும்',
+    rasi: 'ராசி',
+    selectRasi: 'ராசியை தேர்வு செய்யவும்',
+    yourDetails: 'உங்கள் விவரங்கள்',
+    name: 'பெயர்',
+    continue: 'தொடரவும்',
+    createJathagam: 'ஜாதகம் உருவாக்கு',
+    registering: 'பதிவு செய்கிறது...',
+    registrationError: 'பதிவு செய்வதில் பிழை. மீண்டும் முயற்சிக்கவும்.',
+  },
+  en: {
+    skip: 'Skip',
+    next: 'Next',
+    getStarted: 'Get Started',
+    basicDetails: 'Basic Details',
+    nameAndGender: 'Your name and gender',
+    birthDetails: 'Birth Details',
+    birthInfo: 'Date, time and place of birth',
+    astroDetails: 'Astrology Details',
+    nakshatraRasi: 'Nakshatra and Rasi (if known)',
+    yourName: 'Your Name',
+    enterName: 'Enter your name',
+    gender: 'Gender',
+    male: 'Male',
+    female: 'Female',
+    birthDate: 'Birth Date',
+    birthTime: 'Birth Time',
+    timeHint: 'Enter approximate time if exact time is not known',
+    birthPlace: 'Birth Place',
+    selectPlace: 'Select a place',
+    optionalInfo: 'This information is optional. Leave empty if not known - AI will calculate',
+    nakshatra: 'Nakshatra',
+    selectNakshatra: 'Select Nakshatra',
+    rasi: 'Rasi',
+    selectRasi: 'Select Rasi',
+    yourDetails: 'Your Details',
+    name: 'Name',
+    continue: 'Continue',
+    createJathagam: 'Create Jathagam',
+    registering: 'Registering...',
+    registrationError: 'Registration failed. Please try again.',
+  },
+};
 
 const nakshatras = [
   'அசுவினி', 'பரணி', 'கார்த்திகை', 'ரோகிணி', 'மிருகசீரிடம்', 'திருவாதிரை',
@@ -22,11 +202,78 @@ const places = [
   'திருநெல்வேலி', 'ஈரோடு', 'வேலூர்', 'தஞ்சாவூர்', 'திண்டுக்கல்'
 ];
 
+// Intro Slide Component
+const IntroSlide = ({ item, isActive }) => {
+  const { Icon, IconSecondary } = item;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9, y: 50 }}
+      animate={isActive ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0.4, scale: 0.8, y: 50 }}
+      transition={{ duration: 0.4 }}
+      className="flex flex-col items-center px-6 py-8"
+    >
+      {/* Icon Container */}
+      <div className="relative mb-8">
+        <div
+          className="w-28 h-28 rounded-full flex items-center justify-center shadow-xl"
+          style={{ background: `linear-gradient(135deg, ${item.gradient[0]}, ${item.gradient[1]})` }}
+        >
+          <Icon size={56} className="text-white" />
+        </div>
+        <div className="absolute -bottom-1 -right-1 w-11 h-11 rounded-full bg-white shadow-lg flex items-center justify-center">
+          <IconSecondary size={22} style={{ color: item.gradient[0] }} />
+        </div>
+      </div>
+
+      {/* Text Content */}
+      <h2 className="text-2xl font-bold text-gray-800 text-center mb-2">{item.title}</h2>
+      <p className="text-base font-semibold text-orange-500 text-center mb-4">{item.subtitle}</p>
+      <p className="text-gray-600 text-center leading-relaxed mb-6 max-w-sm">{item.description}</p>
+
+      {/* Features */}
+      <div className="flex flex-wrap justify-center gap-2">
+        {item.features.map((feature, i) => (
+          <div
+            key={i}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-white border shadow-sm"
+            style={{ borderColor: item.gradient[0] }}
+          >
+            <CheckCircle size={14} style={{ color: item.gradient[0] }} />
+            <span className="text-xs font-medium" style={{ color: item.gradient[0] }}>{feature}</span>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+};
+
+// Paginator Component
+const Paginator = ({ data, currentIndex }) => {
+  return (
+    <div className="flex justify-center gap-2">
+      {data.map((item, index) => (
+        <div
+          key={index}
+          className="h-2 rounded-full transition-all duration-300"
+          style={{
+            width: index === currentIndex ? 24 : 8,
+            backgroundColor: item.gradient[0],
+            opacity: index === currentIndex ? 1 : 0.3,
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
 export default function Onboarding() {
   const navigate = useNavigate();
+  const [phase, setPhase] = useState('intro'); // 'intro' or 'form'
+  const [introIndex, setIntroIndex] = useState(0);
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [language, setLanguage] = useState('ta');
   const [formData, setFormData] = useState({
     name: '',
     gender: '',
@@ -34,47 +281,48 @@ export default function Onboarding() {
     birthTime: '',
     birthPlace: '',
     nakshatra: '',
-    rasi: ''
+    rasi: '',
+    language: 'ta',
   });
 
-  const steps = [
-    {
-      title: 'வணக்கம்',
-      subtitle: 'ஜோதிட AI உங்களை வரவேற்கிறது',
-      description: 'பாரம்பரிய வேத ஜோதிடத்தை நவீன AI தொழில்நுட்பத்துடன் இணைத்து உங்கள் வாழ்க்கை பயணத்தை வழிநடத்துகிறோம்'
-    },
-    {
-      title: 'அடிப்படை விவரங்கள்',
-      subtitle: 'உங்கள் பெயர் மற்றும் பாலினம்'
-    },
-    {
-      title: 'பிறந்த தகவல்கள்',
-      subtitle: 'பிறந்த தேதி, நேரம் மற்றும் இடம்'
-    },
-    {
-      title: 'ஜாதக விவரங்கள்',
-      subtitle: 'நட்சத்திரம் மற்றும் ராசி (தெரிந்தால்)'
-    }
+  const introData = getOnboardingIntro(language);
+  const t = translations[language];
+
+  const formSteps = [
+    { title: t.basicDetails, subtitle: t.nameAndGender },
+    { title: t.birthDetails, subtitle: t.birthInfo },
+    { title: t.astroDetails, subtitle: t.nakshatraRasi },
   ];
 
-  const handleNext = async () => {
-    if (step < steps.length - 1) {
+  // Handle intro navigation
+  const handleIntroNext = () => {
+    if (introIndex < introData.length - 1) {
+      setIntroIndex(introIndex + 1);
+    } else {
+      setPhase('form');
+    }
+  };
+
+  const handleIntroSkip = () => {
+    setPhase('form');
+  };
+
+  // Handle form navigation
+  const handleFormNext = async () => {
+    if (step < formSteps.length - 1) {
       setStep(step + 1);
     } else {
-      // Register user in database and save to localStorage
       setLoading(true);
-      setError('');
 
       try {
-        // Call API to register user
-        const result = await userAPI.register(formData);
+        const result = await userAPI.register({ ...formData, language });
         console.log('User registered:', result);
 
-        // Save to localStorage for immediate use
         const profileWithAstro = {
           ...formData,
+          language,
           rasi: result.rasi || formData.rasi,
-          nakshatra: result.nakshatra || formData.nakshatra
+          nakshatra: result.nakshatra || formData.nakshatra,
         };
         localStorage.setItem('userProfile', JSON.stringify(profileWithAstro));
         localStorage.setItem('onboardingComplete', 'true');
@@ -82,10 +330,8 @@ export default function Onboarding() {
         navigate('/dashboard');
       } catch (err) {
         console.error('Registration failed:', err);
-        setError('பதிவு செய்வதில் பிழை. மீண்டும் முயற்சிக்கவும்.');
 
-        // Still save to localStorage as fallback
-        localStorage.setItem('userProfile', JSON.stringify(formData));
+        localStorage.setItem('userProfile', JSON.stringify({ ...formData, language }));
         localStorage.setItem('onboardingComplete', 'true');
         navigate('/dashboard');
       } finally {
@@ -94,39 +340,119 @@ export default function Onboarding() {
     }
   };
 
-  const handleBack = () => {
-    if (step > 0) setStep(step - 1);
+  const handleFormBack = () => {
+    if (step > 0) {
+      setStep(step - 1);
+    } else {
+      setPhase('intro');
+      setIntroIndex(introData.length - 1);
+    }
   };
 
   const isStepValid = () => {
     switch (step) {
-      case 0: return true;
-      case 1: return formData.name && formData.gender;
-      case 2: return formData.birthDate && formData.birthTime && formData.birthPlace;
-      case 3: return true; // Optional step
+      case 0: return formData.name && formData.gender;
+      case 1: return formData.birthDate && formData.birthTime && formData.birthPlace;
+      case 2: return true;
       default: return true;
     }
   };
 
+  const currentIntro = introData[introIndex];
+  const isLastIntro = introIndex === introData.length - 1;
+
+  // Intro Phase
+  if (phase === 'intro') {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-orange-50 flex flex-col">
+        {/* Header */}
+        <div className="flex justify-between items-center px-5 pt-6 pb-2">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6">
+              <svg viewBox="0 0 100 100" className="w-full h-full">
+                <path
+                  d="M50 5 L55 40 L90 30 L60 50 L90 70 L55 60 L50 95 L45 60 L10 70 L40 50 L10 30 L45 40 Z"
+                  fill="#f97316"
+                />
+                <circle cx="50" cy="50" r="10" fill="#fff7ed" />
+              </svg>
+            </div>
+            <span className="text-lg font-bold text-orange-800">jothida.ai</span>
+          </div>
+          {!isLastIntro && (
+            <button
+              onClick={handleIntroSkip}
+              className="flex items-center gap-1 px-3 py-2 rounded-full bg-gray-100 text-gray-600 text-sm"
+            >
+              {t.skip}
+              <ChevronRight size={16} />
+            </button>
+          )}
+        </div>
+
+        {/* Language Selector */}
+        <div className="flex justify-center gap-2 px-5 py-2">
+          <button
+            onClick={() => setLanguage('ta')}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+              language === 'ta' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600'
+            }`}
+          >
+            தமிழ்
+          </button>
+          <button
+            onClick={() => setLanguage('en')}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+              language === 'en' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600'
+            }`}
+          >
+            English
+          </button>
+        </div>
+
+        {/* Slides */}
+        <div className="flex-1 flex items-center justify-center overflow-hidden">
+          <AnimatePresence mode="wait">
+            <IntroSlide key={introIndex} item={currentIntro} isActive={true} />
+          </AnimatePresence>
+        </div>
+
+        {/* Footer */}
+        <div className="px-5 pb-8 space-y-6">
+          <Paginator data={introData} currentIndex={introIndex} />
+
+          <button
+            onClick={handleIntroNext}
+            className="w-full py-4 rounded-full font-semibold text-white flex items-center justify-center gap-2 shadow-lg transition-all"
+            style={{ background: `linear-gradient(90deg, ${currentIntro.gradient[0]}, ${currentIntro.gradient[1]})` }}
+          >
+            {isLastIntro ? t.getStarted : t.next}
+            {isLastIntro ? <Rocket size={20} /> : <ChevronRight size={20} />}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Form Phase
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-orange-50">
       {/* Decorative Header */}
       <div className="bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 h-2" />
 
       {/* Om Symbol Header */}
-      <div className="text-center pt-8 pb-4">
+      <div className="text-center pt-6 pb-3">
         <div className="inline-block">
-          <span className="text-6xl text-orange-600 font-serif">ॐ</span>
+          <span className="text-5xl text-orange-600 font-serif">ॐ</span>
         </div>
-        <h1 className="text-2xl font-bold text-orange-800 mt-2 tracking-wide">
-          ஜோதிட AI
+        <h1 className="text-xl font-bold text-orange-800 mt-1 tracking-wide">
+          {language === 'en' ? 'Jothida AI' : 'ஜோதிட AI'}
         </h1>
-        <p className="text-orange-600 text-sm">வேத ஜோதிடம் • AI துணை</p>
       </div>
 
       {/* Progress Indicator */}
-      <div className="flex justify-center gap-2 px-8 mb-8">
-        {steps.map((_, i) => (
+      <div className="flex justify-center gap-2 px-8 mb-6">
+        {formSteps.map((_, i) => (
           <div
             key={i}
             className={`h-1.5 rounded-full transition-all duration-300 ${
@@ -147,76 +473,39 @@ export default function Onboarding() {
             transition={{ duration: 0.3 }}
           >
             {/* Step Title */}
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-gray-800">{steps[step].title}</h2>
-              <p className="text-gray-600 mt-1">{steps[step].subtitle}</p>
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-bold text-gray-800">{formSteps[step].title}</h2>
+              <p className="text-gray-600 mt-1 text-sm">{formSteps[step].subtitle}</p>
             </div>
 
-            {/* Step 0: Welcome */}
+            {/* Step 0: Basic Info */}
             {step === 0 && (
-              <div className="text-center space-y-6">
-                {/* Kolam Pattern */}
-                <div className="relative w-48 h-48 mx-auto">
-                  <div className="absolute inset-0 border-4 border-orange-300 rounded-full animate-spin-slow" style={{animationDuration: '20s'}} />
-                  <div className="absolute inset-4 border-4 border-red-300 rounded-full animate-spin-slow" style={{animationDuration: '15s', animationDirection: 'reverse'}} />
-                  <div className="absolute inset-8 border-4 border-orange-400 rounded-full animate-spin-slow" style={{animationDuration: '10s'}} />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <Sun className="w-12 h-12 text-orange-500 mx-auto" />
-                      <Moon className="w-8 h-8 text-orange-400 mx-auto -mt-2" />
-                    </div>
-                  </div>
-                </div>
-
-                <p className="text-gray-600 leading-relaxed max-w-sm mx-auto">
-                  {steps[step].description}
-                </p>
-
-                {/* Features */}
-                <div className="grid grid-cols-3 gap-4 mt-8">
-                  {[
-                    { icon: '🪔', label: 'ஜாதகம்' },
-                    { icon: '💑', label: 'பொருத்தம்' },
-                    { icon: '📅', label: 'முகூர்த்தம்' }
-                  ].map((f, i) => (
-                    <div key={i} className="bg-white rounded-xl p-4 shadow-sm border border-orange-100">
-                      <span className="text-2xl">{f.icon}</span>
-                      <p className="text-sm text-gray-600 mt-1">{f.label}</p>
-                    </div>
-                  ))}
-                </div>
-
-              </div>
-            )}
-
-            {/* Step 1: Basic Info */}
-            {step === 1 && (
-              <div className="space-y-6">
+              <div className="space-y-5">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    உங்கள் பெயர்
+                    {t.yourName}
                   </label>
                   <input
                     type="text"
                     value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    placeholder="பெயரை உள்ளிடவும்"
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder={t.enterName}
                     className="w-full px-4 py-3 rounded-xl border-2 border-orange-200 focus:border-orange-500 focus:ring-0 outline-none transition-colors bg-white"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    பாலினம்
+                    {t.gender}
                   </label>
                   <div className="grid grid-cols-2 gap-4">
                     {[
-                      { value: 'male', label: 'ஆண்', icon: '👨' },
-                      { value: 'female', label: 'பெண்', icon: '👩' }
+                      { value: 'male', label: t.male, icon: '👨' },
+                      { value: 'female', label: t.female, icon: '👩' },
                     ].map((g) => (
                       <button
                         key={g.value}
-                        onClick={() => setFormData({...formData, gender: g.value})}
+                        onClick={() => setFormData({ ...formData, gender: g.value })}
                         className={`p-4 rounded-xl border-2 transition-all ${
                           formData.gender === g.value
                             ? 'border-orange-500 bg-orange-50'
@@ -232,46 +521,44 @@ export default function Onboarding() {
               </div>
             )}
 
-            {/* Step 2: Birth Details */}
-            {step === 2 && (
-              <div className="space-y-6">
+            {/* Step 1: Birth Details */}
+            {step === 1 && (
+              <div className="space-y-5">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    பிறந்த தேதி
+                    {t.birthDate}
                   </label>
                   <input
                     type="date"
                     value={formData.birthDate}
-                    onChange={(e) => setFormData({...formData, birthDate: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
                     className="w-full px-4 py-3 rounded-xl border-2 border-orange-200 focus:border-orange-500 focus:ring-0 outline-none transition-colors bg-white"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    பிறந்த நேரம்
+                    {t.birthTime}
                   </label>
                   <input
                     type="time"
                     value={formData.birthTime}
-                    onChange={(e) => setFormData({...formData, birthTime: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, birthTime: e.target.value })}
                     className="w-full px-4 py-3 rounded-xl border-2 border-orange-200 focus:border-orange-500 focus:ring-0 outline-none transition-colors bg-white"
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    சரியான நேரம் தெரியவில்லை என்றால் தோராயமாக உள்ளிடவும்
-                  </p>
+                  <p className="text-xs text-gray-500 mt-1">{t.timeHint}</p>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    பிறந்த இடம்
+                    {t.birthPlace}
                   </label>
                   <select
                     value={formData.birthPlace}
-                    onChange={(e) => setFormData({...formData, birthPlace: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, birthPlace: e.target.value })}
                     className="w-full px-4 py-3 rounded-xl border-2 border-orange-200 focus:border-orange-500 focus:ring-0 outline-none transition-colors bg-white"
                   >
-                    <option value="">இடத்தை தேர்வு செய்யவும்</option>
+                    <option value="">{t.selectPlace}</option>
                     {places.map((p) => (
                       <option key={p} value={p}>{p}</option>
                     ))}
@@ -280,26 +567,26 @@ export default function Onboarding() {
               </div>
             )}
 
-            {/* Step 3: Astro Details */}
-            {step === 3 && (
-              <div className="space-y-6">
+            {/* Step 2: Astro Details */}
+            {step === 2 && (
+              <div className="space-y-5">
                 <div className="bg-orange-50 rounded-xl p-4 border border-orange-200">
                   <p className="text-sm text-orange-700">
                     <Sparkles className="w-4 h-4 inline mr-1" />
-                    இந்த தகவல்கள் விருப்பமானவை. தெரியவில்லை என்றால் காலியாக விடலாம் - AI கணக்கிடும்
+                    {t.optionalInfo}
                   </p>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    நட்சத்திரம்
+                    {t.nakshatra}
                   </label>
                   <select
                     value={formData.nakshatra}
-                    onChange={(e) => setFormData({...formData, nakshatra: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, nakshatra: e.target.value })}
                     className="w-full px-4 py-3 rounded-xl border-2 border-orange-200 focus:border-orange-500 focus:ring-0 outline-none transition-colors bg-white"
                   >
-                    <option value="">நட்சத்திரத்தை தேர்வு செய்யவும்</option>
+                    <option value="">{t.selectNakshatra}</option>
                     {nakshatras.map((n) => (
                       <option key={n} value={n}>{n}</option>
                     ))}
@@ -308,14 +595,14 @@ export default function Onboarding() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    ராசி
+                    {t.rasi}
                   </label>
                   <select
                     value={formData.rasi}
-                    onChange={(e) => setFormData({...formData, rasi: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, rasi: e.target.value })}
                     className="w-full px-4 py-3 rounded-xl border-2 border-orange-200 focus:border-orange-500 focus:ring-0 outline-none transition-colors bg-white"
                   >
-                    <option value="">ராசியை தேர்வு செய்யவும்</option>
+                    <option value="">{t.selectRasi}</option>
                     {rasiList.map((r) => (
                       <option key={r} value={r}>{r}</option>
                     ))}
@@ -323,23 +610,23 @@ export default function Onboarding() {
                 </div>
 
                 {/* Summary */}
-                <div className="bg-white rounded-xl p-4 border border-orange-200 mt-6">
-                  <h3 className="font-medium text-gray-800 mb-3">உங்கள் விவரங்கள்</h3>
+                <div className="bg-white rounded-xl p-4 border border-orange-200 mt-4">
+                  <h3 className="font-medium text-gray-800 mb-3">{t.yourDetails}</h3>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-gray-500">பெயர்</span>
+                      <span className="text-gray-500">{t.name}</span>
                       <span className="text-gray-800">{formData.name || '-'}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-500">பிறந்த தேதி</span>
+                      <span className="text-gray-500">{t.birthDate}</span>
                       <span className="text-gray-800">{formData.birthDate || '-'}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-500">பிறந்த நேரம்</span>
+                      <span className="text-gray-500">{t.birthTime}</span>
                       <span className="text-gray-800">{formData.birthTime || '-'}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-500">பிறந்த இடம்</span>
+                      <span className="text-gray-500">{t.birthPlace}</span>
                       <span className="text-gray-800">{formData.birthPlace || '-'}</span>
                     </div>
                   </div>
@@ -353,16 +640,14 @@ export default function Onboarding() {
       {/* Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-orange-100 p-4 safe-bottom">
         <div className="flex gap-3">
-          {step > 0 && (
-            <button
-              onClick={handleBack}
-              className="px-6 py-3 rounded-xl border-2 border-orange-300 text-orange-600 font-medium"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-          )}
           <button
-            onClick={handleNext}
+            onClick={handleFormBack}
+            className="px-6 py-3 rounded-xl border-2 border-orange-300 text-orange-600 font-medium"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <button
+            onClick={handleFormNext}
             disabled={!isStepValid() || loading}
             className={`flex-1 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all ${
               isStepValid() && !loading
@@ -373,16 +658,16 @@ export default function Onboarding() {
             {loading ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                பதிவு செய்கிறது...
+                {t.registering}
               </>
-            ) : step === steps.length - 1 ? (
+            ) : step === formSteps.length - 1 ? (
               <>
                 <Sparkles className="w-5 h-5" />
-                ஜாதகம் உருவாக்கு
+                {t.createJathagam}
               </>
             ) : (
               <>
-                தொடரவும்
+                {t.continue}
                 <ChevronRight className="w-5 h-5" />
               </>
             )}

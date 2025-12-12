@@ -1,204 +1,478 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ResponsiveContainer, RadialBarChart, RadialBar } from 'recharts';
-import { TrendingUp, Sun, Star, Clock, Sparkles, Heart, Briefcase, GraduationCap, Home, MessageCircle, Calendar, Users, Loader2, RefreshCw } from 'lucide-react';
-import { useDashboardData } from '../hooks/useAstroData';
-import { forecastAPI } from '../services/api';
-import ScoreBreakdown from '../components/ScoreBreakdown';
-import UserProfileBanner from '../components/UserProfileBanner';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  TrendingUp, Moon, Star, Sparkles, Heart, Briefcase,
+  GraduationCap, Home, Calendar, ChevronRight, X,
+  Flame, Activity
+} from 'lucide-react';
+import { panchangamAPI, jathagamAPI } from '../services/api';
+import axios from 'axios';
 
-// Icon mapping for life areas
-const iconMap = {
-  'Heart': Heart,
-  'Briefcase': Briefcase,
-  'GraduationCap': GraduationCap,
-  'Home': Home,
+// Translation mappings
+const translations = {
+  ta: {
+    greeting: 'வணக்கம்',
+    todayScore: 'இன்றைய பலன்',
+    tapForDetails: 'விவரங்களுக்கு தட்டவும்',
+    panchangam: 'இன்றைய பஞ்சாங்கம்',
+    month: 'மாதம்',
+    tithi: 'திதி',
+    nakshatra: 'நட்சத்திரம்',
+    yoga: 'யோகம்',
+    lifeAreas: 'வாழ்க்கை பகுதிகள்',
+    futureProjections: 'எதிர்கால பலன்கள்',
+    monthly: 'மாதம்',
+    yearly: 'வருடம்',
+    dasha: 'தசை',
+    bhukti: 'புக்தி',
+    good: 'நல்லது',
+    average: 'சாதாரணம்',
+    caution: 'எச்சரிக்கை',
+    currentYear: 'நடப்பு ஆண்டு',
+    nextYear: 'அடுத்த ஆண்டு',
+    thirdYear: 'மூன்றாம் ஆண்டு',
+    planetAura: 'கிரக ஒளி',
+    strongAura: 'வலிமை',
+    weakAura: 'பலவீனம்',
+    love: 'காதல்',
+    career: 'தொழில்',
+    education: 'கல்வி',
+    family: 'குடும்பம்',
+    health: 'உடல்நலம்',
+    scoreBreakdown: 'மதிப்பெண் விவரம்',
+    close: 'மூடு',
+    rahuKalam: 'ராகு காலம்',
+    goodTime: 'நல்ல நேரம்',
+    normalTime: 'சாதாரண நேரம்',
+  },
+  en: {
+    greeting: 'Hello',
+    todayScore: "Today's Score",
+    tapForDetails: 'Tap for details',
+    panchangam: "Today's Panchangam",
+    month: 'Month',
+    tithi: 'Tithi',
+    nakshatra: 'Nakshatra',
+    yoga: 'Yoga',
+    lifeAreas: 'Life Areas',
+    futureProjections: 'Future Projections',
+    monthly: 'Monthly',
+    yearly: 'Yearly',
+    dasha: 'Dasha',
+    bhukti: 'Bhukti',
+    good: 'Good',
+    average: 'Average',
+    caution: 'Caution',
+    currentYear: 'Current Year',
+    nextYear: 'Next Year',
+    thirdYear: 'Third Year',
+    planetAura: 'Planet Aura',
+    strongAura: 'Strong',
+    weakAura: 'Weak',
+    love: 'Love',
+    career: 'Career',
+    education: 'Education',
+    family: 'Family',
+    health: 'Health',
+    scoreBreakdown: 'Score Breakdown',
+    close: 'Close',
+    rahuKalam: 'Rahu Kalam',
+    goodTime: 'Good Time',
+    normalTime: 'Normal Time',
+  }
 };
 
-// Planet symbols
-const planetSymbols = {
-  'Sun': '☉',
-  'Moon': '☽',
-  'Mars': '♂',
-  'Mercury': '☿',
-  'Jupiter': '♃',
-  'Venus': '♀',
-  'Saturn': '♄',
-  'Rahu': '☊',
-  'Ketu': '☋',
+// Diya (Oil Lamp) SVG Component
+const DiyaIcon = ({ size = 40 }) => (
+  <svg width={size} height={size} viewBox="0 0 100 100">
+    <defs>
+      <radialGradient id="flameGlow" cx="50%" cy="20%" r="60%">
+        <stop offset="0%" stopColor="#fbbf24" stopOpacity="1" />
+        <stop offset="50%" stopColor="#f97316" stopOpacity="0.6" />
+        <stop offset="100%" stopColor="#f97316" stopOpacity="0" />
+      </radialGradient>
+    </defs>
+    <ellipse cx="50" cy="22" rx="18" ry="22" fill="url(#flameGlow)" />
+    <path d="M50 5 Q58 18 55 30 Q52 38 50 42 Q48 38 45 30 Q42 18 50 5" fill="#f97316" />
+    <path d="M50 12 Q54 20 52 28 Q51 34 50 38 Q49 34 48 28 Q46 20 50 12" fill="#fbbf24" />
+    <path d="M50 18 Q52 24 51 30 Q50 34 50 36 Q50 34 49 30 Q48 24 50 18" fill="#fff" opacity="0.8" />
+    <ellipse cx="50" cy="52" rx="28" ry="10" fill="#d97706" />
+    <path d="M22 52 Q22 68 32 78 L68 78 Q78 68 78 52" fill="#d97706" />
+    <ellipse cx="50" cy="60" rx="20" ry="6" fill="#b45309" opacity="0.5" />
+    <ellipse cx="50" cy="82" rx="22" ry="6" fill="#d97706" />
+    <ellipse cx="50" cy="88" rx="18" ry="4" fill="#92400e" />
+  </svg>
+);
+
+// Decorative Border
+const DecorativeBorder = () => (
+  <div className="flex items-center w-full py-2">
+    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
+    <div className="w-2 h-2 rounded-full bg-orange-500 mx-3" />
+    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
+  </div>
+);
+
+// Animated Score Circle
+const AnimatedScoreCircle = ({ score, onClick, tapText }) => (
+  <motion.div
+    initial={{ scale: 0, rotate: -180 }}
+    animate={{ scale: 1, rotate: 0 }}
+    transition={{ type: 'spring', stiffness: 100, damping: 15 }}
+    onClick={onClick}
+    className="cursor-pointer"
+  >
+    <div className="relative w-32 h-32 mx-auto">
+      <svg className="w-full h-full transform -rotate-90" viewBox="0 0 128 128">
+        <circle cx="64" cy="64" r="56" fill="none" stroke="#fed7aa" strokeWidth="8" />
+        <motion.circle
+          cx="64" cy="64" r="56"
+          fill="none"
+          stroke="url(#scoreGradient)"
+          strokeWidth="8"
+          strokeLinecap="round"
+          strokeDasharray={`${score * 3.52} 352`}
+          initial={{ strokeDasharray: '0 352' }}
+          animate={{ strokeDasharray: `${score * 3.52} 352` }}
+          transition={{ duration: 1.5, ease: 'easeOut' }}
+        />
+        <defs>
+          <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#f97316" />
+            <stop offset="100%" stopColor="#ea580c" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-3xl font-bold text-orange-800">{score}%</span>
+        <span className="text-xs text-orange-600">{tapText}</span>
+      </div>
+    </div>
+  </motion.div>
+);
+
+// Life Area Card
+const LifeAreaCard = ({ area, index, onClick, t }) => {
+  const icons = {
+    love: Heart,
+    career: Briefcase,
+    education: GraduationCap,
+    family: Home,
+    health: Activity,
+  };
+  const Icon = icons[area.key] || Star;
+
+  const getScoreColor = (score) => {
+    if (score >= 75) return { bg: 'bg-green-100', text: 'text-green-600', border: 'border-green-200' };
+    if (score >= 50) return { bg: 'bg-amber-100', text: 'text-amber-600', border: 'border-amber-200' };
+    return { bg: 'bg-red-100', text: 'text-red-600', border: 'border-red-200' };
+  };
+
+  const colors = getScoreColor(area.score);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: index * 0.1 }}
+      onClick={() => onClick(area)}
+      className={`bg-white rounded-xl p-4 shadow-sm border ${colors.border} cursor-pointer hover:shadow-md transition-shadow`}
+    >
+      <div className="flex items-center justify-between mb-2">
+        <div className={`p-2 rounded-lg ${colors.bg}`}>
+          <Icon className={`w-5 h-5 ${colors.text}`} />
+        </div>
+        <span className={`text-xs px-2 py-1 rounded-full ${colors.bg} ${colors.text}`}>
+          {area.score >= 75 ? t('good') : area.score >= 50 ? t('average') : t('caution')}
+        </span>
+      </div>
+      <h3 className="font-medium text-gray-800">{area.name}</h3>
+      <div className="flex items-center gap-1 mt-1">
+        <span className={`text-xl font-bold ${colors.text}`}>{area.score}</span>
+        <span className="text-gray-400 text-sm">/100</span>
+        <ChevronRight className="w-4 h-4 text-gray-300 ml-auto" />
+      </div>
+      <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <motion.div
+          className={`h-full rounded-full ${area.score >= 75 ? 'bg-green-500' : area.score >= 50 ? 'bg-amber-500' : 'bg-red-500'}`}
+          initial={{ width: 0 }}
+          animate={{ width: `${area.score}%` }}
+          transition={{ delay: index * 0.1 + 0.3, duration: 0.8 }}
+        />
+      </div>
+    </motion.div>
+  );
 };
 
-// Planet names in Tamil
-const planetTamilNames = {
-  'Sun': 'சூரியன்',
-  'Moon': 'சந்திரன்',
-  'Mars': 'செவ்வாய்',
-  'Mercury': 'புதன்',
-  'Jupiter': 'குரு',
-  'Venus': 'சுக்கிரன்',
-  'Saturn': 'சனி',
-  'Rahu': 'ராகு',
-  'Ketu': 'கேது',
+// Month Projection Card
+const MonthCard = ({ month, index, onClick }) => {
+  const getScoreColor = (score) => {
+    if (score >= 75) return 'text-green-600 bg-green-50';
+    if (score >= 50) return 'text-amber-600 bg-amber-50';
+    return 'text-red-600 bg-red-50';
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+      onClick={() => onClick(month)}
+      className="flex-shrink-0 w-20 bg-white rounded-xl p-3 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+    >
+      <p className="text-xs text-gray-500 text-center truncate">{month.name}</p>
+      <div className={`text-center mt-1 py-1 px-2 rounded-lg ${getScoreColor(month.score)}`}>
+        <span className="font-bold">{month.score}</span>
+      </div>
+      <div className="mt-2 h-1 bg-gray-100 rounded-full overflow-hidden">
+        <div
+          className={`h-full rounded-full ${month.score >= 75 ? 'bg-green-500' : month.score >= 50 ? 'bg-amber-500' : 'bg-red-500'}`}
+          style={{ width: `${month.score}%` }}
+        />
+      </div>
+    </motion.div>
+  );
 };
 
-// Rasi names in Tamil
-const rasiTamilNames = {
-  'Mesha': 'மேஷம்',
-  'Vrishabha': 'ரிஷபம்',
-  'Mithuna': 'மிதுனம்',
-  'Kataka': 'கடகம்',
-  'Simha': 'சிம்மம்',
-  'Kanya': 'கன்னி',
-  'Tula': 'துலாம்',
-  'Vrischika': 'விருச்சிகம்',
-  'Dhanus': 'தனுசு',
-  'Makara': 'மகரம்',
-  'Kumbha': 'கும்பம்',
-  'Meena': 'மீனம்',
+// Year Projection Card
+const YearCard = ({ year, onClick }) => {
+  const getScoreColor = (score) => {
+    if (score >= 75) return { main: '#16a34a', light: '#dcfce7' };
+    if (score >= 50) return { main: '#d97706', light: '#fef3c7' };
+    return { main: '#dc2626', light: '#fee2e2' };
+  };
+
+  const colors = getScoreColor(year.score);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      onClick={() => onClick(year)}
+      className="bg-white rounded-xl p-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow flex items-center gap-4"
+      style={{ borderLeft: `4px solid ${colors.main}` }}
+    >
+      <div className="p-2 rounded-lg" style={{ backgroundColor: colors.light }}>
+        <Calendar className="w-5 h-5" style={{ color: colors.main }} />
+      </div>
+      <div className="flex-1">
+        <p className="font-medium text-gray-800">{year.year}</p>
+        <p className="text-xs text-gray-500">{year.label}</p>
+      </div>
+      <div className="text-right">
+        <span className="text-xl font-bold" style={{ color: colors.main }}>{year.score}%</span>
+        <div className="w-16 h-1.5 bg-gray-100 rounded-full mt-1 overflow-hidden">
+          <div className="h-full rounded-full" style={{ width: `${year.score}%`, backgroundColor: colors.main }} />
+        </div>
+      </div>
+      <ChevronRight className="w-5 h-5 text-gray-300" />
+    </motion.div>
+  );
+};
+
+// Score Detail Modal
+const ScoreModal = ({ data, onClose, t }) => {
+  if (!data) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ y: '100%' }}
+        animate={{ y: 0 }}
+        exit={{ y: '100%' }}
+        transition={{ type: 'spring', damping: 25 }}
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white rounded-t-3xl w-full max-w-lg max-h-[80vh] overflow-y-auto"
+      >
+        <div className="sticky top-0 bg-white p-4 border-b flex items-center justify-between">
+          <h2 className="text-lg font-bold text-gray-800">{data.title || data.name}</h2>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
+
+        <div className="p-6">
+          <div className="text-center mb-6">
+            <span className="text-5xl font-bold text-orange-600">{data.score}</span>
+            <span className="text-2xl text-gray-400">/100</span>
+          </div>
+
+          {data.breakdown && (
+            <div className="space-y-3">
+              <h3 className="font-medium text-gray-700">{t('scoreBreakdown')}</h3>
+              {Object.entries(data.breakdown).map(([key, value]) => (
+                <div key={key} className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600 capitalize">{key}</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-orange-500 rounded-full" style={{ width: `${Math.min(100, value * 3)}%` }} />
+                    </div>
+                    <span className="text-sm font-medium w-8 text-right">{value}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {data.suggestion && (
+            <div className="mt-6 p-4 bg-orange-50 rounded-xl">
+              <div className="flex items-start gap-3">
+                <Sparkles className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-orange-800">{data.suggestion}</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="p-4 border-t">
+          <button
+            onClick={onClose}
+            className="w-full py-3 bg-orange-500 text-white rounded-xl font-medium hover:bg-orange-600 transition-colors"
+          >
+            {t('close')}
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
 };
 
 export default function Dashboard() {
-  const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [userProfile, setUserProfile] = useState(null);
-  const [forecast, setForecast] = useState(null);
-  const [forecastLoading, setForecastLoading] = useState(false);
-  const [expandedForecast, setExpandedForecast] = useState('week'); // 'week', 'month', 'year', '3year'
+  const [loading, setLoading] = useState(true);
+  const [panchangam, setPanchangam] = useState(null);
+  const [jathagam, setJathagam] = useState(null);
+  const [lifeAreas, setLifeAreas] = useState(null);
+  const [projections, setProjections] = useState(null);
+  const [projectionView, setProjectionView] = useState('month');
+  const [selectedScore, setSelectedScore] = useState(null);
+  const [language] = useState('ta');
+
+  const t = (key) => translations[language]?.[key] || translations['en'][key] || key;
 
   useEffect(() => {
-    // Check onboarding
-    const onboardingComplete = localStorage.getItem('onboardingComplete');
-    if (!onboardingComplete) {
-      navigate('/onboarding');
-      return;
-    }
-
     const profile = localStorage.getItem('userProfile');
     if (profile) {
       setUserProfile(JSON.parse(profile));
     }
 
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
-  }, [navigate]);
+  }, []);
 
-  // Fetch real data using the hook
-  const dashboardData = useDashboardData(userProfile);
-
-  // Fetch forecast data when dashboardData.userRasi is available (comes from jathagam API)
   useEffect(() => {
-    const fetchForecast = async () => {
-      // Primary: use dashboardData.userRasi (from jathagam API - most accurate)
-      // Fallback: use userProfile.rasi (from onboarding - may be empty)
-      const rasi = dashboardData?.userRasi || (userProfile?.rasi && userProfile.rasi.trim());
-      const nakshatra = dashboardData?.userNakshatra || (userProfile?.nakshatra && userProfile.nakshatra.trim()) || '';
+    if (userProfile) {
+      fetchData();
+    } else {
+      setLoading(false);
+    }
+  }, [userProfile, language]);
 
-      console.log('Forecast fetch - rasi:', rasi, 'nakshatra:', nakshatra, 'isLoading:', dashboardData?.isLoading);
+  const fetchData = async () => {
+    try {
+      setLoading(true);
 
-      // Wait for dashboardData to finish loading before deciding there's no rasi
-      if (!rasi) {
-        if (dashboardData?.isLoading || dashboardData?.isJathagamLoading) {
-          console.log('Still loading, waiting for rasi...');
-          return;
-        }
-        console.log('No rasi found after loading complete');
-        return;
-      }
+      // Fetch panchangam
+      const panchangamData = await panchangamAPI.getToday().catch(() => null);
+      setPanchangam(panchangamData);
 
-      // Don't refetch if we already have forecast data
-      if (forecast) {
-        console.log('Forecast already loaded');
-        return;
-      }
+      // For jathagamAPI (uses camelCase)
+      const jathagamDetails = {
+        name: userProfile?.name || 'User',
+        birthDate: userProfile?.birthDate,
+        birthTime: userProfile?.birthTime || '12:00',
+        birthPlace: userProfile?.birthPlace || 'Chennai',
+      };
 
-      setForecastLoading(true);
-      try {
-        console.log('Fetching forecast for:', rasi, nakshatra);
-        const data = await forecastAPI.getUserForecast(
-          rasi,
-          nakshatra,
-          userProfile?.birthDate,
-          13.0827,
-          80.2707
-        );
-        console.log('Forecast data received:', data);
-        setForecast(data);
-      } catch (error) {
-        console.error('Failed to fetch forecast:', error);
-      } finally {
-        setForecastLoading(false);
-      }
-    };
+      // For forecast APIs (uses snake_case)
+      const forecastDetails = {
+        name: userProfile?.name || 'User',
+        birth_date: userProfile?.birthDate,
+        birth_time: userProfile?.birthTime || '12:00',
+        birth_place: userProfile?.birthPlace || 'Chennai',
+        latitude: 13.0827,
+        longitude: 80.2707,
+        language: language,
+      };
 
-    fetchForecast();
-  }, [dashboardData?.userRasi, dashboardData?.userNakshatra, dashboardData?.isLoading, dashboardData?.isJathagamLoading, userProfile, forecast]);
+      // Fetch all data in parallel (use relative URLs for vite proxy)
+      const [jathagamData, lifeAreasData, projectionsData] = await Promise.all([
+        jathagamAPI.generate(jathagamDetails).catch(() => null),
+        axios.post('/api/forecast/life-areas', forecastDetails).then(r => r.data).catch(() => null),
+        axios.post('/api/forecast/future-projections', forecastDetails).then(r => r.data).catch(() => null),
+      ]);
+
+      setJathagam(jathagamData);
+      setLifeAreas(lifeAreasData);
+      setProjections(projectionsData);
+
+    } catch (error) {
+      console.error('Failed to fetch data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getCurrentPeriod = () => {
     const hour = currentTime.getHours();
-    // Check if we have real rahu kalam data
-    if (dashboardData.panchangam?.rahu_kalam) {
-      const rahuStart = parseInt(dashboardData.panchangam.rahu_kalam.start?.split(':')[0] || '15');
-      const rahuEnd = parseInt(dashboardData.panchangam.rahu_kalam.end?.split(':')[0] || '17');
-      if (hour >= rahuStart && hour < rahuEnd) {
-        return { status: 'rahu', label: 'ராகு காலம்', color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200' };
-      }
-    }
-
-    // Check nalla neram
-    if (dashboardData.panchangam?.nalla_neram?.length > 0) {
-      for (const period of dashboardData.panchangam.nalla_neram) {
-        const start = parseInt(period.start?.split(':')[0] || '9');
-        const end = parseInt(period.end?.split(':')[0] || '11');
-        if (hour >= start && hour < end) {
-          return { status: 'good', label: 'நல்ல நேரம்', color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200' };
-        }
-      }
-    }
-
-    // Default fallback
-    if (hour >= 15 && hour < 17) return { status: 'rahu', label: 'ராகு காலம்', color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200' };
-    if (hour >= 9 && hour < 11) return { status: 'good', label: 'நல்ல நேரம்', color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200' };
-    return { status: 'neutral', label: 'சாதாரண நேரம்', color: 'text-orange-600', bg: 'bg-orange-50', border: 'border-orange-200' };
+    if (hour >= 15 && hour < 17) return { label: t('rahuKalam'), color: 'text-red-600', bg: 'bg-red-50' };
+    if (hour >= 9 && hour < 11) return { label: t('goodTime'), color: 'text-green-600', bg: 'bg-green-50' };
+    return { label: t('normalTime'), color: 'text-orange-600', bg: 'bg-orange-50' };
   };
 
   const period = getCurrentPeriod();
-  const currentHour = currentTime.getHours();
-
-  // Get Tamil date info from API data
-  const tamilDate = {
-    month: dashboardData.panchangam?.tamil_month || 'மார்கழி',
-    tithi: dashboardData.panchangam?.tithi?.name || 'சப்தமி',
-    nakshatra: dashboardData.panchangam?.nakshatra?.tamil || dashboardData.userNakshatra || 'உத்திரம்',
-    yoga: dashboardData.panchangam?.yoga?.name || 'சித்த யோகம்',
-    vaaram: dashboardData.panchangam?.vaaram || getTamilDay(currentTime.getDay()),
-  };
 
   // Get overall score
-  const overallScore = dashboardData.overallScore || 65;
-
-  // Generate AI insight based on data
-  const generateInsight = () => {
-    if (dashboardData.currentDasha) {
-      const dashaLord = dashboardData.currentDasha.mahadasha;
-      const antarLord = dashboardData.currentDasha.antardasha;
-      return `${planetTamilNames[dashaLord] || dashaLord} மகா தசை மற்றும் ${planetTamilNames[antarLord] || antarLord} அந்தர தசை நடைபெறுகிறது. இது உங்கள் வாழ்க்கையில் முக்கிய மாற்றங்களைக் கொண்டுவரும்.`;
+  const getOverallScore = () => {
+    if (lifeAreas?.life_areas) {
+      const areas = Object.values(lifeAreas.life_areas);
+      const sum = areas.reduce((acc, area) => acc + (area.score || 0), 0);
+      return Math.round(sum / areas.length);
     }
-    if (dashboardData.yogas?.length > 0) {
-      const yoga = dashboardData.yogas[0];
-      return `உங்கள் ஜாதகத்தில் ${yoga.name} யோகம் உள்ளது. ${yoga.effect || 'இது நல்ல பலன்களை தரும்.'}`;
-    }
-    return `குரு உங்கள் 9ம் வீட்டில் இருப்பதால் இன்று புதிய கற்றல் மற்றும் ஆன்மீக செயல்கள் சிறப்பாக அமையும்.`;
+    return jathagam?.overall_score || 55;
   };
 
-  // Loading state
-  if (dashboardData.isLoading && !dashboardData.panchangam) {
+  // Format life areas for display
+  const getLifeAreasForDisplay = () => {
+    if (!lifeAreas?.life_areas) return [];
+
+    const areaConfig = {
+      love: { key: 'love', name: t('love'), color: '#ec4899' },
+      career: { key: 'career', name: t('career'), color: '#3b82f6' },
+      education: { key: 'education', name: t('education'), color: '#8b5cf6' },
+      family: { key: 'family', name: t('family'), color: '#10b981' },
+      health: { key: 'health', name: t('health'), color: '#f59e0b' },
+    };
+
+    return Object.entries(lifeAreas.life_areas).map(([key, data]) => ({
+      key,
+      name: areaConfig[key]?.name || key,
+      score: data.score || 50,
+      color: areaConfig[key]?.color || '#6b7280',
+      suggestion: data.suggestion,
+      factors: data.factors,
+      breakdown: data.breakdown,
+    }));
+  };
+
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-orange-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 text-orange-500 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">ஜாதக தரவுகளை ஏற்றுகிறது...</p>
+      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+          >
+            <DiyaIcon size={60} />
+          </motion.div>
+          <p className="text-orange-600">Loading...</p>
         </div>
       </div>
     );
@@ -206,496 +480,204 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-orange-50 pb-24">
-      {/* Decorative Top Border */}
-      <div className="bg-gradient-to-r from-orange-500 via-red-500 to-orange-500 h-1" />
-
       {/* Header */}
-      <div className="bg-white border-b border-orange-100 px-4 py-4">
-        <div className="flex justify-between items-start">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl text-orange-600">ॐ</span>
-              <h1 className="text-xl font-bold text-orange-800">ஜோதிட AI</h1>
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 pt-6"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+              <span className="text-xl">ॐ</span>
             </div>
-            {userProfile && (
-              <div className="mt-1">
-                <p className="text-gray-600 text-sm">வணக்கம், {userProfile.name}</p>
-                {dashboardData.userRasi && (
-                  <p className="text-xs text-orange-600">
-                    {dashboardData.userRasi} • {dashboardData.userNakshatra}
-                  </p>
-                )}
-              </div>
-            )}
+            <div>
+              <h1 className="text-lg font-bold">ஜோதிட AI</h1>
+              <p className="text-orange-100 text-sm">
+                {t('greeting')}, {userProfile?.name || 'User'}
+              </p>
+            </div>
           </div>
           <div className="text-right">
-            <div className="text-lg font-mono text-gray-800">
-              {currentTime.toLocaleTimeString('ta-IN', { hour: '2-digit', minute: '2-digit' })}
-            </div>
-            <div className={`text-xs px-2 py-1 rounded-full ${period.bg} ${period.color} ${period.border} border inline-block mt-1`}>
-              {period.label}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Offline indicator */}
-      {dashboardData.isOffline && (
-        <div className="mx-4 mt-2 bg-yellow-50 border border-yellow-200 rounded-lg p-2 text-xs text-yellow-700 flex items-center gap-2">
-          <RefreshCw className="w-3 h-3" />
-          ஆஃப்லைன் பயன்முறை - உள்ளூர் கணக்கீடுகள்
-        </div>
-      )}
-
-      {/* User Profile Banner */}
-      {userProfile && (
-        <div className="mx-4 mt-4">
-          <UserProfileBanner
-            userProfile={userProfile}
-            onNavigateToProfile={() => navigate('/profile')}
-          />
-        </div>
-      )}
-
-      {/* Tamil Calendar Info */}
-      <div className="mx-4 mt-4 bg-white rounded-2xl border border-orange-200 p-4 shadow-sm">
-        <div className="flex items-center gap-2 mb-3">
-          <Calendar className="w-4 h-4 text-orange-600" />
-          <span className="text-sm font-medium text-gray-800">இன்றைய பஞ்சாங்கம்</span>
-          <span className="text-xs text-gray-500 ml-auto">{tamilDate.vaaram}</span>
-        </div>
-        <div className="grid grid-cols-4 gap-2 text-center">
-          <div className="bg-orange-50 rounded-lg p-2">
-            <p className="text-xs text-gray-500">மாதம்</p>
-            <p className="text-sm font-medium text-gray-800">{tamilDate.month}</p>
-          </div>
-          <div className="bg-orange-50 rounded-lg p-2">
-            <p className="text-xs text-gray-500">திதி</p>
-            <p className="text-sm font-medium text-gray-800">{tamilDate.tithi}</p>
-          </div>
-          <div className="bg-orange-50 rounded-lg p-2">
-            <p className="text-xs text-gray-500">நட்சத்திரம்</p>
-            <p className="text-sm font-medium text-gray-800">{tamilDate.nakshatra}</p>
-          </div>
-          <div className="bg-orange-50 rounded-lg p-2">
-            <p className="text-xs text-gray-500">யோகம்</p>
-            <p className="text-sm font-medium text-gray-800">{tamilDate.yoga}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Today's Score */}
-      <div className="mx-4 mt-4 bg-white rounded-2xl border border-orange-200 p-4 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-gray-500 text-sm">இன்றைய ஒட்டுமொத்த பலன்</p>
-            <div className="flex items-baseline gap-2 mt-1">
-              <span className="text-4xl font-bold text-orange-600">{overallScore}</span>
-              <span className="text-sm text-gray-500">/100</span>
-              <span className={`flex items-center text-sm ${
-                overallScore >= 70 ? 'text-green-600' : overallScore >= 50 ? 'text-orange-600' : 'text-red-600'
-              }`}>
-                <TrendingUp className="w-4 h-4 mr-1" />
-                {overallScore >= 70 ? 'நல்லது' : overallScore >= 50 ? 'சாதாரணம்' : 'கவனம்'}
-              </span>
-            </div>
-          </div>
-          <div className="w-20 h-20">
-            <ResponsiveContainer>
-              <RadialBarChart cx="50%" cy="50%" innerRadius="70%" outerRadius="100%" data={[{ value: overallScore }]} startAngle={90} endAngle={-270}>
-                <RadialBar dataKey="value" cornerRadius={10} fill="#ea580c" background={{ fill: '#fed7aa' }} />
-              </RadialBarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* AI Insight */}
-        <div className="mt-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl p-3 border border-orange-200">
-          <div className="flex items-start gap-2">
-            <Sparkles className="w-4 h-4 text-orange-500 mt-0.5" />
-            <p className="text-sm text-gray-700 leading-relaxed">
-              {generateInsight()}
+            <p className="text-2xl font-bold">
+              {currentTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
             </p>
+            <span className={`text-xs px-2 py-0.5 rounded-full ${period.bg} ${period.color}`}>
+              {period.label}
+            </span>
           </div>
         </div>
-      </div>
 
-      {/* Forecast Section - Right after Today's Score for visibility */}
-      {userProfile && (
-        <div className="mx-4 mt-4 bg-white rounded-2xl border border-orange-200 p-4 shadow-sm">
+        {/* User Info Card */}
+        {jathagam && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mt-4 bg-white/10 backdrop-blur rounded-xl p-3"
+          >
+            <div className="flex items-center gap-4 text-sm">
+              <div className="flex items-center gap-1">
+                <Moon className="w-4 h-4" />
+                <span>{jathagam.rasi || jathagam.moon_sign?.rasi}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Star className="w-4 h-4" />
+                <span>{jathagam.nakshatra || jathagam.moon_sign?.nakshatra}</span>
+              </div>
+              <div className="flex items-center gap-1 ml-auto">
+                <Sparkles className="w-4 h-4" />
+                <span>{jathagam.dasha?.current?.lord || 'Saturn'} {t('dasha')}</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </motion.div>
+
+      <div className="p-4 space-y-6">
+        {/* Today's Score */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl p-6 shadow-sm"
+        >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-gray-800 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-orange-600" />
-              எதிர்கால பலன்கள்
-            </h3>
-            {forecastLoading && <Loader2 className="w-4 h-4 animate-spin text-orange-500" />}
+            <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+              <Flame className="w-5 h-5 text-orange-500" />
+              {t('todayScore')}
+            </h2>
+            <DiyaIcon size={32} />
           </div>
 
-          {/* Forecast Tabs */}
-          <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
-            {[
-              { key: 'week', label: 'வாரம்' },
-              { key: 'month', label: 'மாதம்' },
-              { key: 'year', label: 'வருடம்' },
-              { key: '3year', label: '3 வருடம்' }
-            ].map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setExpandedForecast(tab.key)}
-                className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
-                  expandedForecast === tab.key
-                    ? 'bg-orange-500 text-white'
-                    : 'bg-orange-50 text-orange-700 border border-orange-200'
-                }`}
-              >
-                {tab.label}
-              </button>
+          <AnimatedScoreCircle
+            score={getOverallScore()}
+            onClick={() => setSelectedScore({
+              title: t('todayScore'),
+              score: getOverallScore(),
+              breakdown: jathagam?.breakdown,
+            })}
+            tapText={t('tapForDetails')}
+          />
+
+          {jathagam?.dasha?.current && (
+            <div className="mt-4 text-center">
+              <p className="text-sm text-gray-500">
+                {jathagam.dasha.current.lord} {t('dasha')} / {jathagam.dasha.current.antardasha_lord || 'Jupiter'} {t('bhukti')}
+              </p>
+            </div>
+          )}
+        </motion.div>
+
+        <DecorativeBorder />
+
+        {/* Panchangam */}
+        {panchangam && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-2xl p-4 shadow-sm"
+          >
+            <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-orange-500" />
+              {t('panchangam')}
+            </h2>
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { label: t('month'), value: panchangam.tamil_month || panchangam.month },
+                { label: t('tithi'), value: panchangam.tithi?.tamil || panchangam.tithi?.name || panchangam.tithi },
+                { label: t('nakshatra'), value: panchangam.nakshatra?.tamil || panchangam.nakshatra?.name || panchangam.nakshatra },
+                { label: t('yoga'), value: panchangam.yoga?.tamil || panchangam.yoga?.name || panchangam.yoga },
+              ].map((item, i) => (
+                <div key={i} className="text-center p-2 bg-orange-50 rounded-lg">
+                  <p className="text-xs text-gray-500">{item.label}</p>
+                  <p className="text-sm font-medium text-orange-800 truncate">{typeof item.value === 'object' ? '-' : (item.value || '-')}</p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Life Areas */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-orange-500" />
+            {t('lifeAreas')}
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            {getLifeAreasForDisplay().slice(0, 4).map((area, index) => (
+              <LifeAreaCard
+                key={area.key}
+                area={area}
+                index={index}
+                onClick={setSelectedScore}
+                t={t}
+              />
             ))}
           </div>
+        </motion.div>
 
-          {/* Weekly Forecast */}
-          {expandedForecast === 'week' && forecast?.week && (
-            <div>
-              <div className="flex items-center justify-between mb-3 p-3 bg-orange-50 rounded-xl">
-                <div>
-                  <p className="text-xs text-gray-500">வார சராசரி</p>
-                  <p className="text-2xl font-bold text-orange-600">{forecast.week.average_score}%</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-green-600">சிறந்த நாள்: {forecast.week.best_day?.day}</p>
-                  <p className="text-xs text-red-600">கவனம்: {forecast.week.worst_day?.day}</p>
-                </div>
-              </div>
-              <div className="flex gap-2 overflow-x-auto pb-2">
-                {forecast.week.days?.map((day, i) => (
-                  <div
-                    key={i}
-                    className={`flex-shrink-0 w-16 p-2 rounded-xl text-center border ${
-                      day.is_good ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
-                    }`}
-                  >
-                    <p className="text-xs text-gray-500">{day.day}</p>
-                    <p className={`text-lg font-bold ${day.is_good ? 'text-green-600' : 'text-gray-600'}`}>
-                      {day.score}%
-                    </p>
-                  </div>
-                ))}
-              </div>
-              {forecast.week.advice && (
-                <p className="text-xs text-gray-600 mt-3 p-2 bg-gray-50 rounded-lg">{forecast.week.advice}</p>
-              )}
+        <DecorativeBorder />
+
+        {/* Future Projections */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-orange-500" />
+              {t('futureProjections')}
+            </h2>
+            <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => setProjectionView('month')}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  projectionView === 'month' ? 'bg-white shadow text-orange-600' : 'text-gray-500'
+                }`}
+              >
+                {t('monthly')}
+              </button>
+              <button
+                onClick={() => setProjectionView('year')}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  projectionView === 'year' ? 'bg-white shadow text-orange-600' : 'text-gray-500'
+                }`}
+              >
+                {t('yearly')}
+              </button>
             </div>
-          )}
+          </div>
 
-          {/* Monthly Forecast */}
-          {expandedForecast === 'month' && forecast?.month && (
-            <div>
-              <div className="flex items-center justify-between mb-3 p-3 bg-orange-50 rounded-xl">
-                <div>
-                  <p className="text-xs text-gray-500">{forecast.month.month_name} மாதம்</p>
-                  <p className="text-2xl font-bold text-orange-600">{forecast.month.average_score}%</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-green-600">நல்ல நாட்கள்: {forecast.month.good_days_count}</p>
-                  <p className="text-xs text-red-600">கவனம்: {forecast.month.caution_days_count}</p>
-                </div>
-              </div>
-              {/* Monthly calendar grid */}
-              <div className="grid grid-cols-7 gap-1 text-center">
-                {['ஞா', 'தி', 'செ', 'பு', 'வி', 'வெ', 'ச'].map(d => (
-                  <div key={d} className="text-xs text-gray-500 py-1">{d}</div>
-                ))}
-                {/* Add empty cells for proper alignment */}
-                {(() => {
-                  const firstDay = new Date(forecast.month.year, forecast.month.month - 1, 1).getDay();
-                  return Array(firstDay).fill(null).map((_, i) => (
-                    <div key={`empty-${i}`} className="p-1"></div>
-                  ));
-                })()}
-                {forecast.month.days?.map((day, i) => (
-                  <div
-                    key={i}
-                    className={`p-1 rounded text-xs font-medium ${
-                      day.type === 'good' ? 'bg-green-100 text-green-700 border border-green-200' :
-                      day.type === 'caution' ? 'bg-red-100 text-red-700 border border-red-200' :
-                      'bg-gray-50 text-gray-600 border border-gray-100'
-                    }`}
-                    title={`${day.day}: ${day.score}%`}
-                  >
-                    {day.day}
-                  </div>
-                ))}
-              </div>
-              {forecast.month.advice && (
-                <p className="text-xs text-gray-600 mt-3 p-2 bg-gray-50 rounded-lg">{forecast.month.advice}</p>
-              )}
-            </div>
-          )}
-
-          {/* Yearly Forecast */}
-          {expandedForecast === 'year' && forecast?.year && (
-            <div>
-              <div className="flex items-center justify-between mb-3 p-3 bg-orange-50 rounded-xl">
-                <div>
-                  <p className="text-xs text-gray-500">{forecast.year.year} வருடம்</p>
-                  <p className="text-2xl font-bold text-orange-600">{forecast.year.average_score}%</p>
-                </div>
-                <div className="text-right text-xs">
-                  <p className="text-green-600">சிறந்த: {forecast.year.best_months?.map(m => m.month).join(', ')}</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-4 gap-2">
-                {forecast.year.months?.map((month, i) => (
-                  <div
-                    key={i}
-                    className={`p-2 rounded-lg text-center border ${
-                      month.type === 'excellent' ? 'bg-green-50 border-green-200' :
-                      month.type === 'good' ? 'bg-orange-50 border-orange-200' :
-                      'bg-gray-50 border-gray-200'
-                    }`}
-                  >
-                    <p className="text-xs text-gray-500">{month.name}</p>
-                    <p className={`text-sm font-bold ${
-                      month.type === 'excellent' ? 'text-green-600' :
-                      month.type === 'good' ? 'text-orange-600' :
-                      'text-gray-600'
-                    }`}>
-                      {month.score}%
-                    </p>
-                  </div>
-                ))}
-              </div>
-              {forecast.year.advice && (
-                <p className="text-xs text-gray-600 mt-3 p-2 bg-gray-50 rounded-lg">{forecast.year.advice}</p>
-              )}
-            </div>
-          )}
-
-          {/* 3-Year Forecast */}
-          {expandedForecast === '3year' && forecast?.three_years && (
-            <div className="space-y-4">
-              {forecast.three_years.map((yearData, yi) => (
-                <div key={yi} className="border border-orange-100 rounded-xl p-3">
-                  <p className="text-sm font-medium text-orange-700 mb-2">{yearData.year}</p>
-                  <div className="flex gap-1 overflow-x-auto pb-1">
-                    {yearData.months?.map((month, mi) => (
-                      <div
-                        key={mi}
-                        className={`flex-shrink-0 w-12 p-1 rounded text-center ${
-                          month.type === 'excellent' ? 'bg-green-100' :
-                          month.type === 'good' ? 'bg-orange-100' :
-                          month.type === 'caution' ? 'bg-red-100' :
-                          'bg-gray-100'
-                        }`}
-                      >
-                        <p className="text-[10px] text-gray-500">{month.name?.substring(0, 3)}</p>
-                        <p className={`text-xs font-bold ${
-                          month.type === 'excellent' ? 'text-green-700' :
-                          month.type === 'good' ? 'text-orange-700' :
-                          month.type === 'caution' ? 'text-red-700' :
-                          'text-gray-600'
-                        }`}>
-                          {month.score}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+          {projectionView === 'month' && projections?.projections?.monthly && (
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+              {projections.projections.monthly.map((month, index) => (
+                <MonthCard key={index} month={month} index={index} onClick={setSelectedScore} />
               ))}
             </div>
           )}
 
-          {/* No forecast yet - show loading or placeholder */}
-          {!forecast && (
-            <div className="text-center py-6 text-gray-500">
-              {(forecastLoading || dashboardData?.isJathagamLoading) ? (
-                <>
-                  <Loader2 className="w-8 h-8 mx-auto mb-2 animate-spin text-orange-400" />
-                  <p className="text-sm">பலன்களை ஏற்றுகிறது...</p>
-                </>
-              ) : (
-                <>
-                  <Calendar className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">பலன் தரவு இல்லை</p>
-                </>
-              )}
+          {projectionView === 'year' && projections?.projections?.yearly && (
+            <div className="space-y-3">
+              {projections.projections.yearly.map((year, index) => (
+                <YearCard key={index} year={year} onClick={setSelectedScore} />
+              ))}
             </div>
           )}
-        </div>
-      )}
-
-      {/* Score Breakdown - Expandable */}
-      <div className="mx-4 mt-4">
-        <ScoreBreakdown />
+        </motion.div>
       </div>
 
-      {/* Time Chart */}
-      <div className="mx-4 mt-4 bg-white rounded-2xl border border-orange-200 p-4 shadow-sm">
-        <div className="flex justify-between items-center mb-3">
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-orange-600" />
-            <span className="text-sm font-medium text-gray-800">இன்றைய நேர பலன்</span>
-          </div>
-          <div className="flex gap-3 text-xs">
-            <span className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-green-500"></span>
-              நல்ல நேரம்
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-red-500"></span>
-              ராகு காலம்
-            </span>
-          </div>
-        </div>
-
-        {/* Time Blocks from API data */}
-        <div className="flex gap-1 overflow-x-auto pb-2">
-          {dashboardData.timeEnergy.map((t, i) => (
-            <div
-              key={i}
-              className={`flex-shrink-0 w-10 h-12 rounded-lg flex flex-col items-center justify-center text-xs transition-all
-                ${t.hour === currentHour ? 'ring-2 ring-orange-500 ring-offset-1' : ''}
-                ${t.is_rahu_kalam ? 'bg-red-100 text-red-700 border border-red-200' :
-                  t.is_nalla_neram ? 'bg-green-100 text-green-700 border border-green-200' :
-                  'bg-gray-100 text-gray-600 border border-gray-200'}`}
-            >
-              <span className="font-medium">{t.hour}</span>
-              <span className="text-[10px]">{t.is_nalla_neram ? '✓' : t.is_rahu_kalam ? '✗' : '•'}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Life Areas Grid */}
-      <div className="mx-4 mt-4">
-        <h3 className="text-sm font-medium text-gray-800 mb-3 flex items-center gap-2">
-          <Star className="w-4 h-4 text-orange-600" />
-          வாழ்க்கை துறைகள்
-        </h3>
-        <div className="grid grid-cols-2 gap-3">
-          {dashboardData.lifeAreas.map((area, i) => {
-            const IconComponent = iconMap[area.icon] || Heart;
-            return (
-              <div key={i} className="bg-white rounded-xl p-4 border border-orange-200 shadow-sm">
-                <div className="flex items-center justify-between mb-2">
-                  <IconComponent className="w-5 h-5" style={{ color: area.color }} />
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    area.score > 75 ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
-                  }`}>
-                    {area.score > 75 ? 'நல்லது' : 'சாதாரணம்'}
-                  </span>
-                </div>
-                <p className="text-gray-700 text-sm font-medium">{area.name}</p>
-                <div className="flex items-end gap-2 mt-1">
-                  <span className="text-2xl font-bold" style={{ color: area.color }}>{area.score}</span>
-                  <span className="text-gray-400 text-sm mb-1">/100</span>
-                </div>
-                <div className="w-full bg-gray-100 rounded-full h-1.5 mt-2">
-                  <div
-                    className="h-1.5 rounded-full transition-all duration-500"
-                    style={{ width: `${area.score}%`, backgroundColor: area.color }}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Planet Positions from Jathagam */}
-      {dashboardData.planets.length > 0 && (
-        <div className="mx-4 mt-4 bg-white rounded-2xl border border-orange-200 p-4 shadow-sm">
-          <h3 className="text-sm font-medium text-gray-800 mb-3 flex items-center gap-2">
-            <Sun className="w-4 h-4 text-orange-600" />
-            கிரக நிலை
-            {dashboardData.isJathagamLoading && (
-              <Loader2 className="w-3 h-3 animate-spin text-orange-400 ml-2" />
-            )}
-          </h3>
-          <div className="space-y-3">
-            {dashboardData.planets.slice(0, 7).map((planet, i) => {
-              const symbol = planetSymbols[planet.planet] || '★';
-              const tamilName = planetTamilNames[planet.planet] || planet.planet;
-              const rasiTamil = rasiTamilNames[planet.rasi] || planet.rasi;
-              const strength = planet.strength || 50;
-              const status = strength >= 70 ? 'மிக நல்லது' : strength >= 50 ? 'நல்லது' : 'கவனம்';
-
-              return (
-                <div key={i} className="flex items-center justify-between py-2 border-b border-orange-100 last:border-0">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xl w-8 text-center">{symbol}</span>
-                    <div>
-                      <p className="text-sm font-medium text-gray-800">{tamilName}</p>
-                      <p className="text-xs text-gray-500">
-                        {rasiTamil} - {planet.degree?.toFixed(1) || '0'}°
-                        {planet.retrograde && <span className="text-red-500 ml-1">(வக்ர)</span>}
-                      </p>
-                    </div>
-                  </div>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    status === 'மிக நல்லது' ? 'bg-green-100 text-green-700' :
-                    status === 'நல்லது' ? 'bg-orange-100 text-orange-700' :
-                    'bg-red-100 text-red-700'
-                  }`}>
-                    {status}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Current Dasha */}
-      {dashboardData.currentDasha && (
-        <div className="mx-4 mt-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl border border-purple-200 p-4 shadow-sm">
-          <h3 className="text-sm font-medium text-purple-800 mb-3 flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-purple-600" />
-            நடப்பு தசா
-          </h3>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-white/50 rounded-lg p-3">
-              <p className="text-xs text-gray-500">மகா தசை</p>
-              <p className="text-sm font-semibold text-purple-700">
-                {planetTamilNames[dashboardData.currentDasha.mahadasha] || dashboardData.currentDasha.mahadasha}
-              </p>
-            </div>
-            <div className="bg-white/50 rounded-lg p-3">
-              <p className="text-xs text-gray-500">அந்தர தசை</p>
-              <p className="text-sm font-semibold text-purple-700">
-                {planetTamilNames[dashboardData.currentDasha.antardasha] || dashboardData.currentDasha.antardasha}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Quick Actions */}
-      <div className="mx-4 mt-4 mb-4">
-        <h3 className="text-sm font-medium text-gray-800 mb-3">விரைவு செயல்கள்</h3>
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { icon: MessageCircle, label: 'AI கேள்வி', path: '/chat', color: 'text-orange-600' },
-            { icon: Users, label: 'பொருத்தம்', path: '/matching', color: 'text-red-600' },
-            { icon: Calendar, label: 'முகூர்த்தம்', path: '/muhurtham', color: 'text-green-600' },
-          ].map((action, i) => (
-            <button
-              key={i}
-              onClick={() => navigate(action.path)}
-              className="bg-white rounded-xl p-4 border border-orange-200 shadow-sm hover:border-orange-400 transition-all"
-            >
-              <action.icon className={`w-6 h-6 mx-auto ${action.color}`} />
-              <span className="text-xs text-gray-600 mt-2 block">{action.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* Score Modal */}
+      <AnimatePresence>
+        {selectedScore && (
+          <ScoreModal
+            data={selectedScore}
+            onClose={() => setSelectedScore(null)}
+            t={t}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
-}
-
-// Helper function for Tamil day
-function getTamilDay(dayIndex) {
-  const days = ['ஞாயிறு', 'திங்கள்', 'செவ்வாய்', 'புதன்', 'வியாழன்', 'வெள்ளி', 'சனி'];
-  return days[dayIndex];
 }

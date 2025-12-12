@@ -1,11 +1,11 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Heart, MessageCircle, Calendar, User } from 'lucide-react';
+import { Home, Heart, Sparkles, BookOpen, User } from 'lucide-react';
 
 const navItems = [
-  { path: '/', icon: Home, label: 'முகப்பு' },
+  { path: '/dashboard', icon: Home, label: 'முகப்பு' },
   { path: '/matching', icon: Heart, label: 'பொருத்தம்' },
-  { path: '/chat', icon: MessageCircle, label: 'AI' },
-  { path: '/muhurtham', icon: Calendar, label: 'முகூர்த்தம்' },
+  { path: '/chat', icon: Sparkles, label: 'ஜோதிடம்' },
+  { path: '/stories', icon: BookOpen, label: 'கதைகள்' },
   { path: '/profile', icon: User, label: 'சுயவிவரம்' },
 ];
 

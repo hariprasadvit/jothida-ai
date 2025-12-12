@@ -1,5 +1,5 @@
 """
-Astro Engine v5.0 - Time Adaptive Tensor-Derived Multi-Module Scoring Engine
+Astro Engine v6.0 - Time Adaptive Tensor-Derived Multi-Module Scoring Engine
 ============================================================================
 
 This engine extends the base AstroPercentEngine with dynamic time-mode adaptation.
@@ -15,14 +15,24 @@ Key Concepts:
 - HAI: House Activation Index = house_lord_POI + transit_overlay + jupiter_support - saturn_pressure + dasha_activation
 - NavamsaSupport: D9 uplift = Δ(dignity_D9 - dignity_D1) + compatibility bonuses
 
-v5.0 Refinements:
-- POI now derives from Planet_Power (Shadbala + Sthana Bala), not just Sign Dignity
-- Retrograde modifier split: +2 to +3 for Benefics, -3 to -5 for Malefics
-- HAI includes House Lord's POI score for static_strength
-- Saturn pressure includes 3rd and 10th aspect effects (-2 per aspect)
-- Dasha activation bonus (+4 to +6) if Dasha Lord transits its own House (Bhavottama)
-- Yoga activation strictly requires Dasha/Bhukti Lord participation
-- Astrologically Weighted Average: s_dasha=0.35, s_transit=0.25, s_yoga=0.20, s_planet=0.10, s_house=0.10
+v6.0 Refinements (STRONGLY POSITIVE - Reduce negativity by 75-80%):
+- CORE PRINCIPLE: Strongly positive output, minimal negative effects
+- Global Numeric Safety: clamp_min=0.50 (high floor), clamp_max=0.88
+- Dasha Baseline Power: benefic=0.78, neutral=0.70, malefic=0.62 (malefics nearly neutral)
+- POI Floor: 5.5-8.0 range (high floor for positive baseline)
+- Transit Cap: Max 0.82 (raised)
+- Saturn Penalty Cap: Single -0.01 max (minimal)
+- Malefic Penalties: All reduced by 80% via malefic_penalty_reduction factor
+- Dosha Penalties: Base values reduced 80%, minimal activation
+- Jupiter Support: Strongly boosted (3.5x direct, 1.8x aspect)
+- Yoga Presence Score: 0.07 even when dormant, 0.12 for activation
+- Negative Yoga Cap: -0.005 max dosha impact (nearly none)
+
+v5.8/5.9 Features (retained):
+- No module produces punitive scores
+- Dasha baseline power independent of POI
+- Transit Effect Fix: Jupiter/Saturn affect houses RULED BY dasha lord
+- Yoga Activation STRICT: ONLY if yoga planet = dasha OR bhukti lord
 """
 
 from datetime import datetime, date, timedelta
@@ -44,15 +54,83 @@ class TimeMode(Enum):
 
 class TimeAdaptiveEngine(AstroPercentEngine):
     """
-    v4.1 Time-Adaptive Astro Scoring Engine
+    v6.0 Time-Adaptive Astro Scoring Engine
 
     Extends AstroPercentEngine with dynamic time-mode adaptation.
     Automatically modifies weights, multipliers, and tensor calculations
     based on the temporal context of the prediction.
+
+    V6.0 Core Principle: STRONGLY POSITIVE - reduce negativity by 75-80%
+    - Module score floor: 0.50 (high - no score below 50%)
+    - Module score ceiling: 0.88
+    - All malefic penalties reduced by 80%
+    - Dasha baseline power: malefic=0.62 (nearly neutral)
+    - POI range: 5.5-8.0 (high floor)
+    - Transit cap: 0.82 max
+    - Saturn penalty cap: -0.01 (minimal)
+    - Jupiter support: strongly boosted (3.5x)
+    - Yoga presence: 0.07 always, 0.12 for activation
+    - Dosha penalties: minimal (nearly none)
     """
 
-    ENGINE_VERSION = "5.0"
+    ENGINE_VERSION = "6.0"
     ENGINE_TYPE = "Tensor-Derived Multi-Module Astro Scoring Engine with Astrological Weighting"
+
+    # ==================== V6.0 GLOBAL NUMERIC SAFETY ====================
+    # V6.0 Core Principle: STRONGLY POSITIVE - reduce all negative effects by 75-80%
+    # High minimum scores, minimal penalties, optimistic and encouraging output
+    GLOBAL_NUMERIC_SAFETY = {
+        'clamp_min': 0.50,       # V6.0: High floor - no score below 50%
+        'clamp_max': 0.88,       # V6.0: Raised ceiling
+        'meta_multiplier_min': 1.00,  # V6.0: Never below 1.0
+        'meta_multiplier_max': 1.12,  # V6.0: Raised max multiplier
+        'poi_min': 5.5,          # V6.0: High POI floor - all planets have decent strength
+        'poi_max': 8.0,          # V6.0: Raised POI ceiling
+        'hai_min': 2.0,          # V6.0: HAI floor raised
+        'hai_max': 10.0,         # HAI ceiling
+        'house_suppression_threshold': 0.30,  # V6.0: Lower threshold - less suppression
+        'saturn_penalty_cap': -0.01,  # V6.0: Minimal Saturn penalty
+        'transit_cap': 0.82,     # V6.0: Raised transit cap
+        'malefic_penalty_reduction': 0.80,  # V6.0: Reduce malefic penalties by 80%
+    }
+
+    # V6.0 DASHA BASELINE POWER (significantly raised - malefics much less punishing)
+    DASHA_BASELINE_POWER = {
+        'benefic': 0.78,    # V6.0: High baseline for benefics
+        'neutral': 0.70,    # V6.0: Raised neutral baseline
+        'malefic': 0.62,    # V6.0: Malefics almost as good as neutrals
+    }
+
+    # V6.0 POI MODIFIER CAPS (minimal penalties, boosted positives)
+    POI_MODIFIER_CAPS = {
+        'retrograde_benefic': 0.08,   # V6.0: Boosted for retrograde benefic
+        'retrograde_malefic': -0.01,  # V6.0: Minimal penalty
+        'aspect_strength_cap': 0.08,  # V6.0: Boosted aspect contribution
+        'dignity_range': (0.55, 0.78),  # V6.0: High floor for dignity
+    }
+
+    # V6.0 YOGA MODULE (strongly positive)
+    YOGA_SCORE_RULES = {
+        'presence_score': 0.07,      # V6.0: High presence value
+        'activation_score': 0.12,    # V6.0: High activation bonus
+        'max_yoga_contribution': 0.25,  # V6.0: Higher cap for yoga
+        'negative_yoga_cap': -0.005,  # V6.0: Minimal dosha penalty (nearly none)
+    }
+
+    # V5.7 SCORING HIERARCHY
+    # Principal: "Astrologically Weighted Additive Sum"
+    # final_score = Σ(module_normalized × module_weight) × meta_multiplier
+    SCORING_HIERARCHY = {
+        'principle': 'Astrologically Weighted Additive Sum',
+        'module_weights': {
+            'dasha_bhukti': 0.35,    # Primary life period indicator
+            'transit': 0.25,         # Current planetary weather
+            'yoga_dosha': 0.20,      # Activated yogas/doshas
+            'planet_power': 0.10,    # Karaka strength
+            'house_power': 0.10,     # Bhava activation
+        },
+        'normalization': 'Each module normalized to 0-1 before weighting'
+    }
 
     # ==================== HOUSE LORDS MAPPING ====================
     # House lords based on Rasi (1=Aries, 2=Taurus, etc.)
@@ -528,8 +606,11 @@ class TimeAdaptiveEngine(AstroPercentEngine):
             - malefic_aspect_penalty
         )
 
-        # Normalize to 0-10 scale
-        poi_normalized = min(10, max(0, poi_raw))
+        # V5.8: Apply POI floor and ceiling to prevent punitive scores
+        # POI range: 4.5 - 7.5 (normalized: 0.45 - 0.75)
+        poi_min = self.GLOBAL_NUMERIC_SAFETY.get('poi_min', 4.5)
+        poi_max = self.GLOBAL_NUMERIC_SAFETY.get('poi_max', 7.5)
+        poi_normalized = max(poi_min, min(poi_max, poi_raw))
 
         result = {
             'planet': planet,
@@ -1170,11 +1251,17 @@ class TimeAdaptiveEngine(AstroPercentEngine):
 
     def _calculate_static_house_strength(self, house: int, target_date: Optional[date] = None) -> float:
         """
-        V5.0: Calculate static birth house strength based on planets present.
+        V5.7: Calculate static birth house strength based on planets present.
 
-        V5.0 REFINEMENT:
+        V5.7 REFINEMENTS:
         - Include House Lord's POI score (not just dignity)
         - POI gives a more accurate picture of lord's operational strength
+        - NEW: House suppression if ruling planet POI < 0.5 (normalized)
+
+        V5.7 HOUSE SUPPRESSION RULE:
+        - If house lord's normalized POI < 0.5 (i.e., POI < 5 on 0-10 scale)
+        - Apply suppression factor that reduces house strength
+        - This reflects weakened house significations when lord is weak
 
         Args:
             house: House number (1-12)
@@ -1199,18 +1286,40 @@ class TimeAdaptiveEngine(AstroPercentEngine):
                 else:
                     strength += 0.8 * dignity_score
 
-        # V5.0: House lord contribution using POI instead of just dignity
+        # V5.7: House lord contribution using POI with SUPPRESSION check
         lord = self._get_house_lord(house)
+        house_suppression_factor = 1.0  # Default: no suppression
+
         if lord:
             # Calculate House Lord's POI for more accurate strength
             lord_poi_result = self.calculate_poi(lord, target_date)
             lord_poi = lord_poi_result['poi']  # 0-10 scale
+            lord_poi_normalized = lord_poi / 10  # 0-1 scale
+
+            # V5.7 HOUSE SUPPRESSION: If house lord POI < threshold (0.5 normalized = 5 on 0-10 scale)
+            suppression_threshold = self.GLOBAL_NUMERIC_SAFETY.get('house_suppression_threshold', 0.5)
+            if lord_poi_normalized < suppression_threshold:
+                # Apply suppression proportional to how weak the lord is
+                # Suppression ranges from 0.5 (lord POI = 0) to 1.0 (lord POI = threshold)
+                house_suppression_factor = 0.5 + (lord_poi_normalized / suppression_threshold) * 0.5
+                # Log suppression for trace
+                self.calculation_trace.append({
+                    'action': 'HOUSE_SUPPRESSION_V57',
+                    'house': house,
+                    'lord': lord,
+                    'lord_poi': lord_poi,
+                    'suppression_threshold': suppression_threshold,
+                    'suppression_factor': round(house_suppression_factor, 3)
+                })
 
             # POI-based contribution (scaled to 0-2 range)
             lord_contribution = (lord_poi / 10) * 2.0
             strength += lord_contribution
 
-        return min(8.0, strength)  # Cap at 8 (increased from 6 due to POI)
+        # V5.7: Apply house suppression factor
+        strength = strength * house_suppression_factor
+
+        return min(8.0, max(0, strength))  # Cap at 8, floor at 0
 
     def _calculate_house_transit_overlay(self, house: int, target_date: date) -> float:
         """Calculate transit overlay for house on specific date"""
@@ -1544,44 +1653,46 @@ class TimeAdaptiveEngine(AstroPercentEngine):
         target_date: Optional[date] = None
     ) -> Dict:
         """
-        V5.0 Dasha-Bhukti-Antara module calculation.
+        V5.8 Dasha-Bhukti-Antara module calculation.
 
-        V5.0 REFINEMENTS:
-        - Dasha Lord uses dynamic POI (already implemented)
-        - NEW: Jupiter/Saturn transit effects on houses RULED BY Dasha Lord
+        V5.8 CRITICAL FIX:
+        - Use DASHA_BASELINE_POWER independent of POI
+        - POI only acts as modifier (±0.10 cap)
+        - Prevents Dasha from collapsing to punitive scores
 
         FORMULA:
-        raw_dasha =
-            0.50 * POI(dasha_lord, date)  # Dynamic POI
-          + 0.30 * POI(bhukti_lord, date)
-          + 0.20 * POI(antara_lord, date)
+        baseline_dasha =
+            0.50 * BASELINE(dasha_lord)  # V5.8: Fixed baseline
+          + 0.30 * BASELINE(bhukti_lord)
+          + 0.20 * BASELINE(antara_lord)
 
-        house_alignment_bonus =
-            HAI(house ruled by dasha_lord, date) * 0.4
-          + HAI(house ruled by bhukti_lord, date) * 0.3
+        poi_modifier =
+            (POI(dasha_lord) - 5.0) * 0.02  # Centered at 5, capped ±0.10
 
-        ruled_house_transit_effect =  # V5.0 NEW
-            jupiter_transit_to_ruled_houses(date)
-          + saturn_transit_to_ruled_houses(date)
+        final_dasha_base = baseline_dasha + poi_modifier
 
-        dasha_synergy =
-            transit_effect(dasha_lord, date)
-          + transit_effect(bhukti_lord, date)
-          + antara_activation_bonus(date)
-
-        navamsa_modifier =
-            1 + NavamsaSupport(date) * 0.015
-
-        final_dasha =
-            (raw_dasha + house_alignment_bonus + ruled_house_transit + dasha_synergy) * navamsa_modifier
+        V5.8 Target Range: 0.18 – 0.32 after weighting (0.35 weight)
         """
-        # Calculate POI for each dasha lord (includes all date-specific components)
-        mahadasha_poi = self.calculate_poi(mahadasha_lord, target_date)['poi']
-        bhukti_poi = self.calculate_poi(bhukti_lord, target_date)['poi'] if bhukti_lord else mahadasha_poi * 0.8
-        antara_poi = self.calculate_poi(antara_lord, target_date)['poi'] if antara_lord else bhukti_poi * 0.7
+        # V5.8: Get baseline power for each dasha lord
+        mahadasha_baseline = self._get_dasha_baseline_power(mahadasha_lord)
+        bhukti_baseline = self._get_dasha_baseline_power(bhukti_lord) if bhukti_lord else mahadasha_baseline * 0.9
+        antara_baseline = self._get_dasha_baseline_power(antara_lord) if antara_lord else bhukti_baseline * 0.9
 
-        # RAW DASHA (V5.0 weighted sum using dynamic POI)
-        raw_dasha = (0.50 * mahadasha_poi + 0.30 * bhukti_poi + 0.20 * antara_poi)
+        # V5.8: Baseline dasha (stable foundation)
+        baseline_dasha = (0.50 * mahadasha_baseline + 0.30 * bhukti_baseline + 0.20 * antara_baseline)
+
+        # V5.8: POI as modifier only (centered at 5, capped at ±0.10)
+        mahadasha_poi = self.calculate_poi(mahadasha_lord, target_date)['poi']
+        bhukti_poi = self.calculate_poi(bhukti_lord, target_date)['poi'] if bhukti_lord else 5.0
+        antara_poi = self.calculate_poi(antara_lord, target_date)['poi'] if antara_lord else 5.0
+
+        # POI modifier: deviation from neutral (5.0), scaled and capped
+        avg_poi = (0.50 * mahadasha_poi + 0.30 * bhukti_poi + 0.20 * antara_poi)
+        poi_modifier = (avg_poi - 5.0) * 0.02  # Each point deviation = 0.02
+        poi_modifier = max(-0.10, min(0.10, poi_modifier))  # Cap at ±0.10
+
+        # V5.8: Raw dasha uses baseline + capped POI modifier
+        raw_dasha = (baseline_dasha + poi_modifier) * 10  # Scale to 0-10 range for compatibility
 
         # HOUSE ALIGNMENT BONUS (using houses RULED by dasha lords)
         mahadasha_ruled_houses = self._get_houses_ruled_by(mahadasha_lord)
@@ -1615,23 +1726,34 @@ class TimeAdaptiveEngine(AstroPercentEngine):
 
         dasha_synergy = dasha_transit_effect + bhukti_transit_effect + antara_activation
 
-        # Malefic penalty for malefic dasha lords during high malefic pressure
-        malefic_penalty = 0
-        transit_malefic_pressure = self._calculate_malefic_pressure(target_date)
-        if mahadasha_lord in self.MALEFIC_PLANETS and transit_malefic_pressure > 60:
-            malefic_penalty = -0.12 * raw_dasha
-
         # NAVAMSA MODIFIER (date-specific)
         navamsa_support = self._calculate_dasha_navamsa_support(mahadasha_lord, target_date)
         navamsa_mod = 1 + (navamsa_support * 0.015)
 
-        # V5.0 FINAL DASHA CALCULATION (includes ruled_house_transit_effect)
-        raw_score = (raw_dasha + house_alignment_bonus + ruled_house_transit_effect + dasha_synergy + malefic_penalty) * navamsa_mod
+        # V5.7 FINAL DASHA CALCULATION (malefic penalty applied AFTER normalization)
+        raw_score = (raw_dasha + house_alignment_bonus + ruled_house_transit_effect + dasha_synergy) * navamsa_mod
 
         # Normalize to 0-1
         min_range, max_range = self.TENSOR_MODELS['dasha_bhukti']['expected_range']
         normalized = (raw_score - min_range) / (max_range - min_range)
         normalized = max(0, min(1, normalized))
+
+        # V6.0 MALEFIC PENALTY: Nearly eliminated (80% reduction)
+        # V6.0 Core: Strongly positive - malefics have minimal impact
+        malefic_penalty_normalized = 0
+        transit_malefic_pressure = self._calculate_malefic_pressure(target_date)
+        penalty_reduction = self.GLOBAL_NUMERIC_SAFETY.get('malefic_penalty_reduction', 0.80)
+        if mahadasha_lord in self.MALEFIC_PLANETS and transit_malefic_pressure > 80:  # V6.0: High threshold
+            # V6.0: Minimal penalty range -0.02 to -0.03 (80% reduction)
+            pressure_intensity = min(1.0, (transit_malefic_pressure - 80) / 20)  # 0 to 1 scale
+            base_penalty = -0.10 - (pressure_intensity * 0.05)  # Original penalty
+            malefic_penalty_normalized = base_penalty * (1 - penalty_reduction)  # Apply 80% reduction
+            normalized = max(0.5, normalized + malefic_penalty_normalized)  # V6.0: Never below 50%
+
+        # V6.0: Apply global numeric safety clamp (floor 0.50, ceiling 0.88)
+        clamp_min = self.GLOBAL_NUMERIC_SAFETY.get('clamp_min', 0.50)
+        clamp_max = self.GLOBAL_NUMERIC_SAFETY.get('clamp_max', 0.88)
+        normalized = max(clamp_min, min(clamp_max, normalized))
 
         return {
             'module': 'dasha_bhukti',
@@ -1644,7 +1766,7 @@ class TimeAdaptiveEngine(AstroPercentEngine):
                 'house_alignment_bonus': round(house_alignment_bonus, 3),
                 'ruled_house_transit_effect': round(ruled_house_transit_effect, 3),
                 'dasha_synergy': round(dasha_synergy, 3),
-                'malefic_penalty': round(malefic_penalty, 3),
+                'malefic_penalty_normalized': round(malefic_penalty_normalized, 3),  # V5.7: Post-normalization penalty
                 'navamsa_mod': round(navamsa_mod, 4)
             },
             'inputs': {
@@ -1660,12 +1782,17 @@ class TimeAdaptiveEngine(AstroPercentEngine):
                 'bhukti_transit_effect': round(bhukti_transit_effect, 3),
                 'antara_activation': round(antara_activation, 3)
             },
-            'formula': 'final = (raw_dasha + house_alignment + ruled_house_transit + dasha_synergy + malefic_penalty) × navamsa_mod'
+            'formula': 'V5.7: final = normalize(raw_dasha + house_alignment + ruled_house_transit + dasha_synergy) × navamsa_mod + malefic_penalty_post_norm'
         }
 
     def _calculate_ruled_house_transit_effects(self, ruled_houses: List[int], target_date: date) -> float:
         """
-        V5.0 NEW: Calculate Jupiter/Saturn transit effects on houses ruled by Dasha Lord.
+        V5.7: Calculate Jupiter/Saturn transit effects on houses RULED BY Dasha Lord.
+
+        V5.7 CRITICAL FIX:
+        - Jupiter/Saturn must affect the HOUSES ruled by dasha lord, not just any house
+        - This is the key principle: transits affect dasha significations through house rulership
+        - Effect strength based on aspect type (direct > special aspects > trine)
 
         When Jupiter transits a house ruled by the current Dasha Lord, it brings
         expansion and opportunities to that house's significations.
@@ -1687,36 +1814,60 @@ class TimeAdaptiveEngine(AstroPercentEngine):
         saturn_house = self._estimate_transit_house('Saturn', target_date)
 
         effect = 0
+        effect_details = []  # V5.7: Track details for debugging
 
         for house in ruled_houses:
-            # Jupiter transiting ruled house = POSITIVE (+1.5 per house)
+            house_effect = 0
+
+            # === JUPITER EFFECTS (V5.7: Enhanced) ===
+            # Jupiter transiting ruled house = POSITIVE (+2.0 per house, increased from 1.5)
             if jupiter_house == house:
-                effect += 1.5
+                house_effect += 2.0
+                effect_details.append(f"Jupiter direct transit H{house}: +2.0")
 
             # Jupiter aspecting ruled house (5th, 7th, 9th aspects)
-            jupiter_aspects = [
-                ((jupiter_house - 1 + 4) % 12) + 1,   # 5th aspect
-                ((jupiter_house - 1 + 6) % 12) + 1,   # 7th aspect
-                ((jupiter_house - 1 + 8) % 12) + 1    # 9th aspect
-            ]
-            if house in jupiter_aspects:
-                effect += 0.8
+            jupiter_5th = ((jupiter_house - 1 + 4) % 12) + 1   # 5th aspect
+            jupiter_7th = ((jupiter_house - 1 + 6) % 12) + 1   # 7th aspect
+            jupiter_9th = ((jupiter_house - 1 + 8) % 12) + 1   # 9th aspect
 
-            # Saturn transiting ruled house = NEGATIVE (-1.5 per house)
+            if house == jupiter_5th:
+                house_effect += 1.0  # V5.7: 5th aspect (trikona) = +1.0
+            elif house == jupiter_9th:
+                house_effect += 1.0  # V5.7: 9th aspect (trikona) = +1.0
+            elif house == jupiter_7th:
+                house_effect += 0.7  # V5.7: 7th aspect (standard) = +0.7
+
+            # === SATURN EFFECTS (V5.7: 3rd and 10th aspects are STRONGER) ===
+            # Saturn transiting ruled house = NEGATIVE (-2.0 per house, increased from 1.5)
             if saturn_house == house:
-                effect -= 1.5
+                house_effect -= 2.0
+                effect_details.append(f"Saturn direct transit H{house}: -2.0")
 
-            # Saturn aspecting ruled house (3rd, 7th, 10th aspects)
-            saturn_3rd_aspect = ((saturn_house - 1 + 2) % 12) + 1
-            saturn_7th_aspect = ((saturn_house - 1 + 6) % 12) + 1
-            saturn_10th_aspect = ((saturn_house - 1 + 9) % 12) + 1
+            # Saturn's special aspects (V5.7: 3rd and 10th are HARSH)
+            saturn_3rd = ((saturn_house - 1 + 2) % 12) + 1   # 3rd aspect
+            saturn_7th = ((saturn_house - 1 + 6) % 12) + 1   # 7th aspect
+            saturn_10th = ((saturn_house - 1 + 9) % 12) + 1  # 10th aspect
 
-            if house == saturn_3rd_aspect:
-                effect -= 1.0  # 3rd aspect = harsh
-            elif house == saturn_10th_aspect:
-                effect -= 1.0  # 10th aspect = karmic weight
-            elif house == saturn_7th_aspect:
-                effect -= 0.5  # 7th aspect = moderate
+            if house == saturn_3rd:
+                house_effect -= 1.5  # V5.7: 3rd aspect = HARSH (increased from 1.0)
+                effect_details.append(f"Saturn 3rd aspect H{house}: -1.5")
+            elif house == saturn_10th:
+                house_effect -= 1.5  # V5.7: 10th aspect = KARMIC WEIGHT (increased from 1.0)
+                effect_details.append(f"Saturn 10th aspect H{house}: -1.5")
+            elif house == saturn_7th:
+                house_effect -= 0.8  # V5.7: 7th aspect = standard opposition
+
+            effect += house_effect
+
+        # V5.7: Store trace for debugging
+        self.calculation_trace.append({
+            'action': 'RULED_HOUSE_TRANSIT_V57',
+            'ruled_houses': ruled_houses,
+            'jupiter_house': jupiter_house,
+            'saturn_house': saturn_house,
+            'effect_details': effect_details,
+            'total_effect': effect
+        })
 
         # Cap effect to reasonable range
         return max(-3.0, min(3.0, effect))
@@ -1756,6 +1907,49 @@ class TimeAdaptiveEngine(AstroPercentEngine):
             ruled_houses.append(house)
 
         return ruled_houses
+
+    def _get_dasha_baseline_power(self, planet: str) -> float:
+        """
+        V5.8: Get baseline dasha power for a planet.
+
+        This provides a stable foundation independent of POI.
+        Prevents Dasha score from collapsing due to low POI.
+
+        Returns:
+            Baseline power: 0.45 (malefic), 0.55 (neutral), 0.65 (benefic)
+        """
+        if not planet:
+            return self.DASHA_BASELINE_POWER.get('neutral', 0.55)
+
+        # Classify planet
+        benefics = ['Jupiter', 'Venus']
+        malefics = ['Saturn', 'Mars', 'Rahu', 'Ketu']
+
+        # Moon is benefic when waxing, malefic when waning
+        if planet == 'Moon':
+            # Check if we have paksha info
+            paksha = self.jathagam.get('panchagam', {}).get('paksha', '')
+            if paksha.lower() == 'shukla' or paksha.lower() == 'bright':
+                return self.DASHA_BASELINE_POWER.get('benefic', 0.65)
+            else:
+                return self.DASHA_BASELINE_POWER.get('neutral', 0.55)
+
+        # Mercury is benefic when with benefics, malefic otherwise
+        if planet == 'Mercury':
+            mercury_data = self.planets.get('Mercury', {})
+            mercury_house = mercury_data.get('house', 0)
+            # Check if Mercury is with benefics
+            for benefic in benefics:
+                if self.planets.get(benefic, {}).get('house', -1) == mercury_house:
+                    return self.DASHA_BASELINE_POWER.get('benefic', 0.65)
+            return self.DASHA_BASELINE_POWER.get('neutral', 0.55)
+
+        if planet in benefics:
+            return self.DASHA_BASELINE_POWER.get('benefic', 0.65)
+        elif planet in malefics:
+            return self.DASHA_BASELINE_POWER.get('malefic', 0.45)
+        else:
+            return self.DASHA_BASELINE_POWER.get('neutral', 0.55)
 
     def _calculate_dasha_transit_effect(self, planet: str, target_date: Optional[date]) -> float:
         """Calculate transit effect on dasha lord"""
@@ -1906,6 +2100,14 @@ class TimeAdaptiveEngine(AstroPercentEngine):
             future_boost = self.active_multipliers.get('future_window_boost', 0.003)
             normalized *= (1 + months_ahead * future_boost)
             normalized = min(1, normalized)
+
+        # V5.8: Apply transit cap to prevent excessive scores
+        transit_cap = self.GLOBAL_NUMERIC_SAFETY.get('transit_cap', 0.70)
+        normalized = min(transit_cap, normalized)
+
+        # V5.8: Apply module floor
+        clamp_min = self.GLOBAL_NUMERIC_SAFETY.get('clamp_min', 0.30)
+        normalized = max(clamp_min, normalized)
 
         return {
             'module': 'transit',
@@ -2254,6 +2456,11 @@ class TimeAdaptiveEngine(AstroPercentEngine):
         normalized = (raw_score - min_range) / (max_range - min_range)
         normalized = max(0, min(1, normalized))
 
+        # V5.8: Apply module floor and ceiling
+        clamp_min = self.GLOBAL_NUMERIC_SAFETY.get('clamp_min', 0.30)
+        clamp_max = self.GLOBAL_NUMERIC_SAFETY.get('clamp_max', 0.85)
+        normalized = max(clamp_min, min(clamp_max, normalized))
+
         return {
             'module': 'house_power',
             'raw_score': round(raw_score, 3),
@@ -2270,29 +2477,29 @@ class TimeAdaptiveEngine(AstroPercentEngine):
         }
 
     def _calculate_transit_house_overlay_v50(self, houses: List[int], target_date: date) -> float:
-        """Calculate transit house overlay for V5.0"""
+        """Calculate transit house overlay for V6.0 - strongly positive"""
         overlay = 0
 
         for house in houses:
-            # Check benefic transits through house
+            # Check benefic transits through house (V6.0: significantly boosted)
             for benefic in self.BENEFIC_PLANETS:
                 benefic_house = self._estimate_transit_house(benefic, target_date)
                 if benefic_house == house:
-                    overlay += 1.5
+                    overlay += 2.5  # V6.0: Strongly boosted
                 # Check benefic aspects to house
                 aspect_houses = self._get_planet_aspect_houses(benefic, benefic_house)
                 if house in aspect_houses:
-                    overlay += 0.5
+                    overlay += 1.0  # V6.0: Boosted
 
-            # Check malefic transits through house
+            # Check malefic transits through house (V6.0: minimal penalties)
             for malefic in self.MALEFIC_PLANETS:
                 malefic_house = self._estimate_transit_house(malefic, target_date)
                 if malefic_house == house:
-                    overlay -= 1.2
+                    overlay -= 0.2  # V6.0: Minimal penalty (was -0.6)
                 # Check malefic aspects to house
                 aspect_houses = self._get_planet_aspect_houses(malefic, malefic_house)
                 if house in aspect_houses:
-                    overlay -= 0.4
+                    overlay -= 0.05  # V6.0: Nearly no penalty (was -0.2)
 
         return overlay / len(houses) if houses else 0
 
@@ -2300,27 +2507,36 @@ class TimeAdaptiveEngine(AstroPercentEngine):
         """
         Calculate Saturn/Jupiter pressure index for houses.
         Positive = Jupiter support, Negative = Saturn pressure
+
+        V6.0 FIX: Saturn penalties nearly eliminated, Jupiter strongly boosted
         """
         jupiter_house = self._estimate_transit_house('Jupiter', target_date)
         saturn_house = self._estimate_transit_house('Saturn', target_date)
 
-        index = 0
+        jupiter_index = 0
+        saturn_index = 0
 
         for house in houses:
-            # Jupiter support
+            # Jupiter support (V6.0: significantly boosted)
             if jupiter_house == house:
-                index += 2.0
+                jupiter_index += 3.5  # V6.0: Strongly boosted
             elif house in self._get_planet_aspect_houses('Jupiter', jupiter_house):
-                index += 1.0
+                jupiter_index += 1.8  # V6.0: Boosted
             elif self._is_trine_house(jupiter_house, house):
-                index += 0.7
+                jupiter_index += 1.2  # V6.0: Boosted
 
-            # Saturn pressure
+            # Saturn pressure (V6.0: minimal - 80% reduction)
             if saturn_house == house:
-                index -= 1.5
+                saturn_index -= 0.2  # V6.0: Minimal (was -0.75)
             elif house in self._get_planet_aspect_houses('Saturn', saturn_house):
-                index -= 0.8
+                saturn_index -= 0.1  # V6.0: Minimal (was -0.4)
 
+        # V6.0: Very strict Saturn penalty cap (-0.01 max)
+        saturn_penalty_cap = self.GLOBAL_NUMERIC_SAFETY.get('saturn_penalty_cap', -0.01)
+        # Convert to comparable scale
+        saturn_index = max(saturn_index, saturn_penalty_cap * 10)
+
+        index = jupiter_index + saturn_index
         return index / len(houses) if houses else 0
 
     def _is_trine_house(self, from_house: int, to_house: int) -> bool:
@@ -2405,6 +2621,11 @@ class TimeAdaptiveEngine(AstroPercentEngine):
         normalized = (avg_strength - min_range) / (max_range - min_range)
         normalized = max(0, min(1, normalized))
 
+        # V5.8: Apply module floor and ceiling
+        clamp_min = self.GLOBAL_NUMERIC_SAFETY.get('clamp_min', 0.30)
+        clamp_max = self.GLOBAL_NUMERIC_SAFETY.get('clamp_max', 0.85)
+        normalized = max(clamp_min, min(clamp_max, normalized))
+
         return {
             'module': 'planet_power',
             'raw_score': round(avg_strength, 3),
@@ -2488,18 +2709,17 @@ class TimeAdaptiveEngine(AstroPercentEngine):
 
     def _calculate_yoga_dosha_v41(self, target_date: date) -> Dict:
         """
-        V5.0 Yoga-Dosha module calculation with STRICT TIME-DEPENDENT activation.
+        V5.7 Yoga-Dosha module calculation with STRICT TIME-DEPENDENT activation.
 
-        V5.0 REFINEMENTS:
-        - Activation=1.0 ONLY if yoga-forming planet is current Dasha/Bhukti Lord
-        - Transit activation downgraded to 0.5 (secondary trigger, not primary)
-        - NEW: Degree-based orb strength (tighter aspect = stronger yoga)
-        - Presence ≠ Activation (critical rule enforced more strictly)
+        V5.7 CRITICAL RULE:
+        - Yoga activation: ONLY if yoga planet = dasha OR bhukti lord
+        - Transit activation REMOVED - transits alone cannot activate yogas
+        - This is stricter than V5.0 which allowed 0.5 transit activation
 
-        CRITICAL RULE:
+        V5.7 REFINEMENTS:
         - YogaPresence = 1 or 0 (birth chart)
         - YogaActivation = 1.0 ONLY IF dasha/bhukti lord forms the yoga
-        - YogaActivation = 0.5 for transit activation (secondary)
+        - YogaActivation = 0 otherwise (NO transit fallback)
         - OrbStrength = degree-based angular separation factor (0.5-1.0)
         - FinalYogaScore = Σ(YogaPresence × YogaActivation × YogaStrength × OrbStrength × TransitSupport)
         """
@@ -2542,42 +2762,23 @@ class TimeAdaptiveEngine(AstroPercentEngine):
             yoga_key = yoga.lower().replace(' ', '_')
             planets = yoga_karakas.get(yoga_key, ['Jupiter'])
 
-            # --- YOGA PRESENCE (from birth chart) ---
-            yoga_presence = 1  # Present in birth chart
-
-            # --- V5.0: STRICT YOGA ACTIVATION CHECK ---
+            # --- V5.7: STRICT YOGA ACTIVATION CHECK ---
+            # V5.7 CRITICAL: ONLY dasha/bhukti lord participation activates yoga
+            # Transit activation REMOVED (was 0.5 in V5.0)
             yoga_activation = 0
             activation_reason = 'dormant'
 
-            # V5.0 PRIMARY ACTIVATION: Dasha/Bhukti lord MUST be a yoga-forming planet
-            # This is the ONLY way to get full activation (1.0)
+            # V5.7 ONLY ACTIVATION: Dasha/Bhukti lord MUST be a yoga-forming planet
+            # This is the ONLY way to activate a yoga - NO transit fallback
             if dasha_lord in planets:
                 yoga_activation = 1.0
                 activation_reason = f'dasha_lord_{dasha_lord}'
             elif bhukti_lord in planets:
                 yoga_activation = 1.0
                 activation_reason = f'bhukti_lord_{bhukti_lord}'
+            # V5.7: NO transit activation fallback - yoga stays dormant if not dasha/bhukti activated
 
-            # V5.0 SECONDARY ACTIVATION: Transit (reduced to 0.5, not 1.0)
-            # Transit alone cannot fully activate a yoga
-            if yoga_activation == 0:
-                for planet in planets:
-                    planet_data = self.planets.get(planet, {})
-                    planet_house = planet_data.get('house', 0)
-
-                    jupiter_transit_house = self._estimate_transit_house('Jupiter', target_date)
-                    saturn_transit_house = self._estimate_transit_house('Saturn', target_date)
-
-                    if jupiter_transit_house == planet_house:
-                        yoga_activation = 0.5  # V5.0: Reduced from 1.0
-                        activation_reason = 'jupiter_transit'
-                        break
-                    if saturn_transit_house == planet_house and planet in self.BENEFIC_PLANETS:
-                        yoga_activation = 0.3  # V5.0: Reduced from 0.7
-                        activation_reason = 'saturn_transit'
-                        break
-
-            # --- V5.0 NEW: DEGREE-BASED ORB STRENGTH ---
+            # --- V5.7: DEGREE-BASED ORB STRENGTH ---
             orb_strength = self._calculate_yoga_orb_strength(planets)
 
             # --- YOGA STRENGTH (rarity) ---
@@ -2594,12 +2795,27 @@ class TimeAdaptiveEngine(AstroPercentEngine):
                 self.calculate_poi(p, target_date)['poi'] for p in planets
             ) / len(planets) if planets else 5
 
-            # --- V5.0 FINAL YOGA SCORE FORMULA ---
-            # FinalYogaScore = YogaPresence × YogaActivation × YogaStrength × OrbStrength × TransitSupport × 0.08
-            yoga_contribution = yoga_presence * yoga_activation * yoga_strength * orb_strength * (transit_support / 5) * 0.08
+            # --- V5.8 YOGA SCORE FORMULA ---
+            # V5.8 FIX: Presence score even without activation
+            # presence_score = 0.04 (just having yoga gives points)
+            # activation_score = 0.08 (dasha activation bonus)
+            presence_score = self.YOGA_SCORE_RULES.get('presence_score', 0.04)
+            activation_bonus = self.YOGA_SCORE_RULES.get('activation_score', 0.08)
+
+            # V5.8: Presence contribution (always given if yoga exists)
+            presence_contribution = presence_score * yoga_strength * orb_strength
+
+            # V5.8: Activation contribution (only if dasha/bhukti activates)
+            activation_contribution = 0
+            if yoga_activation > 0:
+                activation_contribution = activation_bonus * yoga_strength * orb_strength * (transit_support / 5)
+
+            yoga_contribution = presence_contribution + activation_contribution
+
+            # V5.8: All yogas get at least presence score
+            yoga_tensor += yoga_contribution
 
             if yoga_activation > 0:
-                yoga_tensor += yoga_contribution
                 activated_yogas.append({
                     'name': yoga,
                     'activation': round(yoga_activation, 2),
@@ -2607,10 +2823,16 @@ class TimeAdaptiveEngine(AstroPercentEngine):
                     'strength': yoga_strength,
                     'orb_strength': round(orb_strength, 2),
                     'transit_support': round(transit_support, 2),
+                    'presence_contribution': round(presence_contribution, 3),
+                    'activation_contribution': round(activation_contribution, 3),
                     'contribution': round(yoga_contribution, 3)
                 })
             else:
-                dormant_yogas.append(yoga)
+                dormant_yogas.append({
+                    'name': yoga,
+                    'presence_contribution': round(presence_contribution, 3),
+                    'note': 'V5.8: Presence score given even when dormant'
+                })
 
         # Dosha penalties (also time-dependent)
         dosha_tensor = 0
@@ -2620,50 +2842,64 @@ class TimeAdaptiveEngine(AstroPercentEngine):
             dosha_name = dosha if isinstance(dosha, str) else dosha.get('name', str(dosha))
             dosha_key = dosha_name.lower()
 
-            # Base penalties
+            # V6.0: Minimal base penalties (80% reduction from original)
             dosha_penalties = {
-                'manglik': -3,
-                'kala_sarpa': -4,
-                'pitru': -2,
-                'nadi': -2,
-                'kemadruma': -2,
+                'manglik': -0.5,    # V6.0: Minimal (was -3)
+                'kala_sarpa': -0.6, # V6.0: Minimal (was -4)
+                'pitru': -0.3,      # V6.0: Minimal (was -2)
+                'nadi': -0.3,       # V6.0: Minimal (was -2)
+                'kemadruma': -0.3,  # V6.0: Minimal (was -2)
             }
-            base_penalty = dosha_penalties.get(dosha_key, -2)
+            base_penalty = dosha_penalties.get(dosha_key, -0.3)
 
-            # Dosha activation check (doshas are AMPLIFIED during malefic transits)
-            dosha_activation = 0.5  # Base dormant level
+            # V6.0: Very low dosha activation (doshas rarely activate)
+            dosha_activation = 0.15  # V6.0: Very low baseline
 
             # Kala Sarpa activates when Rahu/Ketu transit sensitive points
             if 'kala' in dosha_key or 'sarpa' in dosha_key:
                 rahu_house = self._estimate_transit_house('Rahu', target_date)
                 if rahu_house in [1, 4, 7, 10]:  # Kendra transit
-                    dosha_activation = 1.0
+                    dosha_activation = 0.3  # V6.0: Still low activation
 
             # Manglik activates during Mars transits to 1,4,7,8,12
             if 'manglik' in dosha_key:
                 mars_house = self._estimate_transit_house('Mars', target_date)
                 if mars_house in [1, 4, 7, 8, 12]:
-                    dosha_activation = 1.0
+                    dosha_activation = 0.3  # V6.0: Still low activation
 
-            # Saturn dasha amplifies all doshas
+            # V6.0: Minimal Saturn amplification
             if dasha_lord == 'Saturn' or bhukti_lord == 'Saturn':
-                dosha_activation = min(1.0, dosha_activation + 0.3)
+                dosha_activation = min(0.4, dosha_activation + 0.05)  # V6.0: Minimal boost
 
             penalty = base_penalty * dosha_activation
-            dosha_tensor += penalty * 1.4
+            dosha_tensor += penalty * 0.3  # V6.0: Much reduced multiplier (was 0.7)
 
-            if dosha_activation > 0.5:
+            if dosha_activation > 0.2:
                 active_doshas.append({
                     'name': dosha_name,
                     'activation': round(dosha_activation, 2),
-                    'penalty': round(penalty * 1.4, 2)
+                    'penalty': round(penalty * 0.3, 2)
                 })
+
+        # V5.8: Cap negative dosha impact
+        negative_yoga_cap = self.YOGA_SCORE_RULES.get('negative_yoga_cap', -0.05)
+        # Scale to raw score range (approx -0.5 for -0.05 normalized)
+        dosha_tensor = max(dosha_tensor, negative_yoga_cap * 10)
+
+        # V5.8: Cap total yoga contribution
+        max_yoga_contribution = self.YOGA_SCORE_RULES.get('max_yoga_contribution', 0.15)
+        yoga_tensor = min(yoga_tensor, max_yoga_contribution * 10)
 
         raw_score = yoga_tensor + dosha_tensor
 
         min_range, max_range = self.TENSOR_MODELS['yoga_dosha']['expected_range']
         normalized = (raw_score - min_range) / (max_range - min_range)
         normalized = max(0, min(1, normalized))
+
+        # V5.8: Apply module floor and ceiling
+        clamp_min = self.GLOBAL_NUMERIC_SAFETY.get('clamp_min', 0.30)
+        clamp_max = self.GLOBAL_NUMERIC_SAFETY.get('clamp_max', 0.85)
+        normalized = max(clamp_min, min(clamp_max, normalized))
 
         return {
             'module': 'yoga_dosha',
@@ -2682,8 +2918,8 @@ class TimeAdaptiveEngine(AstroPercentEngine):
             'dormant_yogas': dormant_yogas,
             'doshas': doshas,
             'active_doshas': active_doshas,
-            'formula': 'Σ(YogaPresence × YogaActivation × YogaStrength × OrbStrength × TransitSupport × 0.08) - Σ(DoshaPenalty × DoshaActivation × 1.4)',
-            'activation_note': 'V5.0: Yogas require dasha/bhukti lord participation for full activation (1.0). Transit activation is secondary (0.5).'
+            'formula': 'V5.8: Σ(presence_score + activation_bonus) - Σ(DoshaPenalty) with caps',
+            'activation_note': 'V5.8: Presence score given even when dormant. Yogas activate ONLY if dasha/bhukti lord is yoga-forming planet.'
         }
 
     def _calculate_yoga_orb_strength(self, planets: List[str]) -> float:
@@ -2963,39 +3199,62 @@ class TimeAdaptiveEngine(AstroPercentEngine):
         }
         return planet2 in friendships.get(planet1, [])
 
-    def _calculate_meta_multiplier_v41(self, modules: Dict, target_date: date) -> float:
-        """Calculate v4.1 meta multiplier"""
-        base_mult = 1.0
+    def _calculate_meta_multiplier_v57(self, modules: Dict, target_date: date) -> float:
+        """
+        V5.7: Calculate meta multiplier with stricter bounds.
+
+        V5.7 Meta Multiplier Logic:
+        - Base: 1.0
+        - Nakshatra Effect: nes × 0.01 (capped contribution)
+        - Overall POI: poi_avg × 0.003 (reduced from 0.005)
+        - STRICT RANGE: 0.90 to 1.10 (no exceptions)
+        - Future/Year modes: small adjustments within range
+
+        Formula: meta = clamp(1.0 + nes_contrib + poi_contrib + mode_adj, 0.90, 1.10)
+        """
+        # V5.7: Get strict bounds from global safety config
+        meta_min = self.GLOBAL_NUMERIC_SAFETY.get('meta_multiplier_min', 0.90)
+        meta_max = self.GLOBAL_NUMERIC_SAFETY.get('meta_multiplier_max', 1.10)
 
         # Nakshatra effect score (NES)
         nakshatra_mult = self._get_nakshatra_multiplier()
         nes = (nakshatra_mult - 1.0) * 100  # Convert to percentage
+        nes_contribution = nes * 0.01  # Cap at +/- 0.05 effective
+        nes_contribution = max(-0.05, min(0.05, nes_contribution))
 
-        # Overall POI average
+        # Overall POI average (V5.7: reduced coefficient)
         all_pois = [self.calculate_poi(p, target_date)['poi'] for p in self.planets.keys()]
         overall_poi = sum(all_pois) / len(all_pois) if all_pois else 5
+        poi_contribution = (overall_poi - 5) * 0.003  # Centered at 5, reduced from 0.005
+        poi_contribution = max(-0.03, min(0.03, poi_contribution))
 
-        # Calculate meta multiplier
-        meta = 1 + (nes * 0.01) + (overall_poi * 0.005)
+        # Base calculation
+        meta = 1.0 + nes_contribution + poi_contribution
 
-        # Apply time mode cap
-        cap = self.active_multipliers.get('meta_multiplier_cap', 1.10)
-        meta = min(meta, cap)
+        # Mode-specific adjustments (small, within bounds)
+        mode_adjustment = 0.0
 
-        # For future mode, add time factor
         if self.current_time_mode == TimeMode.FUTURE_PREDICTION:
+            # V5.7: Very small future adjustment
             months_ahead = max(0, (target_date - date.today()).days / 30)
-            future_boost = self.active_multipliers.get('future_window_boost', 0.003)
-            meta += months_ahead * future_boost
-            meta = min(meta, cap + 0.05)  # Allow slightly higher for future
+            mode_adjustment = min(0.02, months_ahead * 0.002)  # Max +0.02
 
-        # For year overlay mode, add varshaphal factor
-        if self.current_time_mode == TimeMode.YEAR_OVERLAY:
+        elif self.current_time_mode == TimeMode.YEAR_OVERLAY:
+            # V5.7: Varshaphal factor (small)
             varshaphal_poi = self._calculate_varshaphal_poi(target_date)
-            year_factor = self.active_multipliers.get('year_trend_multiplier_factor', 0.01)
-            meta += varshaphal_poi * year_factor
+            mode_adjustment = (varshaphal_poi - 5) * 0.005  # Centered at 5
+            mode_adjustment = max(-0.02, min(0.02, mode_adjustment))
 
-        return max(0.8, min(1.25, meta))
+        meta += mode_adjustment
+
+        # V5.7: STRICT CLAMPING - no exceptions
+        meta = max(meta_min, min(meta_max, meta))
+
+        return round(meta, 4)
+
+    def _calculate_meta_multiplier_v41(self, modules: Dict, target_date: date) -> float:
+        """Backward compatible wrapper - calls V5.7 implementation"""
+        return self._calculate_meta_multiplier_v57(modules, target_date)
 
     def _calculate_varshaphal_poi(self, target_date: date) -> float:
         """Calculate Varshaphal (Solar Return) POI for yearly mode"""
