@@ -1,7 +1,31 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AuthContext = createContext(null);
+
+// Storage helper that works on both web and native
+const storage = {
+  getItem: async (key) => {
+    if (Platform.OS === 'web') {
+      return AsyncStorage.getItem(key);
+    }
+    return SecureStore.getItemAsync(key);
+  },
+  setItem: async (key, value) => {
+    if (Platform.OS === 'web') {
+      return AsyncStorage.setItem(key, value);
+    }
+    return SecureStore.setItemAsync(key, value);
+  },
+  deleteItem: async (key) => {
+    if (Platform.OS === 'web') {
+      return AsyncStorage.removeItem(key);
+    }
+    return SecureStore.deleteItemAsync(key);
+  },
+};
 
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -14,8 +38,8 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const token = await SecureStore.getItemAsync('authToken');
-      const profile = await SecureStore.getItemAsync('userProfile');
+      const token = await storage.getItem('authToken');
+      const profile = await storage.getItem('userProfile');
 
       if (token || profile) {
         setIsAuthenticated(true);
@@ -32,8 +56,8 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (token, profile) => {
     try {
-      await SecureStore.setItemAsync('authToken', token);
-      await SecureStore.setItemAsync('userProfile', JSON.stringify(profile));
+      await storage.setItem('authToken', token);
+      await storage.setItem('userProfile', JSON.stringify(profile));
       setIsAuthenticated(true);
       setUserProfile(profile);
     } catch (error) {
@@ -43,8 +67,8 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await SecureStore.deleteItemAsync('authToken');
-      await SecureStore.deleteItemAsync('userProfile');
+      await storage.deleteItem('authToken');
+      await storage.deleteItem('userProfile');
       setIsAuthenticated(false);
       setUserProfile(null);
     } catch (error) {
@@ -54,7 +78,7 @@ export const AuthProvider = ({ children }) => {
 
   const updateProfile = async (profile) => {
     try {
-      await SecureStore.setItemAsync('userProfile', JSON.stringify(profile));
+      await storage.setItem('userProfile', JSON.stringify(profile));
       setUserProfile(profile);
     } catch (error) {
       console.error('Update profile error:', error);

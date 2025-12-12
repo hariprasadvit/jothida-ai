@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { mobileAPI } from '../services/api';
+import { useLanguage } from '../context/LanguageContext';
 
 // Animated Card Component
 const AnimatedCard = ({ children, delay = 0, style }) => {
@@ -121,37 +122,27 @@ const AnimatedCalendarCell = ({ day, isSelected, dateStyle, goodEvents, hasSelec
   };
 
   return (
-    <Animated.View style={{ width: '14.28%', transform: [{ scale: scaleAnim }] }}>
-      <TouchableOpacity
-        style={[
-          styles.calendarCell,
-          { backgroundColor: isSelected ? '#f97316' : dateStyle.bg, borderColor: isSelected ? '#f97316' : dateStyle.border }
-        ]}
-        onPress={onPress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        activeOpacity={0.8}
-      >
-        <Text style={[styles.calendarDay, { color: isSelected ? '#fff' : dateStyle.text }]}>
-          {day}
-        </Text>
-        {!isSelected && goodEvents.length > 0 && (
-          <View style={styles.eventIconsRow}>
-            {goodEvents.slice(0, 3).map((evt, idx) => {
-              const eventIcon = eventTypes.find(e => e.id === evt.type)?.icon || '⭐';
-              return (
-                <Text key={idx} style={[styles.eventMiniIcon, evt.type === eventType && styles.eventMiniIconActive]}>
-                  {eventIcon}
-                </Text>
-              );
-            })}
-          </View>
-        )}
-        {!isSelected && hasSelectedEvent && (
-          <View style={styles.eventDot} />
-        )}
-      </TouchableOpacity>
-    </Animated.View>
+    <View style={styles.calendarCellWrapper}>
+      <Animated.View style={[styles.calendarCellAnimated, { transform: [{ scale: scaleAnim }] }]}>
+        <TouchableOpacity
+          style={[
+            styles.calendarCell,
+            { backgroundColor: isSelected ? '#f97316' : dateStyle.bg, borderColor: isSelected ? '#f97316' : dateStyle.border }
+          ]}
+          onPress={onPress}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.calendarDay, { color: isSelected ? '#fff' : dateStyle.text }]}>
+            {day}
+          </Text>
+          {!isSelected && hasSelectedEvent && (
+            <View style={styles.eventDot} />
+          )}
+        </TouchableOpacity>
+      </Animated.View>
+    </View>
   );
 };
 
@@ -221,25 +212,27 @@ const PulsingCalendarIcon = () => {
   );
 };
 
-const eventTypes = [
-  { id: 'marriage', icon: '💒', label: 'திருமணம்' },
-  { id: 'griha_pravesam', icon: '🏠', label: 'கிரக பிரவேசம்' },
-  { id: 'vehicle', icon: '🚗', label: 'வாகனம்' },
-  { id: 'business', icon: '💼', label: 'தொழில்' },
-  { id: 'travel', icon: '✈️', label: 'பயணம்' },
-  { id: 'general', icon: '⭐', label: 'பொது' },
+// Event type IDs for translation lookup
+const eventTypeIds = [
+  { id: 'marriage', icon: '💒', labelKey: 'marriage' },
+  { id: 'griha_pravesam', icon: '🏠', labelKey: 'housewarming' },
+  { id: 'vehicle', icon: '🚗', labelKey: 'vehicle' },
+  { id: 'business', icon: '💼', labelKey: 'business' },
+  { id: 'travel', icon: '✈️', labelKey: 'travel' },
+  { id: 'general', icon: '⭐', labelKey: 'general' },
 ];
-
-const monthNames = [
-  'ஜனவரி', 'பிப்ரவரி', 'மார்ச்', 'ஏப்ரல்', 'மே', 'ஜூன்',
-  'ஜூலை', 'ஆகஸ்ட்', 'செப்டம்பர்', 'அக்டோபர்', 'நவம்பர்', 'டிசம்பர்'
-];
-
-const dayNames = ['ஞா', 'தி', 'செ', 'பு', 'வி', 'வெ', 'ச'];
 
 export default function MuhurthamScreen() {
   const insets = useSafeAreaInsets();
   const bottomPadding = Platform.OS === 'android' ? Math.max(insets.bottom, 80) : insets.bottom + 80;
+  const { t, getMonthName, getShortDayName } = useLanguage();
+
+  // Build translated event types
+  const eventTypes = eventTypeIds.map(et => ({
+    ...et,
+    label: t(et.labelKey)
+  }));
+
   const [eventType, setEventType] = useState('general');
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
@@ -363,16 +356,16 @@ export default function MuhurthamScreen() {
           <Animated.View style={[styles.header, { opacity: headerFadeAnim, transform: [{ translateY: headerSlideAnim }] }]}>
             <View style={styles.headerRow}>
               <Ionicons name="calendar" size={20} color="#16a34a" />
-              <Text style={styles.headerTitle}>முகூர்த்தம் கண்டறிதல்</Text>
+              <Text style={styles.headerTitle}>{t('muhurthamFinder')}</Text>
             </View>
-            <Text style={styles.headerSubtitle}>சுப நேரம் தேர்வு</Text>
+            <Text style={styles.headerSubtitle}>{t('auspiciousTime')}</Text>
           </Animated.View>
 
           {/* Event Type Selector */}
           <AnimatedCard delay={100} style={styles.card}>
             <View style={styles.cardHeader}>
               <Ionicons name="star" size={16} color="#ea580c" />
-              <Text style={styles.cardTitle}>நிகழ்வு வகை</Text>
+              <Text style={styles.cardTitle}>{t('eventType')}</Text>
             </View>
             <View style={styles.eventGrid}>
               {eventTypes.map((type, index) => (
@@ -402,7 +395,7 @@ export default function MuhurthamScreen() {
                 <Ionicons name="chevron-back" size={20} color="#6b7280" />
               </TouchableOpacity>
               <Text style={styles.monthTitle}>
-                {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+                {getMonthName(currentMonth.getMonth())} {currentMonth.getFullYear()}
               </Text>
               <TouchableOpacity onPress={nextMonth} style={styles.navBtn}>
                 <Ionicons name="chevron-forward" size={20} color="#6b7280" />
@@ -411,9 +404,9 @@ export default function MuhurthamScreen() {
 
             {/* Day Headers */}
             <View style={styles.dayHeaderRow}>
-              {dayNames.map((day, i) => (
+              {[0, 1, 2, 3, 4, 5, 6].map((i) => (
                 <Text key={i} style={[styles.dayHeader, i === 0 && styles.sundayHeader]}>
-                  {day}
+                  {getShortDayName(i)}
                 </Text>
               ))}
             </View>
@@ -459,15 +452,15 @@ export default function MuhurthamScreen() {
             <View style={styles.legendRow}>
               <View style={styles.legendItem}>
                 <View style={[styles.legendDot, { backgroundColor: '#f0fdf4', borderColor: '#bbf7d0' }]} />
-                <Text style={styles.legendText}>நல்ல நாள்</Text>
+                <Text style={styles.legendText}>{t('goodDay')}</Text>
               </View>
               <View style={styles.legendItem}>
                 <View style={[styles.legendDot, { backgroundColor: '#fefce8', borderColor: '#fef08a' }]} />
-                <Text style={styles.legendText}>சாதாரணம்</Text>
+                <Text style={styles.legendText}>{t('normalDay')}</Text>
               </View>
               <View style={styles.legendItem}>
                 <View style={[styles.legendDot, { backgroundColor: '#fef2f2', borderColor: '#fecaca' }]} />
-                <Text style={styles.legendText}>தவிர்க்கவும்</Text>
+                <Text style={styles.legendText}>{t('avoidDay')}</Text>
               </View>
             </View>
           </AnimatedCard>
@@ -478,7 +471,7 @@ export default function MuhurthamScreen() {
               <View style={styles.cardHeader}>
                 <Ionicons name="time" size={16} color="#ea580c" />
                 <Text style={styles.cardTitle}>
-                  {selectedDate} {monthNames[currentMonth.getMonth()]} - சிறந்த நேரங்கள்
+                  {selectedDate} {getMonthName(currentMonth.getMonth())} - {t('bestTimes')}
                 </Text>
               </View>
 
@@ -491,7 +484,7 @@ export default function MuhurthamScreen() {
                   {/* Good Events */}
                   {dayDetails.good_for_events?.length > 0 && (
                     <View style={styles.goodEventsBox}>
-                      <Text style={styles.goodEventsTitle}>✓ இன்று நல்ல நாள்:</Text>
+                      <Text style={styles.goodEventsTitle}>✓ {t('todayGoodFor')}:</Text>
                       <View style={styles.goodEventsList}>
                         {dayDetails.good_for_events.map((evt, i) => (
                           <View key={i} style={styles.goodEventItem}>
@@ -716,42 +709,53 @@ const styles = StyleSheet.create({
   },
   emptyCell: {
     width: '14.28%',
-    aspectRatio: 1,
+    height: 44,
+  },
+  calendarCellWrapper: {
+    width: '14.28%',
+    height: 44,
+    padding: 2,
+  },
+  calendarCellAnimated: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
   },
   calendarCell: {
-    width: '14.28%',
-    aspectRatio: 1,
+    flex: 1,
+    width: '100%',
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 8,
     borderWidth: 1,
-    marginBottom: 4,
-    position: 'relative',
   },
   calendarDay: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 15,
+    fontWeight: '600',
+    textAlign: 'center',
+    includeFontPadding: false,
   },
   eventIconsRow: {
     flexDirection: 'row',
-    marginTop: 2,
+    position: 'absolute',
+    bottom: 2,
     gap: 1,
   },
   eventMiniIcon: {
-    fontSize: 8,
-    opacity: 0.6,
+    fontSize: 6,
+    opacity: 0.7,
   },
   eventMiniIconActive: {
     opacity: 1,
-    transform: [{ scale: 1.2 }],
   },
   eventDot: {
     position: 'absolute',
-    top: 2,
-    right: 2,
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    top: 3,
+    right: 3,
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
     backgroundColor: '#16a34a',
   },
   legendRow: {

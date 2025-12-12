@@ -245,7 +245,7 @@ export default function SplashScreen({ onFinish }) {
             style={styles.logoGradient}
           >
             <View style={styles.logoInner}>
-              <Text style={styles.omSymbol}>ॐ</Text>
+              <Text style={styles.omSymbol}>ஓம்</Text>
             </View>
           </LinearGradient>
 

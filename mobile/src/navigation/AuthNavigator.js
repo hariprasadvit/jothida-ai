@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { Platform } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import SplashScreen from '../screens/SplashScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
@@ -8,6 +10,14 @@ import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 
 const Stack = createNativeStackNavigator();
+
+// Storage helper for web compatibility
+const getStorageItem = async (key) => {
+  if (Platform.OS === 'web') {
+    return AsyncStorage.getItem(key);
+  }
+  return SecureStore.getItemAsync(key);
+};
 
 export default function AuthNavigator() {
   const [showSplash, setShowSplash] = useState(true);
@@ -19,7 +29,7 @@ export default function AuthNavigator() {
 
   const checkOnboardingStatus = async () => {
     try {
-      const status = await SecureStore.getItemAsync('onboardingComplete');
+      const status = await getStorageItem('onboardingComplete');
       setHasSeenOnboarding(status === 'true');
     } catch (error) {
       console.error('Error checking onboarding status:', error);

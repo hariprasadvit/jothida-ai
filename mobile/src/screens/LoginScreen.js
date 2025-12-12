@@ -151,7 +151,7 @@ export default function LoginScreen({ navigation }) {
 
           {/* Om Symbol */}
           <View style={styles.omContainer}>
-            <Text style={styles.omSymbol}>ॐ</Text>
+            <Text style={styles.omSymbol}>ஓம்</Text>
             <Text style={styles.appTitle}>ஜோதிட AI</Text>
             <Text style={styles.appSubtitle}>மொபைல் உள்நுழைவு</Text>
           </View>

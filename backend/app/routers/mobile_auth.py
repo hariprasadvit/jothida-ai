@@ -224,7 +224,7 @@ async def register_with_phone(
         OTPVerification.is_verified == True
     ).order_by(OTPVerification.verified_at.desc()).first()
 
-    if not otp_record or (datetime.utcnow() - otp_record.verified_at).seconds > 600:
+    if not otp_record or (datetime.utcnow() - otp_record.verified_at).total_seconds() > 600:
         raise HTTPException(
             status_code=400,
             detail="Please verify OTP first. Verification expired."

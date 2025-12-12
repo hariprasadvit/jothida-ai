@@ -11,6 +11,7 @@ import {
   Platform,
   Animated,
   Easing,
+  Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,6 +19,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage, languageOptions } from '../context/LanguageContext';
 import { mobileAPI } from '../services/api';
 import { generateComprehensivePDFHTML } from '../services/reportGenerator';
 
@@ -404,10 +406,12 @@ function PanchagamCard({ chartData }) {
 
 export default function ProfileScreen({ navigation }) {
   const { userProfile, logout } = useAuth();
+  const { language, changeLanguage, t } = useLanguage();
   const [chartData, setChartData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('chart');
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
   const insets = useSafeAreaInsets();
   const bottomPadding = Platform.OS === 'android' ? Math.max(insets.bottom, 80) : insets.bottom + 80;
 
@@ -941,16 +945,84 @@ export default function ProfileScreen({ navigation }) {
             </AnimatedCard>
           )}
 
+          {/* Language Selector */}
+          <AnimatedCard delay={750} style={styles.card}>
+            <View style={styles.cardHeader}>
+              <Ionicons name="language" size={16} color="#3b82f6" />
+              <Text style={[styles.cardTitle, { color: '#1d4ed8' }]}>{t('language')}</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.languageSelector}
+              onPress={() => setShowLanguageModal(true)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.languageInfo}>
+                <Text style={styles.languageLabel}>{t('selectLanguage')}</Text>
+                <Text style={styles.languageValue}>
+                  {languageOptions.find(l => l.code === language)?.name || 'தமிழ்'}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#6b7280" />
+            </TouchableOpacity>
+          </AnimatedCard>
+
           {/* Logout Button */}
           <AnimatedCard delay={800}>
             <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.7}>
               <Ionicons name="log-out" size={20} color="#dc2626" />
-              <Text style={styles.logoutText}>வெளியேறு</Text>
+              <Text style={styles.logoutText}>{t('logout')}</Text>
             </TouchableOpacity>
           </AnimatedCard>
 
         </ScrollView>
       </LinearGradient>
+
+      {/* Language Selection Modal */}
+      <Modal
+        transparent
+        visible={showLanguageModal}
+        animationType="slide"
+        onRequestClose={() => setShowLanguageModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.languageModalContent}>
+            <View style={styles.languageModalHeader}>
+              <Ionicons name="language" size={24} color="#3b82f6" />
+              <Text style={styles.languageModalTitle}>{t('selectLanguage')}</Text>
+              <TouchableOpacity onPress={() => setShowLanguageModal(false)}>
+                <Ionicons name="close" size={24} color="#6b7280" />
+              </TouchableOpacity>
+            </View>
+
+            {languageOptions.map((lang) => (
+              <TouchableOpacity
+                key={lang.code}
+                style={[
+                  styles.languageOption,
+                  language === lang.code && styles.languageOptionActive
+                ]}
+                onPress={() => {
+                  changeLanguage(lang.code);
+                  setShowLanguageModal(false);
+                }}
+              >
+                <View>
+                  <Text style={[
+                    styles.languageOptionName,
+                    language === lang.code && styles.languageOptionNameActive
+                  ]}>
+                    {lang.name}
+                  </Text>
+                  <Text style={styles.languageOptionNameEn}>{lang.nameEn}</Text>
+                </View>
+                {language === lang.code && (
+                  <Ionicons name="checkmark-circle" size={24} color="#3b82f6" />
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -1409,5 +1481,83 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#9ca3af',
     marginTop: 8,
+  },
+  // Language selector styles
+  languageSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#eff6ff',
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#bfdbfe',
+  },
+  languageInfo: {
+    flex: 1,
+  },
+  languageLabel: {
+    fontSize: 11,
+    color: '#6b7280',
+  },
+  languageValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1d4ed8',
+    marginTop: 2,
+  },
+  // Language modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  languageModalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    paddingBottom: 40,
+  },
+  languageModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  languageModalTitle: {
+    flex: 1,
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginLeft: 12,
+  },
+  languageOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+    backgroundColor: '#f9fafb',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  languageOptionActive: {
+    backgroundColor: '#eff6ff',
+    borderColor: '#3b82f6',
+  },
+  languageOptionName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  languageOptionNameActive: {
+    color: '#1d4ed8',
+  },
+  languageOptionNameEn: {
+    fontSize: 12,
+    color: '#9ca3af',
+    marginTop: 2,
   },
 });

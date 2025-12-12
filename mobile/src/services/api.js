@@ -1,10 +1,19 @@
 import axios from 'axios';
+import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Change this to your actual server IP when testing on device
-// For emulator use: http://10.0.2.2:8000 (Android) or http://localhost:8000 (iOS)
-// For physical device use your computer's local IP: http://192.168.x.x:8000
-const API_BASE_URL = 'http://192.168.1.40:8000'; // Update with your IP
+// API URL - switch between local and production
+const API_BASE_URL = 'http://localhost:8000';
+// const API_BASE_URL = 'https://jothida-api.booleanbeyond.com';
+
+// Storage helper for web compatibility
+const getStorageItem = async (key) => {
+  if (Platform.OS === 'web') {
+    return AsyncStorage.getItem(key);
+  }
+  return SecureStore.getItemAsync(key);
+};
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -17,7 +26,7 @@ const api = axios.create({
 // Add auth token to requests
 api.interceptors.request.use(async (config) => {
   try {
-    const token = await SecureStore.getItemAsync('authToken');
+    const token = await getStorageItem('authToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -122,7 +131,19 @@ export const mobileAPI = {
         latitude: coords.lat,
         longitude: coords.lon,
       });
-      return response.data;
+
+      // Transform dasha data to expected format
+      const jathagamData = response.data;
+      if (jathagamData?.dasha?.current) {
+        jathagamData.dasha = {
+          mahadasha: jathagamData.dasha.current.lord,
+          mahadasha_tamil: jathagamData.dasha.current.tamil_lord,
+          antardasha: jathagamData.dasha.current.lord, // Using same for now
+          antardasha_tamil: jathagamData.dasha.current.tamil_lord,
+          all_periods: jathagamData.dasha.all_periods,
+        };
+      }
+      return jathagamData;
     } catch (error) {
       console.error('Jathagam API error:', error);
       return null;
@@ -131,7 +152,29 @@ export const mobileAPI = {
 
   // Matching
   calculateMatching: async (payload) => {
-    const response = await api.post('/api/matching/calculate', payload);
+    // Transform payload to match backend expected format
+    // Backend expects: name, date (YYYY-MM-DD), time (HH:MM), place, latitude, longitude, gender
+    const transformedPayload = {
+      bride: {
+        name: payload.bride.name,
+        date: payload.bride.birth_date,
+        time: payload.bride.birth_time,
+        place: payload.bride.birth_place,
+        latitude: payload.bride.latitude,
+        longitude: payload.bride.longitude,
+        gender: 'female'
+      },
+      groom: {
+        name: payload.groom.name,
+        date: payload.groom.birth_date,
+        time: payload.groom.birth_time,
+        place: payload.groom.birth_place,
+        latitude: payload.groom.latitude,
+        longitude: payload.groom.longitude,
+        gender: 'male'
+      }
+    };
+    const response = await api.post('/api/matching/check', transformedPayload);
     return response.data;
   },
 
@@ -187,6 +230,100 @@ export const mobileAPI = {
       return response.data;
     } catch (error) {
       console.error('Forecast API error:', error);
+      return null;
+    }
+  },
+
+  // Life Timeline
+  getLifeTimeline: async (birthDetails, yearsAhead = 10) => {
+    try {
+      const coords = getCityCoordinates(birthDetails.birthPlace);
+      const response = await api.post('/api/forecast/life-timeline', {
+        name: birthDetails.name,
+        birth_date: birthDetails.birthDate,
+        birth_time: birthDetails.birthTime,
+        birth_place: birthDetails.birthPlace,
+        latitude: coords.lat,
+        longitude: coords.lon,
+        years_ahead: yearsAhead,
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Life Timeline API error:', error);
+      return null;
+    }
+  },
+
+  // Planet Aura (Strength Visualization)
+  getPlanetAura: async (birthDetails) => {
+    try {
+      const coords = getCityCoordinates(birthDetails.birthPlace);
+      const response = await api.post('/api/forecast/planet-aura', {
+        name: birthDetails.name,
+        birth_date: birthDetails.birthDate,
+        birth_time: birthDetails.birthTime,
+        birth_place: birthDetails.birthPlace,
+        latitude: coords.lat,
+        longitude: coords.lon,
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Planet Aura API error:', error);
+      return null;
+    }
+  },
+
+  // Transits Map (Live Planetary Movements)
+  getTransitsMap: async (birthPlace, rasi = '') => {
+    try {
+      const coords = getCityCoordinates(birthPlace);
+      const response = await api.get('/api/forecast/transits-map', {
+        params: {
+          lat: coords.lat,
+          lon: coords.lon,
+          rasi: rasi,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Transits Map API error:', error);
+      return null;
+    }
+  },
+
+  // Life Areas (Dynamic calculation based on birth chart)
+  getLifeAreas: async (birthDetails) => {
+    try {
+      const coords = getCityCoordinates(birthDetails.birthPlace);
+      const response = await api.post('/api/forecast/life-areas', {
+        name: birthDetails.name,
+        birth_date: birthDetails.birthDate,
+        birth_time: birthDetails.birthTime,
+        birth_place: birthDetails.birthPlace,
+        latitude: coords.lat,
+        longitude: coords.lon,
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Life Areas API error:', error);
+      return null;
+    }
+  },
+
+  getFutureProjections: async (birthDetails) => {
+    try {
+      const coords = getCityCoordinates(birthDetails.birthPlace);
+      const response = await api.post('/api/forecast/future-projections', {
+        name: birthDetails.name,
+        birth_date: birthDetails.birthDate,
+        birth_time: birthDetails.birthTime,
+        birth_place: birthDetails.birthPlace,
+        latitude: coords.lat,
+        longitude: coords.lon,
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Future Projections API error:', error);
       return null;
     }
   },
@@ -275,6 +412,56 @@ export const reportAPI = {
       longitude: coords.lon,
     }, {
       responseType: 'blob',
+    });
+    return response.data;
+  },
+};
+
+// AI Remedy Engine API
+export const remedyAPI = {
+  // Get personalized remedies based on birth chart
+  getPersonalized: async (birthDetails, goal = null) => {
+    const coords = getCityCoordinates(birthDetails.birthPlace);
+    const response = await api.post('/api/remedy/personalized', {
+      name: birthDetails.name,
+      birth_date: birthDetails.birthDate,
+      birth_time: birthDetails.birthTime,
+      birth_place: birthDetails.birthPlace,
+      latitude: coords.lat,
+      longitude: coords.lon,
+      goal: goal,
+    });
+    return response.data;
+  },
+
+  // Get remedies for a specific planet
+  getForPlanet: async (planet, language = 'ta') => {
+    const response = await api.get(`/api/remedy/for-planet/${planet}`, {
+      params: { language },
+    });
+    return response.data;
+  },
+
+  // Get remedies for a specific dosha
+  getForDosha: async (dosha, language = 'ta') => {
+    const response = await api.get(`/api/remedy/for-dosha/${dosha}`, {
+      params: { language },
+    });
+    return response.data;
+  },
+
+  // Get daily remedies based on rasi
+  getDaily: async (rasi, nakshatra, language = 'ta') => {
+    const response = await api.get('/api/remedy/daily', {
+      params: { rasi, nakshatra, language },
+    });
+    return response.data;
+  },
+
+  // Get goal-specific remedies
+  getForGoal: async (goal, rasi, language = 'ta') => {
+    const response = await api.get(`/api/remedy/goal/${goal}`, {
+      params: { rasi, language },
     });
     return response.data;
   },

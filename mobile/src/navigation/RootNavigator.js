@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 
 import AuthNavigator from './AuthNavigator';
 import MainNavigator from './MainNavigator';
+import RemedyScreen from '../screens/RemedyScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -22,7 +23,17 @@ export default function RootNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {isAuthenticated ? (
-        <Stack.Screen name="Main" component={MainNavigator} />
+        <>
+          <Stack.Screen name="Main" component={MainNavigator} />
+          <Stack.Screen
+            name="Remedy"
+            component={RemedyScreen}
+            options={{
+              presentation: 'modal',
+              animation: 'slide_from_bottom',
+            }}
+          />
+        </>
       ) : (
         <Stack.Screen name="Auth" component={AuthNavigator} />
       )}

@@ -595,7 +595,7 @@ export function generateComprehensivePDFHTML(userProfile, chartData) {
     <body>
       <!-- Cover Page -->
       <div class="header">
-        <div style="font-size:40px;color:#f97316;">ॐ</div>
+        <div style="font-size:40px;color:#f97316;">ஓம்</div>
         <h1>ஜாதக அறிக்கை</h1>
         <div class="subtitle">விரிவான ஜோதிட பகுப்பாய்வு</div>
         <div style="margin-top:15px;font-size:16px;color:#374151;font-weight:bold;">${userProfile?.name || ''}</div>

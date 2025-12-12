@@ -13,6 +13,15 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// Storage helper for web compatibility
+const setStorageItem = async (key, value) => {
+  if (Platform.OS === 'web') {
+    return AsyncStorage.setItem(key, value);
+  }
+  return SecureStore.setItemAsync(key, value);
+};
 
 const { width, height } = Dimensions.get('window');
 
@@ -200,7 +209,7 @@ export default function OnboardingScreen({ navigation }) {
 
   const completeOnboarding = async () => {
     try {
-      await SecureStore.setItemAsync('onboardingComplete', 'true');
+      await setStorageItem('onboardingComplete', 'true');
       navigation.replace('Login');
     } catch (error) {
       console.error('Error saving onboarding status:', error);
@@ -235,7 +244,7 @@ export default function OnboardingScreen({ navigation }) {
         {/* Header */}
         <Animated.View style={[styles.header, { opacity: fadeAnim, paddingTop: insets.top + 10 }]}>
           <View style={styles.logoContainer}>
-            <Text style={styles.omSymbol}>ॐ</Text>
+            <Text style={styles.omSymbol}>ஓம்</Text>
             <Text style={styles.logoText}>ஜோதிட AI</Text>
           </View>
           {!isLastSlide && (

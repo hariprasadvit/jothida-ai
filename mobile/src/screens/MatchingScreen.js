@@ -16,6 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { mobileAPI, CITY_COORDINATES } from '../services/api';
 
 const cities = Object.keys(CITY_COORDINATES);
@@ -321,6 +322,7 @@ const AnimatedPoruthamItem = ({ porutham, index, isExpanded, onPress, statusStyl
 
 export default function MatchingScreen() {
   const { userProfile } = useAuth();
+  const { t } = useLanguage();
   const insets = useSafeAreaInsets();
   const bottomPadding = Platform.OS === 'android' ? Math.max(insets.bottom, 80) : insets.bottom + 80;
 
@@ -400,7 +402,7 @@ export default function MatchingScreen() {
       setStep('result');
     } catch (err) {
       console.error('Matching error:', err);
-      setError('பொருத்தம் கணக்கிடுவதில் பிழை. மீண்டும் முயற்சிக்கவும்.');
+      setError(t('matchingError'));
       setStep('input');
     }
   };
@@ -437,9 +439,9 @@ export default function MatchingScreen() {
             <Animated.View style={[styles.header, { opacity: headerFadeAnim, transform: [{ translateY: headerSlideAnim }] }]}>
               <View style={styles.headerRow}>
                 <Ionicons name="heart" size={20} color="#ef4444" />
-                <Text style={styles.headerTitle}>திருமண பொருத்தம்</Text>
+                <Text style={styles.headerTitle}>{t('marriageMatching')}</Text>
               </View>
-              <Text style={styles.headerSubtitle}>10 பொருத்த பகுப்பாய்வு</Text>
+              <Text style={styles.headerSubtitle}>{t('tenPoruthamAnalysis')}</Text>
             </Animated.View>
 
             {error && (
@@ -453,22 +455,22 @@ export default function MatchingScreen() {
             <AnimatedCard delay={100} style={[styles.card, styles.groomCard]}>
               <View style={styles.cardHeader}>
                 <Ionicons name="person" size={16} color="#2563eb" />
-                <Text style={[styles.cardTitle, { color: '#1e40af' }]}>மணமகன் விவரங்கள்</Text>
+                <Text style={[styles.cardTitle, { color: '#1e40af' }]}>{t('groomDetails')}</Text>
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>பெயர் *</Text>
+                <Text style={styles.label}>{t('name')} *</Text>
                 <TextInput
                   style={styles.input}
                   value={groomData.name}
                   onChangeText={(text) => setGroomData({ ...groomData, name: text })}
-                  placeholder="பெயர் உள்ளிடவும்"
+                  placeholder={t('enterName')}
                 />
               </View>
 
               <View style={styles.row}>
                 <View style={styles.halfInput}>
-                  <Text style={styles.label}>பிறந்த தேதி *</Text>
+                  <Text style={styles.label}>{t('birthDate')} *</Text>
                   <TextInput
                     style={styles.input}
                     value={groomData.birthDate}
@@ -478,7 +480,7 @@ export default function MatchingScreen() {
                   />
                 </View>
                 <View style={styles.halfInput}>
-                  <Text style={styles.label}>பிறந்த நேரம் *</Text>
+                  <Text style={styles.label}>{t('birthTime')} *</Text>
                   <TextInput
                     style={styles.input}
                     value={groomData.birthTime}
@@ -490,7 +492,7 @@ export default function MatchingScreen() {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>பிறந்த இடம் *</Text>
+                <Text style={styles.label}>{t('birthPlace')} *</Text>
                 <View style={styles.pickerContainer}>
                   <Picker
                     selectedValue={groomData.birthPlace}
@@ -505,14 +507,14 @@ export default function MatchingScreen() {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>ராசி (விரும்பினால்)</Text>
+                <Text style={styles.label}>{t('rasiOptional')}</Text>
                 <View style={styles.pickerContainer}>
                   <Picker
                     selectedValue={groomData.rasi}
                     onValueChange={(value) => setGroomData({ ...groomData, rasi: value })}
                     style={styles.picker}
                   >
-                    <Picker.Item label="தானாக கணக்கிடு" value="" />
+                    <Picker.Item label={t('autoCalculate')} value="" />
                     {rasis.map((r) => (
                       <Picker.Item key={r.english} label={r.tamil} value={r.english} />
                     ))}
@@ -525,22 +527,22 @@ export default function MatchingScreen() {
             <AnimatedCard delay={200} style={[styles.card, styles.brideCard]}>
               <View style={styles.cardHeader}>
                 <Ionicons name="person" size={16} color="#db2777" />
-                <Text style={[styles.cardTitle, { color: '#be185d' }]}>மணமகள் விவரங்கள்</Text>
+                <Text style={[styles.cardTitle, { color: '#be185d' }]}>{t('brideDetails')}</Text>
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>பெயர் *</Text>
+                <Text style={styles.label}>{t('name')} *</Text>
                 <TextInput
                   style={[styles.input, styles.brideInput]}
                   value={brideData.name}
                   onChangeText={(text) => setBrideData({ ...brideData, name: text })}
-                  placeholder="பெயர் உள்ளிடவும்"
+                  placeholder={t('enterName')}
                 />
               </View>
 
               <View style={styles.row}>
                 <View style={styles.halfInput}>
-                  <Text style={styles.label}>பிறந்த தேதி *</Text>
+                  <Text style={styles.label}>{t('birthDate')} *</Text>
                   <TextInput
                     style={[styles.input, styles.brideInput]}
                     value={brideData.birthDate}
@@ -550,7 +552,7 @@ export default function MatchingScreen() {
                   />
                 </View>
                 <View style={styles.halfInput}>
-                  <Text style={styles.label}>பிறந்த நேரம் *</Text>
+                  <Text style={styles.label}>{t('birthTime')} *</Text>
                   <TextInput
                     style={[styles.input, styles.brideInput]}
                     value={brideData.birthTime}
@@ -562,7 +564,7 @@ export default function MatchingScreen() {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>பிறந்த இடம் *</Text>
+                <Text style={styles.label}>{t('birthPlace')} *</Text>
                 <View style={[styles.pickerContainer, styles.bridePicker]}>
                   <Picker
                     selectedValue={brideData.birthPlace}
@@ -577,14 +579,14 @@ export default function MatchingScreen() {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>ராசி (விரும்பினால்)</Text>
+                <Text style={styles.label}>{t('rasiOptional')}</Text>
                 <View style={[styles.pickerContainer, styles.bridePicker]}>
                   <Picker
                     selectedValue={brideData.rasi}
                     onValueChange={(value) => setBrideData({ ...brideData, rasi: value })}
                     style={styles.picker}
                   >
-                    <Picker.Item label="தானாக கணக்கிடு" value="" />
+                    <Picker.Item label={t('autoCalculate')} value="" />
                     {rasis.map((r) => (
                       <Picker.Item key={r.english} label={r.tamil} value={r.english} />
                     ))}
@@ -607,7 +609,7 @@ export default function MatchingScreen() {
                   style={styles.calculateBtnGradient}
                 >
                   <Ionicons name="heart" size={20} color="#fff" />
-                  <Text style={styles.calculateBtnText}>பொருத்தம் கணக்கிடு</Text>
+                  <Text style={styles.calculateBtnText}>{t('calculateCompatibility')}</Text>
                 </LinearGradient>
               </AnimatedButton>
             </AnimatedCard>
@@ -624,8 +626,8 @@ export default function MatchingScreen() {
         <FloatingHearts />
         <AnimatedHeart />
         <ActivityIndicator size="large" color="#ec4899" style={{ marginTop: 16 }} />
-        <Text style={styles.loadingText}>10 பொருத்தங்களை கணக்கிடுகிறது...</Text>
-        <Text style={styles.loadingSubtext}>உங்கள் ஜோதிட பொருத்தத்தை ஆராய்கிறோம்</Text>
+        <Text style={styles.loadingText}>{t('calculatingPoruthams')}</Text>
+        <Text style={styles.loadingSubtext}>{t('analyzingCompatibility')}</Text>
       </View>
     );
   }
@@ -651,7 +653,7 @@ export default function MatchingScreen() {
           <Animated.View style={[styles.header, { opacity: headerFadeAnim, transform: [{ translateY: headerSlideAnim }] }]}>
             <View style={styles.headerRow}>
               <Ionicons name="heart" size={20} color="#ef4444" />
-              <Text style={styles.headerTitle}>திருமண பொருத்தம்</Text>
+              <Text style={styles.headerTitle}>{t('marriageMatching')}</Text>
             </View>
             <TouchableOpacity onPress={resetForm} style={styles.resetBtn}>
               <Ionicons name="refresh" size={20} color="#ea580c" />
@@ -681,7 +683,7 @@ export default function MatchingScreen() {
           <AnimatedCard delay={100} style={styles.card}>
             <View style={styles.scoreRow}>
               <View>
-                <Text style={styles.scoreLabel}>ஒட்டுமொத்த பொருத்தம்</Text>
+                <Text style={styles.scoreLabel}>{t('overallCompatibility')}</Text>
                 <View style={styles.scoreValueRow}>
                   <Text style={styles.scoreNumber}>{overallScore.toFixed(1)}</Text>
                   <Text style={styles.scoreMax}>/100</Text>
@@ -689,7 +691,7 @@ export default function MatchingScreen() {
                 <View style={styles.matchInfo}>
                   <View style={styles.matchBadge}>
                     <Ionicons name="checkmark-circle" size={14} color="#16a34a" />
-                    <Text style={styles.matchBadgeText}>{matchedCount}/10 பொருந்தும்</Text>
+                    <Text style={styles.matchBadgeText}>{matchedCount}/10 {t('matchesOutOf10')}</Text>
                   </View>
                 </View>
               </View>
@@ -701,7 +703,7 @@ export default function MatchingScreen() {
               <Ionicons name="sparkles" size={16} color={overallScore >= 70 ? '#16a34a' : '#d97706'} />
               <View style={{ flex: 1 }}>
                 <Text style={[styles.verdictTitle, { color: overallScore >= 70 ? '#15803d' : '#a16207' }]}>
-                  AI தீர்ப்பு: {overallScore >= 70 ? 'நல்ல பொருத்தம்' : 'கவனிக்க வேண்டும்'}
+                  {t('aiVerdict')}: {overallScore >= 70 ? t('goodMatch') : t('needsAttention')}
                 </Text>
                 <Text style={styles.verdictText}>{matchResult.ai_verdict?.explanation || 'விரிவான பகுப்பாய்வு கீழே உள்ளது.'}</Text>
               </View>
@@ -711,7 +713,7 @@ export default function MatchingScreen() {
           {/* 10 Poruthams */}
           <AnimatedCard delay={200} style={styles.card}>
             <View style={styles.cardHeader}>
-              <Text style={styles.poruthamTitle}>॥ 10 பொருத்தங்கள் ॥</Text>
+              <Text style={styles.poruthamTitle}>{t('tenPoruthams')}</Text>
             </View>
 
             {poruthams.map((p, i) => {
@@ -735,7 +737,7 @@ export default function MatchingScreen() {
           <AnimatedCard delay={300} style={styles.actionRow}>
             <TouchableOpacity style={styles.newMatchBtn} onPress={resetForm} activeOpacity={0.7}>
               <Ionicons name="people" size={20} color="#ea580c" />
-              <Text style={styles.newMatchBtnText}>புதிய பொருத்தம்</Text>
+              <Text style={styles.newMatchBtnText}>{t('newMatching')}</Text>
             </TouchableOpacity>
           </AnimatedCard>
         </ScrollView>

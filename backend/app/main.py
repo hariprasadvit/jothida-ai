@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from app.routers import panchangam, jathagam, matching, chat, muhurtham, user, forecast
-from app.routers import auth, admin, mobile_auth, report
+from app.routers import auth, admin, mobile_auth, report, remedy
 from app.services.ephemeris import EphemerisService
 from app.database import init_db
 
@@ -39,7 +39,7 @@ app = FastAPI(
 # CORS for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],
+    allow_origins=["*"],  # Allow all origins for development
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -57,6 +57,7 @@ app.include_router(forecast.router, prefix="/api/forecast", tags=["Forecast"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 app.include_router(mobile_auth.router, prefix="/api/mobile", tags=["Mobile Auth"])
 app.include_router(report.router, prefix="/api/report", tags=["PDF Reports"])
+app.include_router(remedy.router, prefix="/api/remedy", tags=["AI Remedy Engine"])
 
 @app.get("/")
 async def root():
