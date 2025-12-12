@@ -5,6 +5,7 @@ import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import SplashScreen from '../screens/SplashScreen';
+import LanguageSelectionScreen from '../screens/LanguageSelectionScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
@@ -21,24 +22,47 @@ const getStorageItem = async (key) => {
 
 export default function AuthNavigator() {
   const [showSplash, setShowSplash] = useState(true);
+  const [showLanguageSelection, setShowLanguageSelection] = useState(false);
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(null);
+  const [hasSelectedLanguage, setHasSelectedLanguage] = useState(null);
 
   useEffect(() => {
-    checkOnboardingStatus();
+    checkInitialStatus();
   }, []);
 
-  const checkOnboardingStatus = async () => {
+  const checkInitialStatus = async () => {
     try {
-      const status = await getStorageItem('onboardingComplete');
-      setHasSeenOnboarding(status === 'true');
+      // Check if user has already selected a language
+      const languageSelected = await AsyncStorage.getItem('languageSelected');
+      setHasSelectedLanguage(languageSelected === 'true');
+
+      // Check onboarding status
+      const onboardingStatus = await getStorageItem('onboardingComplete');
+      setHasSeenOnboarding(onboardingStatus === 'true');
     } catch (error) {
-      console.error('Error checking onboarding status:', error);
+      console.error('Error checking initial status:', error);
+      setHasSelectedLanguage(false);
       setHasSeenOnboarding(false);
     }
   };
 
   const handleSplashFinish = () => {
     setShowSplash(false);
+    // Show language selection if not selected before
+    if (!hasSelectedLanguage) {
+      setShowLanguageSelection(true);
+    }
+  };
+
+  const handleLanguageSelected = async () => {
+    try {
+      await AsyncStorage.setItem('languageSelected', 'true');
+      setHasSelectedLanguage(true);
+      setShowLanguageSelection(false);
+    } catch (error) {
+      console.error('Error saving language selection:', error);
+      setShowLanguageSelection(false);
+    }
   };
 
   // Show splash screen first
@@ -46,8 +70,13 @@ export default function AuthNavigator() {
     return <SplashScreen onFinish={handleSplashFinish} />;
   }
 
-  // Wait for onboarding check
-  if (hasSeenOnboarding === null) {
+  // Show language selection if needed
+  if (showLanguageSelection || (hasSelectedLanguage === false && !showSplash)) {
+    return <LanguageSelectionScreen onLanguageSelected={handleLanguageSelected} />;
+  }
+
+  // Wait for status checks
+  if (hasSeenOnboarding === null || hasSelectedLanguage === null) {
     return null;
   }
 

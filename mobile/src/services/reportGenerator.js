@@ -595,7 +595,11 @@ export function generateComprehensivePDFHTML(userProfile, chartData) {
     <body>
       <!-- Cover Page -->
       <div class="header">
-        <div style="font-size:40px;color:#f97316;">ஓம்</div>
+        <svg width="50" height="50" viewBox="0 0 100 100" style="margin-bottom:10px;">
+          <path d="M50 5 L55 40 L90 30 L60 50 L90 70 L55 60 L50 95 L45 60 L10 70 L40 50 L10 30 L45 40 Z" fill="#f97316"/>
+          <circle cx="50" cy="50" r="10" fill="#fff7ed"/>
+        </svg>
+        <div style="font-size:24px;font-weight:bold;color:#9a3412;margin-bottom:5px;">jothida.ai</div>
         <h1>ஜாதக அறிக்கை</h1>
         <div class="subtitle">விரிவான ஜோதிட பகுப்பாய்வு</div>
         <div style="margin-top:15px;font-size:16px;color:#374151;font-weight:bold;">${userProfile?.name || ''}</div>

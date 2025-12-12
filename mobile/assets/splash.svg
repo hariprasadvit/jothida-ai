@@ -1,0 +1,21 @@
+<svg width="1284" height="2778" viewBox="0 0 1284 2778" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="splashBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fff7ed"/>
+      <stop offset="50%" style="stop-color:#ffedd5"/>
+      <stop offset="100%" style="stop-color:#fff7ed"/>
+    </linearGradient>
+  </defs>
+  <rect width="1284" height="2778" fill="url(#splashBg)"/>
+  
+  <!-- Centered star logo -->
+  <g transform="translate(542.0, 1239.0)">
+    <circle cx="100" cy="100" r="90" fill="#f97316" opacity="0.1"/>
+    <circle cx="100" cy="100" r="70" fill="#f97316" opacity="0.2"/>
+    <path d="M100 10 L110 80 L180 60 L120 100 L180 140 L110 120 L100 190 L90 120 L20 140 L80 100 L20 60 L90 80 Z" fill="#f97316"/>
+    <circle cx="100" cy="100" r="20" fill="#fff7ed"/>
+  </g>
+  
+  <!-- Brand name below -->
+  <text x="642.0" y="1519.0" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#9a3412" text-anchor="middle">jothida.ai</text>
+</svg>

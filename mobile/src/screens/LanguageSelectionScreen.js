@@ -1,0 +1,683 @@
+import React, { useEffect, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Animated,
+  Dimensions,
+  Easing,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
+import Svg, { Path, Circle, Defs, RadialGradient, Stop, Ellipse, G } from 'react-native-svg';
+import { useLanguage, languageOptions } from '../context/LanguageContext';
+
+const { width, height } = Dimensions.get('window');
+
+// Mango Leaf Component - More detailed and realistic
+const MangoLeaf = ({ x, y, rotation = 0, scale = 1 }) => (
+  <G transform={`translate(${x}, ${y}) rotate(${rotation}) scale(${scale})`}>
+    {/* Leaf body with gradient effect */}
+    <Path
+      d="M0 0 Q6 -12 0 -32 Q-6 -12 0 0"
+      fill="#166534"
+      stroke="#15803d"
+      strokeWidth="0.3"
+    />
+    {/* Center vein */}
+    <Path
+      d="M0 -3 L0 -28"
+      stroke="#22c55e"
+      strokeWidth="0.6"
+    />
+    {/* Side veins */}
+    <Path d="M0 -8 L-3 -12" stroke="#22c55e" strokeWidth="0.3" />
+    <Path d="M0 -8 L3 -12" stroke="#22c55e" strokeWidth="0.3" />
+    <Path d="M0 -14 L-3.5 -18" stroke="#22c55e" strokeWidth="0.3" />
+    <Path d="M0 -14 L3.5 -18" stroke="#22c55e" strokeWidth="0.3" />
+    <Path d="M0 -20 L-2.5 -24" stroke="#22c55e" strokeWidth="0.3" />
+    <Path d="M0 -20 L2.5 -24" stroke="#22c55e" strokeWidth="0.3" />
+  </G>
+);
+
+// Small Leaf for filling gaps
+const SmallLeaf = ({ x, y, rotation = 0 }) => (
+  <G transform={`translate(${x}, ${y}) rotate(${rotation})`}>
+    <Path
+      d="M0 0 Q3 -8 0 -18 Q-3 -8 0 0"
+      fill="#15803d"
+      stroke="#166534"
+      strokeWidth="0.2"
+    />
+    <Path d="M0 -2 L0 -15" stroke="#22c55e" strokeWidth="0.4" />
+  </G>
+);
+
+// Marigold Flower Component - More petals for realistic look
+const MarigoldFlower = ({ cx, cy, size = 20, color = '#f97316' }) => (
+  <G>
+    {/* Outer layer - 16 petals */}
+    {[...Array(16)].map((_, i) => (
+      <Ellipse
+        key={`outer-${i}`}
+        cx={cx + (size * 0.45) * Math.cos((i * 22.5 * Math.PI) / 180)}
+        cy={cy + (size * 0.45) * Math.sin((i * 22.5 * Math.PI) / 180)}
+        rx={size * 0.22}
+        ry={size * 0.12}
+        fill={color}
+        transform={`rotate(${i * 22.5 + 90}, ${cx + (size * 0.45) * Math.cos((i * 22.5 * Math.PI) / 180)}, ${cy + (size * 0.45) * Math.sin((i * 22.5 * Math.PI) / 180)})`}
+      />
+    ))}
+    {/* Middle layer - 12 petals */}
+    {[...Array(12)].map((_, i) => (
+      <Ellipse
+        key={`middle-${i}`}
+        cx={cx + (size * 0.28) * Math.cos((i * 30 * Math.PI) / 180)}
+        cy={cy + (size * 0.28) * Math.sin((i * 30 * Math.PI) / 180)}
+        rx={size * 0.18}
+        ry={size * 0.1}
+        fill={color === '#f97316' ? '#fb923c' : '#fde047'}
+        transform={`rotate(${i * 30 + 90}, ${cx + (size * 0.28) * Math.cos((i * 30 * Math.PI) / 180)}, ${cy + (size * 0.28) * Math.sin((i * 30 * Math.PI) / 180)})`}
+      />
+    ))}
+    {/* Inner layer - 8 petals */}
+    {[...Array(8)].map((_, i) => (
+      <Ellipse
+        key={`inner-${i}`}
+        cx={cx + (size * 0.12) * Math.cos((i * 45 * Math.PI) / 180)}
+        cy={cy + (size * 0.12) * Math.sin((i * 45 * Math.PI) / 180)}
+        rx={size * 0.12}
+        ry={size * 0.08}
+        fill={color === '#f97316' ? '#fdba74' : '#fef08a'}
+        transform={`rotate(${i * 45 + 90}, ${cx + (size * 0.12) * Math.cos((i * 45 * Math.PI) / 180)}, ${cy + (size * 0.12) * Math.sin((i * 45 * Math.PI) / 180)})`}
+      />
+    ))}
+    <Circle cx={cx} cy={cy} r={size * 0.08} fill="#fbbf24" />
+  </G>
+);
+
+// Rose/Red Flower Component
+const RoseFlower = ({ cx, cy, size = 16 }) => (
+  <G>
+    {[...Array(10)].map((_, i) => (
+      <Ellipse
+        key={`rose-${i}`}
+        cx={cx + (size * 0.35) * Math.cos((i * 36 * Math.PI) / 180)}
+        cy={cy + (size * 0.35) * Math.sin((i * 36 * Math.PI) / 180)}
+        rx={size * 0.25}
+        ry={size * 0.15}
+        fill="#dc2626"
+        transform={`rotate(${i * 36 + 90}, ${cx + (size * 0.35) * Math.cos((i * 36 * Math.PI) / 180)}, ${cy + (size * 0.35) * Math.sin((i * 36 * Math.PI) / 180)})`}
+      />
+    ))}
+    {[...Array(6)].map((_, i) => (
+      <Ellipse
+        key={`rose-inner-${i}`}
+        cx={cx + (size * 0.15) * Math.cos((i * 60 * Math.PI) / 180)}
+        cy={cy + (size * 0.15) * Math.sin((i * 60 * Math.PI) / 180)}
+        rx={size * 0.15}
+        ry={size * 0.1}
+        fill="#ef4444"
+        transform={`rotate(${i * 60 + 90}, ${cx + (size * 0.15) * Math.cos((i * 60 * Math.PI) / 180)}, ${cy + (size * 0.15) * Math.sin((i * 60 * Math.PI) / 180)})`}
+      />
+    ))}
+    <Circle cx={cx} cy={cy} r={size * 0.08} fill="#fbbf24" />
+  </G>
+);
+
+// Toran (Mango Leaf Decoration) - Denser with multiple rows
+const Toran = ({ toranWidth }) => {
+  const leafCount = Math.floor(toranWidth / 10); // More leaves
+  const smallLeafCount = Math.floor(toranWidth / 12);
+  return (
+    <Svg width={toranWidth} height={85} viewBox={`0 0 ${toranWidth} 85`}>
+      {/* Rope/String */}
+      <Path
+        d={`M0 10 Q${toranWidth / 4} 18 ${toranWidth / 2} 12 Q${toranWidth * 3 / 4} 6 ${toranWidth} 12`}
+        stroke="#92400e"
+        strokeWidth="4"
+        fill="none"
+      />
+      <Path
+        d={`M0 10 Q${toranWidth / 4} 18 ${toranWidth / 2} 12 Q${toranWidth * 3 / 4} 6 ${toranWidth} 12`}
+        stroke="#b45309"
+        strokeWidth="2"
+        fill="none"
+      />
+
+      {/* Back row of small leaves */}
+      {[...Array(smallLeafCount)].map((_, i) => {
+        const x = (i / smallLeafCount) * toranWidth + 6;
+        const curveY = 12 + Math.sin((i / smallLeafCount) * Math.PI) * 5;
+        const rotation = -15 + (i % 4) * 10;
+        return (
+          <SmallLeaf
+            key={`small-${i}`}
+            x={x}
+            y={curveY + 22}
+            rotation={rotation}
+          />
+        );
+      })}
+
+      {/* Main row of mango leaves */}
+      {[...Array(leafCount)].map((_, i) => {
+        const x = (i / leafCount) * toranWidth + 5;
+        const curveY = 12 + Math.sin((i / leafCount) * Math.PI) * 6;
+        const rotation = -12 + (i % 5) * 6;
+        return (
+          <MangoLeaf
+            key={`main-${i}`}
+            x={x}
+            y={curveY + 35}
+            rotation={rotation}
+            scale={0.75}
+          />
+        );
+      })}
+
+      {/* Front row alternating */}
+      {[...Array(Math.floor(leafCount / 2))].map((_, i) => {
+        const x = (i / (leafCount / 2)) * toranWidth + 10;
+        const curveY = 12 + Math.sin((i / (leafCount / 2)) * Math.PI) * 6;
+        return (
+          <MangoLeaf
+            key={`front-${i}`}
+            x={x}
+            y={curveY + 42}
+            rotation={(i % 2 === 0 ? -8 : 8)}
+            scale={0.6}
+          />
+        );
+      })}
+
+      {/* Decorative flowers on toran */}
+      {[...Array(5)].map((_, i) => {
+        const x = 40 + (i * (toranWidth - 80) / 4);
+        return (
+          <MarigoldFlower
+            key={`toran-flower-${i}`}
+            cx={x}
+            cy={15}
+            size={12}
+            color={i % 2 === 0 ? '#f97316' : '#fbbf24'}
+          />
+        );
+      })}
+    </Svg>
+  );
+};
+
+// Hanging Marigold String - Denser with mixed flowers
+const HangingMarigold = ({ length }) => {
+  const flowerCount = Math.floor(length / 18); // More flowers
+  return (
+    <Svg width={45} height={length} viewBox={`0 0 45 ${length}`}>
+      {/* Dual strings for realistic look */}
+      <Path d={`M18 0 L18 ${length}`} stroke="#84cc16" strokeWidth="2" />
+      <Path d={`M27 0 L27 ${length}`} stroke="#84cc16" strokeWidth="2" />
+      <Path d={`M22 0 L22 ${length}`} stroke="#65a30d" strokeWidth="1" />
+
+      {/* Small connecting leaves */}
+      {[...Array(Math.floor(flowerCount * 1.5))].map((_, i) => (
+        <G key={`leaf-${i}`}>
+          <Path
+            d={`M22 ${8 + i * 12} Q18 ${12 + i * 12} 16 ${8 + i * 12}`}
+            stroke="#22c55e"
+            strokeWidth="1"
+            fill="none"
+          />
+          <Path
+            d={`M22 ${8 + i * 12} Q26 ${12 + i * 12} 28 ${8 + i * 12}`}
+            stroke="#22c55e"
+            strokeWidth="1"
+            fill="none"
+          />
+        </G>
+      ))}
+
+      {/* Alternating marigold and rose flowers */}
+      {[...Array(flowerCount)].map((_, i) => {
+        const yPos = 10 + i * 18;
+        if (i % 3 === 2) {
+          return (
+            <RoseFlower
+              key={`flower-${i}`}
+              cx={22}
+              cy={yPos}
+              size={14}
+            />
+          );
+        }
+        return (
+          <MarigoldFlower
+            key={`flower-${i}`}
+            cx={22}
+            cy={yPos}
+            size={16}
+            color={i % 2 === 0 ? '#f97316' : '#fbbf24'}
+          />
+        );
+      })}
+    </Svg>
+  );
+};
+
+// Diya Glow Component - for auspicious lighting effect
+const DiyaGlow = () => (
+  <Svg width={140} height={140} viewBox="0 0 140 140">
+    <Defs>
+      <RadialGradient id="diyaGlow" cx="50%" cy="50%" r="50%">
+        <Stop offset="0%" stopColor="#fbbf24" stopOpacity="0.8" />
+        <Stop offset="30%" stopColor="#f97316" stopOpacity="0.5" />
+        <Stop offset="60%" stopColor="#ea580c" stopOpacity="0.3" />
+        <Stop offset="100%" stopColor="#ea580c" stopOpacity="0" />
+      </RadialGradient>
+      <RadialGradient id="innerGlow" cx="50%" cy="50%" r="50%">
+        <Stop offset="0%" stopColor="#fef3c7" stopOpacity="1" />
+        <Stop offset="50%" stopColor="#fbbf24" stopOpacity="0.6" />
+        <Stop offset="100%" stopColor="#f97316" stopOpacity="0" />
+      </RadialGradient>
+    </Defs>
+    {/* Outer glow */}
+    <Circle cx="70" cy="70" r="70" fill="url(#diyaGlow)" />
+    {/* Middle glow */}
+    <Circle cx="70" cy="70" r="50" fill="url(#innerGlow)" />
+    {/* Light rays */}
+    {[...Array(12)].map((_, i) => (
+      <Path
+        key={`ray-${i}`}
+        d={`M70 70 L${70 + 60 * Math.cos((i * 30 * Math.PI) / 180)} ${70 + 60 * Math.sin((i * 30 * Math.PI) / 180)}`}
+        stroke="#fbbf24"
+        strokeWidth="1"
+        opacity="0.3"
+      />
+    ))}
+  </Svg>
+);
+
+export default function LanguageSelectionScreen({ onLanguageSelected }) {
+  const { changeLanguage, language } = useLanguage();
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
+  const buttonAnims = useRef(languageOptions.map(() => new Animated.Value(0))).current;
+  const garlandAnim = useRef(new Animated.Value(-50)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 600,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }),
+      Animated.spring(garlandAnim, {
+        toValue: 0,
+        friction: 8,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    buttonAnims.forEach((anim, index) => {
+      Animated.timing(anim, {
+        toValue: 1,
+        duration: 400,
+        delay: 400 + index * 150,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }).start();
+    });
+  }, []);
+
+  const handleLanguageSelect = async (langCode) => {
+    await changeLanguage(langCode);
+    onLanguageSelected?.();
+  };
+
+  return (
+    <View style={styles.container}>
+      <LinearGradient
+        colors={['#fef3c7', '#fed7aa', '#fdba74', '#fb923c']}
+        style={styles.gradient}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        locations={[0, 0.3, 0.6, 1]}
+      >
+        {/* Top Mango Toran */}
+        <Animated.View
+          style={[
+            styles.toranContainer,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: garlandAnim }]
+            }
+          ]}
+        >
+          <Toran toranWidth={width} />
+        </Animated.View>
+
+        {/* Left hanging garlands */}
+        <Animated.View
+          style={[
+            styles.leftGarland,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: garlandAnim }]
+            }
+          ]}
+        >
+          <HangingMarigold length={height * 0.25} />
+        </Animated.View>
+
+        {/* Right hanging garlands */}
+        <Animated.View
+          style={[
+            styles.rightGarland,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: garlandAnim }]
+            }
+          ]}
+        >
+          <HangingMarigold length={height * 0.25} />
+        </Animated.View>
+
+        {/* Main Content */}
+        <Animated.View
+          style={[
+            styles.content,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
+        >
+          {/* Logo with Diya Glow */}
+          <View style={styles.logoWrapper}>
+            {/* Diya glow behind logo */}
+            <View style={styles.diyaGlowContainer}>
+              <DiyaGlow />
+            </View>
+            {/* Logo */}
+            <View style={styles.logoContainer}>
+              <LinearGradient
+                colors={['#f97316', '#ea580c']}
+                style={styles.logoGradient}
+              >
+                <Svg width={48} height={48} viewBox="0 0 100 100">
+                  <Path
+                    d="M50 5 L55 40 L90 30 L60 50 L90 70 L55 60 L50 95 L45 60 L10 70 L40 50 L10 30 L45 40 Z"
+                    fill="#fff"
+                  />
+                  <Circle cx="50" cy="50" r="10" fill="#f97316" />
+                </Svg>
+              </LinearGradient>
+            </View>
+          </View>
+
+          <Text style={styles.brandName}>jothida.ai</Text>
+
+          {/* Welcome text */}
+          <View style={styles.welcomeContainer}>
+            <Text style={styles.welcomeText}>Welcome</Text>
+            <Text style={styles.welcomeTextTamil}>வரவேற்கிறோம்</Text>
+            <Text style={styles.welcomeTextKannada}>ಸ್ವಾಗತ</Text>
+          </View>
+
+          <Text style={styles.selectLanguageText}>Select your language</Text>
+          <Text style={styles.selectLanguageSubtext}>மொழியைத் தேர்வு செய்யவும்</Text>
+
+          {/* Language Options */}
+          <View style={styles.languageOptions}>
+            {languageOptions.map((lang, index) => (
+              <Animated.View
+                key={lang.code}
+                style={{
+                  opacity: buttonAnims[index],
+                  transform: [
+                    {
+                      translateY: buttonAnims[index].interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [30, 0],
+                      }),
+                    },
+                  ],
+                }}
+              >
+                <TouchableOpacity
+                  style={[
+                    styles.languageButton,
+                    language === lang.code && styles.languageButtonSelected,
+                  ]}
+                  onPress={() => handleLanguageSelect(lang.code)}
+                  activeOpacity={0.8}
+                >
+                  <LinearGradient
+                    colors={
+                      language === lang.code
+                        ? ['#f97316', '#ea580c']
+                        : ['#fff', '#fef3c7']
+                    }
+                    style={styles.languageButtonGradient}
+                  >
+                    <Text
+                      style={[
+                        styles.languageName,
+                        language === lang.code && styles.languageNameSelected,
+                      ]}
+                    >
+                      {lang.name}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.languageNameEn,
+                        language === lang.code && styles.languageNameEnSelected,
+                      ]}
+                    >
+                      {lang.nameEn}
+                    </Text>
+                    {language === lang.code && (
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={24}
+                        color="#fff"
+                        style={styles.checkIcon}
+                      />
+                    )}
+                  </LinearGradient>
+                </TouchableOpacity>
+              </Animated.View>
+            ))}
+          </View>
+
+          {/* Continue Button */}
+          <Animated.View
+            style={{
+              opacity: buttonAnims[buttonAnims.length - 1],
+              marginTop: 30,
+            }}
+          >
+            <TouchableOpacity
+              style={styles.continueButton}
+              onPress={() => onLanguageSelected?.()}
+              activeOpacity={0.8}
+            >
+              <LinearGradient
+                colors={['#7c2d12', '#9a3412']}
+                style={styles.continueGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+              >
+                <Text style={styles.continueText}>Continue</Text>
+                <Ionicons name="arrow-forward" size={20} color="#fff" />
+              </LinearGradient>
+            </TouchableOpacity>
+          </Animated.View>
+        </Animated.View>
+      </LinearGradient>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  gradient: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  toranContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+  },
+  leftGarland: {
+    position: 'absolute',
+    top: 55,
+    left: 15,
+    zIndex: 5,
+  },
+  rightGarland: {
+    position: 'absolute',
+    top: 55,
+    right: 15,
+    zIndex: 5,
+  },
+  content: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 30,
+    paddingTop: 60,
+  },
+  logoWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 5,
+  },
+  diyaGlowContainer: {
+    position: 'absolute',
+    top: -25,
+    left: -25,
+  },
+  logoContainer: {
+    shadowColor: '#f97316',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 20,
+    elevation: 15,
+  },
+  logoGradient: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  brandName: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#7c2d12',
+    marginBottom: 20,
+    letterSpacing: 1,
+  },
+  welcomeContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  welcomeText: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 4,
+  },
+  welcomeTextTamil: {
+    fontSize: 20,
+    color: '#9a3412',
+    marginBottom: 2,
+  },
+  welcomeTextKannada: {
+    fontSize: 18,
+    color: '#b45309',
+  },
+  selectLanguageText: {
+    fontSize: 16,
+    color: '#4b5563',
+    marginBottom: 4,
+  },
+  selectLanguageSubtext: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 25,
+  },
+  languageOptions: {
+    width: '100%',
+    gap: 12,
+  },
+  languageButton: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#fed7aa',
+  },
+  languageButtonSelected: {
+    borderColor: '#f97316',
+  },
+  languageButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+  },
+  languageName: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: '#1f2937',
+    flex: 1,
+  },
+  languageNameSelected: {
+    color: '#fff',
+  },
+  languageNameEn: {
+    fontSize: 14,
+    color: '#6b7280',
+  },
+  languageNameEnSelected: {
+    color: '#fef3c7',
+  },
+  checkIcon: {
+    marginLeft: 10,
+  },
+  continueButton: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#7c2d12',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  continueGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 50,
+    gap: 10,
+  },
+  continueText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fff',
+  },
+});

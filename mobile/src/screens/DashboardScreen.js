@@ -16,6 +16,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Svg, { Path, Circle } from 'react-native-svg';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { mobileAPI } from '../services/api';
@@ -1206,7 +1207,15 @@ export default function DashboardScreen({ navigation }) {
           >
             <View>
               <View style={styles.logoRow}>
-                <Text style={styles.omSymbol}>ஓம்</Text>
+                <View style={styles.logoIcon}>
+                  <Svg width={28} height={28} viewBox="0 0 100 100">
+                    <Path
+                      d="M50 5 L55 40 L90 30 L60 50 L90 70 L55 60 L50 95 L45 60 L10 70 L40 50 L10 30 L45 40 Z"
+                      fill="#f97316"
+                    />
+                    <Circle cx="50" cy="50" r="10" fill="#fff7ed" />
+                  </Svg>
+                </View>
                 <Text style={styles.appTitle}>{t('appName')}</Text>
               </View>
               {userProfile && (
@@ -2255,7 +2264,7 @@ const styles = StyleSheet.create({
   headerBar: { height: 4 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#fed7aa' },
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  omSymbol: { fontSize: 24, color: '#ea580c' },
+  logoIcon: { width: 28, height: 28 },
   appTitle: { fontSize: 20, fontWeight: 'bold', color: '#9a3412' },
   userInfo: { marginTop: 4 },
   greeting: { fontSize: 14, color: '#6b7280' },

@@ -15,6 +15,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Svg, { Path, Circle } from 'react-native-svg';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { mobileAPI } from '../services/api';
@@ -609,7 +610,13 @@ export default function AstroFeedScreen({ navigation }) {
         <View style={[styles.header, { top: insets.top + 24 }]}>
           <View style={styles.headerLeft}>
             <View style={styles.logoContainer}>
-              <Text style={styles.omSymbol}>ஓம்</Text>
+              <Svg width={28} height={28} viewBox="0 0 100 100">
+                <Path
+                  d="M50 5 L55 40 L90 30 L60 50 L90 70 L55 60 L50 95 L45 60 L10 70 L40 50 L10 30 L45 40 Z"
+                  fill="#fff"
+                />
+                <Circle cx="50" cy="50" r="10" fill="rgba(255,255,255,0.3)" />
+              </Svg>
             </View>
             <View>
               <Text style={styles.appName}>{t('appName')}</Text>
@@ -1236,10 +1243,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(249, 115, 22, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  omSymbol: {
-    color: '#f97316',
-    fontSize: 20,
   },
   appName: {
     color: '#fff',
