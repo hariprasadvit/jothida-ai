@@ -88,16 +88,17 @@ async def get_calendar_view(
     month: int,
     year: int,
     lat: float = Query(default=13.0827),
-    lon: float = Query(default=80.2707)
+    lon: float = Query(default=80.2707),
+    lang: str = Query(default="ta", description="Language: ta, en, kn")
 ) -> List[CalendarDay]:
     """
     Get calendar heat map data for a month
     Each day has a score for coloring (green/yellow/red)
     """
     from app.services.muhurtham_finder import MuhurthamFinder
-    
-    finder = MuhurthamFinder(request.app.state.ephemeris)
-    return finder.get_month_calendar(month, year, lat, lon)
+
+    finder = MuhurthamFinder(request.app.state.ephemeris, lang=lang)
+    return finder.get_month_calendar(month, year, lat, lon, lang=lang)
 
 @router.get("/best-time-today")
 async def get_best_time_today(
@@ -124,7 +125,8 @@ async def get_day_details(
     request: Request,
     target_date: date,
     lat: float = Query(default=13.0827),
-    lon: float = Query(default=80.2707)
+    lon: float = Query(default=80.2707),
+    lang: str = Query(default="ta", description="Language: ta, en, kn")
 ):
     """
     Get detailed muhurtham info for a specific day
@@ -132,5 +134,5 @@ async def get_day_details(
     """
     from app.services.muhurtham_finder import MuhurthamFinder
 
-    finder = MuhurthamFinder(request.app.state.ephemeris)
-    return finder.get_day_details(target_date, lat, lon)
+    finder = MuhurthamFinder(request.app.state.ephemeris, lang=lang)
+    return finder.get_day_details(target_date, lat, lon, lang=lang)

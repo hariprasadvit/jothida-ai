@@ -199,10 +199,10 @@ export const mobileAPI = {
   },
 
   // Muhurtham Calendar
-  getMuhurthamCalendar: async (month, year) => {
+  getMuhurthamCalendar: async (month, year, lang = 'ta') => {
     try {
       const response = await api.get('/api/muhurtham/calendar', {
-        params: { month, year }
+        params: { month, year, lang }
       });
       return response.data;
     } catch (error) {
@@ -212,9 +212,11 @@ export const mobileAPI = {
   },
 
   // Muhurtham Day Details
-  getMuhurthamDayDetails: async (dateStr) => {
+  getMuhurthamDayDetails: async (dateStr, lang = 'ta') => {
     try {
-      const response = await api.get(`/api/muhurtham/day-details/${dateStr}`);
+      const response = await api.get(`/api/muhurtham/day-details/${dateStr}`, {
+        params: { lang }
+      });
       return response.data;
     } catch (error) {
       console.error('Muhurtham day API error:', error);
@@ -415,6 +417,42 @@ export const reportAPI = {
       longitude: coords.lon,
     }, {
       responseType: 'blob',
+    });
+    return response.data;
+  },
+};
+
+// Ungal Jothidan (Your Astrologer) - Daily Intelligence Dashboard API
+export const ungalJothidanAPI = {
+  // Get daily insights for a user
+  getDailyInsights: async (userData, language = 'ta', targetDate = null) => {
+    const coords = getCityCoordinates(userData.birthPlace);
+    const response = await api.post('/api/ungal-jothidan/daily-insights', {
+      user_id: userData.id || userData.phone || 'demo',
+      name: userData.name,
+      birth_date: userData.birthDate,
+      birth_time: userData.birthTime || '06:00',
+      birth_place: userData.birthPlace,
+      rasi: userData.rasi,
+      nakshatra: userData.nakshatra,
+      language: language,
+      target_date: targetDate,
+    });
+    return response.data;
+  },
+
+  // Get insights by user ID (from database)
+  getDailyInsightsByUserId: async (userId, language = 'ta', targetDate = null) => {
+    const response = await api.get(`/api/ungal-jothidan/daily-insights/${userId}`, {
+      params: { language, target_date: targetDate },
+    });
+    return response.data;
+  },
+
+  // Get detailed explanation for a specific card
+  getCardDetails: async (cardId, userId, language = 'ta') => {
+    const response = await api.get(`/api/ungal-jothidan/card-details/${cardId}`, {
+      params: { user_id: userId, language },
     });
     return response.data;
   },

@@ -9,6 +9,165 @@ from datetime import datetime, date
 import math
 
 
+# Planet name translations
+PLANET_NAMES = {
+    'en': {
+        'Sun': 'Sun', 'Moon': 'Moon', 'Mars': 'Mars', 'Mercury': 'Mercury',
+        'Jupiter': 'Jupiter', 'Venus': 'Venus', 'Saturn': 'Saturn',
+        'Rahu': 'Rahu', 'Ketu': 'Ketu'
+    },
+    'ta': {
+        'Sun': 'சூரியன்', 'Moon': 'சந்திரன்', 'Mars': 'செவ்வாய்', 'Mercury': 'புதன்',
+        'Jupiter': 'குரு', 'Venus': 'சுக்கிரன்', 'Saturn': 'சனி',
+        'Rahu': 'ராகு', 'Ketu': 'கேது'
+    },
+    'kn': {
+        'Sun': 'ಸೂರ್ಯ', 'Moon': 'ಚಂದ್ರ', 'Mars': 'ಮಂಗಳ', 'Mercury': 'ಬುಧ',
+        'Jupiter': 'ಗುರು', 'Venus': 'ಶುಕ್ರ', 'Saturn': 'ಶನಿ',
+        'Rahu': 'ರಾಹು', 'Ketu': 'ಕೇತು'
+    }
+}
+
+# Translation strings
+TRANSLATIONS = {
+    'en': {
+        'strength': 'Strength',
+        'strong': 'is strong',
+        'weak': 'is weak',
+        'house': 'house',
+        'lord': 'lord',
+        'in_good_house': 'in good house',
+        'in_6_8_12': 'in 6/8/12 house',
+        'dasha': 'Dasha',
+        'karaka_amplified': 'Karaka - amplified effect',
+        'current_dasha_karaka': 'Current dasha lord is karaka for this area',
+        'transit': 'Transit',
+        'good_transit': 'good',
+        'challenging_transit': 'challenge',
+        # Status labels
+        'excellent': 'Excellent',
+        'good': 'Good',
+        'average': 'Average',
+        'challenging': 'Needs attention',
+        # Calculation trace components
+        'karaka_planet_strength': 'Karaka Planet Strength',
+        'house_lord_position': 'House Lord Position',
+        'dasha_effect': 'Dasha Effect',
+        'transit_effect': 'Transit Effect',
+        # Suggestions
+        'love_high': 'Love life is excellent. Nurture your relationships.',
+        'love_medium': 'Fasting on Friday will improve love life',
+        'love_low': 'Do Venus remedies. Wear white colored clothes.',
+        'career_high': 'Great time for career growth. Try new initiatives.',
+        'career_medium': 'Hanuman worship on Saturday helps career growth',
+        'career_low': 'Worship Saturn. Wear blue colored clothes.',
+        'education_high': 'Excellent time for education. Start new courses.',
+        'education_medium': 'Vishnu worship on Wednesday helps education',
+        'education_low': 'Do Mercury and Jupiter remedies.',
+        'family_high': 'Family relationships are very good.',
+        'family_medium': 'Shiva worship on Monday helps family harmony',
+        'family_low': 'Do Moon remedies. Spend time with family.',
+        'health_high': 'Health is excellent. Continue exercising.',
+        'health_medium': 'Gayatri japa on Sunday helps health',
+        'health_low': 'Do Sun remedies. Take morning walks.',
+    },
+    'ta': {
+        'strength': 'பலம்',
+        'strong': 'நல்ல பலத்தில் உள்ளார்',
+        'weak': 'பலவீனமாக உள்ளார்',
+        'house': 'வீடு',
+        'lord': 'அதிபதி',
+        'in_good_house': 'நல்ல வீட்டில் உள்ளார்',
+        'in_6_8_12': '6/8/12 வீட்டில்',
+        'dasha': 'தசை',
+        'karaka_amplified': 'காரகர் - பலம்',
+        'current_dasha_karaka': 'தற்போதைய தசா நாதர் இந்த துறைக்கு காரகர்',
+        'transit': 'கோச்சாரம்',
+        'good_transit': 'நல்லது',
+        'challenging_transit': 'சவால்',
+        # Status labels
+        'excellent': 'சிறப்பு',
+        'good': 'நல்லது',
+        'average': 'சாதாரணம்',
+        'challenging': 'கவனம்',
+        # Calculation trace components
+        'karaka_planet_strength': 'காரக கிரக பலம்',
+        'house_lord_position': 'வீட்டு அதிபதி நிலை',
+        'dasha_effect': 'தசா பலம்',
+        'transit_effect': 'கோச்சார பலம்',
+        # Suggestions
+        'love_high': 'காதல் வாழ்க்கை சிறப்பாக உள்ளது. உறவுகளை பேணுங்கள்.',
+        'love_medium': 'வெள்ளிக்கிழமை விரதம் இருந்தால் காதல் வாழ்க்கை மேம்படும்',
+        'love_low': 'சுக்கிர பரிகாரம் செய்யுங்கள். வெள்ளை நிற உடை அணியுங்கள்.',
+        'career_high': 'தொழில் வளர்ச்சிக்கு சிறந்த நேரம். புதிய முயற்சிகள் செய்யலாம்.',
+        'career_medium': 'சனிக்கிழமை ஹனுமான் வழிபாடு தொழில் வளர்ச்சிக்கு உதவும்',
+        'career_low': 'சனி பகவான் வழிபாடு செய்யுங்கள். நீல நிற ஆடை அணியுங்கள்.',
+        'education_high': 'கல்வியில் சிறப்பு காலம். புதிய படிப்புகள் தொடங்கலாம்.',
+        'education_medium': 'புதன்கிழமை விஷ்ணு வழிபாடு கல்வி வளர்ச்சிக்கு நல்லது',
+        'education_low': 'புதன் மற்றும் குரு பரிகாரம் செய்யுங்கள்.',
+        'family_high': 'குடும்ப உறவுகள் மிகவும் சிறப்பாக உள்ளன.',
+        'family_medium': 'திங்கள்கிழமை சிவ வழிபாடு குடும்ப ஒற்றுமைக்கு நல்லது',
+        'family_low': 'சந்திர பரிகாரம் செய்யுங்கள். குடும்பத்துடன் நேரம் செலவிடுங்கள்.',
+        'health_high': 'ஆரோக்கியம் சிறப்பாக உள்ளது. உடற்பயிற்சி தொடருங்கள்.',
+        'health_medium': 'ஞாயிறு காயத்ரி ஜபம் ஆரோக்கியத்திற்கு நல்லது',
+        'health_low': 'சூரிய பரிகாரம் செய்யுங்கள். காலை நடை பயிற்சி செய்யுங்கள்.',
+    },
+    'kn': {
+        'strength': 'ಬಲ',
+        'strong': 'ಬಲಶಾಲಿ',
+        'weak': 'ದುರ್ಬಲ',
+        'house': 'ಮನೆ',
+        'lord': 'ಅಧಿಪತಿ',
+        'in_good_house': 'ಒಳ್ಳೆಯ ಮನೆಯಲ್ಲಿ',
+        'in_6_8_12': '6/8/12 ಮನೆಯಲ್ಲಿ',
+        'dasha': 'ದಶಾ',
+        'karaka_amplified': 'ಕಾರಕ - ಬಲವರ್ಧಿತ',
+        'current_dasha_karaka': 'ಪ್ರಸ್ತುತ ದಶಾ ಅಧಿಪತಿ ಈ ಕ್ಷೇತ್ರಕ್ಕೆ ಕಾರಕ',
+        'transit': 'ಗೋಚಾರ',
+        'good_transit': 'ಒಳ್ಳೆಯದು',
+        'challenging_transit': 'ಸವಾಲು',
+        # Status labels
+        'excellent': 'ಅತ್ಯುತ್ತಮ',
+        'good': 'ಒಳ್ಳೆಯದು',
+        'average': 'ಸಾಮಾನ್ಯ',
+        'challenging': 'ಗಮನ ಬೇಕು',
+        # Calculation trace components
+        'karaka_planet_strength': 'ಕಾರಕ ಗ್ರಹ ಬಲ',
+        'house_lord_position': 'ಮನೆ ಅಧಿಪತಿ ಸ್ಥಾನ',
+        'dasha_effect': 'ದಶಾ ಪರಿಣಾಮ',
+        'transit_effect': 'ಗೋಚಾರ ಪರಿಣಾಮ',
+        # Suggestions
+        'love_high': 'ಪ್ರೇಮ ಜೀವನ ಅತ್ಯುತ್ತಮ. ಸಂಬಂಧಗಳನ್ನು ಪೋಷಿಸಿ.',
+        'love_medium': 'ಶುಕ್ರವಾರ ಉಪವಾಸ ಪ್ರೇಮ ಜೀವನವನ್ನು ಸುಧಾರಿಸುತ್ತದೆ',
+        'love_low': 'ಶುಕ್ರ ಪರಿಹಾರ ಮಾಡಿ. ಬಿಳಿ ಬಣ್ಣದ ಬಟ್ಟೆ ಧರಿಸಿ.',
+        'career_high': 'ವೃತ್ತಿ ಬೆಳವಣಿಗೆಗೆ ಉತ್ತಮ ಸಮಯ. ಹೊಸ ಪ್ರಯತ್ನಗಳನ್ನು ಮಾಡಿ.',
+        'career_medium': 'ಶನಿವಾರ ಹನುಮಾನ್ ಪೂಜೆ ವೃತ್ತಿ ಬೆಳವಣಿಗೆಗೆ ಸಹಾಯಕ',
+        'career_low': 'ಶನಿ ಪೂಜೆ ಮಾಡಿ. ನೀಲಿ ಬಣ್ಣದ ಬಟ್ಟೆ ಧರಿಸಿ.',
+        'education_high': 'ಶಿಕ್ಷಣಕ್ಕೆ ಅತ್ಯುತ್ತಮ ಸಮಯ. ಹೊಸ ಕೋರ್ಸ್‌ಗಳನ್ನು ಪ್ರಾರಂಭಿಸಿ.',
+        'education_medium': 'ಬುಧವಾರ ವಿಷ್ಣು ಪೂಜೆ ಶಿಕ್ಷಣಕ್ಕೆ ಸಹಾಯಕ',
+        'education_low': 'ಬುಧ ಮತ್ತು ಗುರು ಪರಿಹಾರ ಮಾಡಿ.',
+        'family_high': 'ಕುಟುಂಬ ಸಂಬಂಧಗಳು ತುಂಬಾ ಒಳ್ಳೆಯವು.',
+        'family_medium': 'ಸೋಮವಾರ ಶಿವ ಪೂಜೆ ಕುಟುಂಬ ಐಕ್ಯತೆಗೆ ಸಹಾಯಕ',
+        'family_low': 'ಚಂದ್ರ ಪರಿಹಾರ ಮಾಡಿ. ಕುಟುಂಬದೊಂದಿಗೆ ಸಮಯ ಕಳೆಯಿರಿ.',
+        'health_high': 'ಆರೋಗ್ಯ ಅತ್ಯುತ್ತಮ. ವ್ಯಾಯಾಮ ಮುಂದುವರಿಸಿ.',
+        'health_medium': 'ಭಾನುವಾರ ಗಾಯತ್ರಿ ಜಪ ಆರೋಗ್ಯಕ್ಕೆ ಸಹಾಯಕ',
+        'health_low': 'ಸೂರ್ಯ ಪರಿಹಾರ ಮಾಡಿ. ಬೆಳಗಿನ ನಡಿಗೆ ಮಾಡಿ.',
+    }
+}
+
+
+def get_planet_name(planet: str, lang: str = 'ta') -> str:
+    """Get translated planet name"""
+    names = PLANET_NAMES.get(lang, PLANET_NAMES['ta'])
+    return names.get(planet, planet)
+
+
+def get_text(key: str, lang: str = 'ta') -> str:
+    """Get translated text"""
+    texts = TRANSLATIONS.get(lang, TRANSLATIONS['ta'])
+    return texts.get(key, TRANSLATIONS['ta'].get(key, key))
+
+
 class LifeAreasService:
     """
     Calculates life area scores based on:
@@ -85,7 +244,8 @@ class LifeAreasService:
         lagna_rasi: str,
         moon_rasi: str,
         dasha_lord: Optional[str] = None,
-        current_transits: Optional[List[Dict]] = None
+        current_transits: Optional[List[Dict]] = None,
+        lang: str = 'ta'
     ) -> Dict:
         """
         Calculate scores for all life areas based on birth chart
@@ -125,12 +285,13 @@ class LifeAreasService:
                 planet_strengths=planet_strengths,
                 planet_houses=planet_houses,
                 dasha_lord=dasha_lord,
-                current_transits=current_transits
+                current_transits=current_transits,
+                lang=lang
             )
 
             results[area] = {
                 'score': score,
-                'status': self._get_status(score),
+                'status': self._get_status(score, lang),
                 'status_tamil': self._get_status_tamil(score),
                 'factors': factors,
                 'suggestion': suggestion,
@@ -148,7 +309,8 @@ class LifeAreasService:
         planet_strengths: Dict,
         planet_houses: Dict,
         dasha_lord: Optional[str],
-        current_transits: Optional[List[Dict]]
+        current_transits: Optional[List[Dict]],
+        lang: str = 'ta'
     ) -> tuple:
         """Calculate score for a specific life area"""
 
@@ -169,9 +331,10 @@ class LifeAreasService:
             contribution = (strength - 50) * 0.4 / len(karakas)
             karaka_score += contribution
 
+            planet_name = get_planet_name(karaka, lang)
             factor_entry = {
-                'name': self._get_tamil_planet(karaka),
-                'detail': f'பலம்: {strength}%',
+                'name': planet_name,
+                'detail': f'{get_text("strength", lang)}: {strength}%',
                 'value': int(contribution),
                 'positive': strength >= 50
             }
@@ -179,17 +342,17 @@ class LifeAreasService:
 
             if strength >= 65:
                 factors.append({
-                    'name': f'{self._get_tamil_planet(karaka)} பலம்',
+                    'name': f'{planet_name} {get_text("strength", lang)}',
                     'value': int((strength - 50) * 0.5),
                     'positive': True,
-                    'description': f'{self._get_tamil_planet(karaka)} நல்ல பலத்தில் உள்ளார்'
+                    'description': f'{planet_name} {get_text("strong", lang)}'
                 })
             elif strength <= 35:
                 factors.append({
-                    'name': f'{self._get_tamil_planet(karaka)} பலவீனம்',
+                    'name': f'{planet_name} {get_text("weak", lang)}',
                     'value': int((50 - strength) * -0.5),
                     'positive': False,
-                    'description': f'{self._get_tamil_planet(karaka)} பலவீனமாக உள்ளார்'
+                    'description': f'{planet_name} {get_text("weak", lang)}'
                 })
 
         breakdown['karaka']['score'] = int(karaka_score)
@@ -203,34 +366,37 @@ class LifeAreasService:
             lord = self.HOUSE_LORDS.get(actual_house, 'Sun')
             lord_strength = planet_strengths.get(lord, 50)
             lord_house = planet_houses.get(lord, 1)
+            lord_name = get_planet_name(lord, lang)
+            house_text = get_text('house', lang)
+            lord_text = get_text('lord', lang)
 
             # Check if lord is in good houses (1, 4, 5, 7, 9, 10, 11)
             good_houses = [1, 4, 5, 7, 9, 10, 11]
             if lord_house in good_houses:
                 contribution = 8
                 factors.append({
-                    'name': f'{house_num}ம் வீட்டு அதிபதி',
+                    'name': f'{house_num} {house_text} {lord_text}',
                     'value': contribution,
                     'positive': True,
-                    'description': f'{self._get_tamil_planet(lord)} நல்ல வீட்டில் உள்ளார்'
+                    'description': f'{lord_name} {get_text("in_good_house", lang)}'
                 })
                 breakdown['house']['factors'].append({
-                    'name': f'{house_num}ம் வீடு',
-                    'detail': f'{self._get_tamil_planet(lord)} {lord_house}ம் வீட்டில்',
+                    'name': f'{house_num} {house_text}',
+                    'detail': f'{lord_name} {lord_house} {house_text}',
                     'value': contribution,
                     'positive': True
                 })
             elif lord_house in [6, 8, 12]:  # Dusthana houses
                 contribution = -10
                 factors.append({
-                    'name': f'{house_num}ம் வீட்டு அதிபதி',
+                    'name': f'{house_num} {house_text} {lord_text}',
                     'value': contribution,
                     'positive': False,
-                    'description': f'{self._get_tamil_planet(lord)} 6/8/12 வீட்டில்'
+                    'description': f'{lord_name} {get_text("in_6_8_12", lang)}'
                 })
                 breakdown['house']['factors'].append({
-                    'name': f'{house_num}ம் வீடு',
-                    'detail': f'{self._get_tamil_planet(lord)} {lord_house}ம் வீட்டில்',
+                    'name': f'{house_num} {house_text}',
+                    'detail': f'{lord_name} {lord_house} {house_text}',
                     'value': contribution,
                     'positive': False
                 })
@@ -245,33 +411,38 @@ class LifeAreasService:
         dasha_score = 0
         if dasha_lord:
             dasha_strength = planet_strengths.get(dasha_lord, 50)
+            dasha_lord_name = get_planet_name(dasha_lord, lang)
+            dasha_text = get_text('dasha', lang)
             if dasha_lord in karakas:
                 # Dasha lord is karaka for this area - amplified effect
                 dasha_score = (dasha_strength - 50) * 0.2
                 breakdown['dasha']['factors'].append({
-                    'name': f'{self._get_tamil_planet(dasha_lord)} தசை',
-                    'detail': f'காரகர் - பலம் {dasha_strength}%',
+                    'name': f'{dasha_lord_name} {dasha_text}',
+                    'detail': f'{get_text("karaka_amplified", lang)} {dasha_strength}%',
                     'value': int(dasha_score),
                     'positive': dasha_score >= 0
                 })
                 if dasha_strength >= 60:
                     factors.append({
-                        'name': f'{self._get_tamil_planet(dasha_lord)} தசா',
+                        'name': f'{dasha_lord_name} {dasha_text}',
                         'value': int(dasha_score),
                         'positive': True,
-                        'description': f'தற்போதைய தசா நாதர் இந்த துறைக்கு காரகர்'
+                        'description': get_text('current_dasha_karaka', lang)
                     })
 
         breakdown['dasha']['score'] = int(dasha_score)
 
         # 4. Transit effects (15% weight)
         transit_score = 0
+        transit_text = get_text('transit', lang)
+        house_text = get_text('house', lang)
         if current_transits:
             for transit in current_transits:
                 t_planet = transit.get('planet', transit.get('name', ''))
                 t_rasi = self._get_rasi_number(transit.get('rasi', ''))
 
                 if t_planet in karakas and t_rasi:
+                    t_planet_name = get_planet_name(t_planet, lang)
                     # Calculate transit house from moon
                     transit_house = ((t_rasi - moon_num) % 12) + 1
 
@@ -279,16 +450,16 @@ class LifeAreasService:
                     if transit_house in [2, 5, 7, 9, 11]:
                         transit_score += 5
                         breakdown['transit']['factors'].append({
-                            'name': f'{self._get_tamil_planet(t_planet)} கோச்சாரம்',
-                            'detail': f'{transit_house}ம் வீடு - நல்லது',
+                            'name': f'{t_planet_name} {transit_text}',
+                            'detail': f'{transit_house} {house_text} - {get_text("good_transit", lang)}',
                             'value': 5,
                             'positive': True
                         })
                     elif transit_house in [6, 8, 12]:
                         transit_score -= 5
                         breakdown['transit']['factors'].append({
-                            'name': f'{self._get_tamil_planet(t_planet)} கோச்சாரம்',
-                            'detail': f'{transit_house}ம் வீடு - சவால்',
+                            'name': f'{t_planet_name} {transit_text}',
+                            'detail': f'{transit_house} {house_text} - {get_text("challenging_transit", lang)}',
                             'value': -5,
                             'positive': False
                         })
@@ -308,7 +479,7 @@ class LifeAreasService:
         final_score = max(35, min(95, final_score))
 
         # Generate suggestion
-        suggestion = self._get_suggestion(area, final_score, factors)
+        suggestion = self._get_suggestion(area, final_score, factors, lang)
 
         # Create calculation trace for detailed modal display
         calculation_trace = {
@@ -316,28 +487,28 @@ class LifeAreasService:
             'step_by_step': [
                 {
                     'component': 'karaka',
-                    'component_tamil': 'காரக கிரக பலம்',
+                    'component_label': get_text('karaka_planet_strength', lang),
                     'weight': '40%',
                     'contribution': breakdown['karaka']['score'],
                     'factors_detail': breakdown['karaka']['factors']
                 },
                 {
                     'component': 'house',
-                    'component_tamil': 'வீட்டு அதிபதி நிலை',
+                    'component_label': get_text('house_lord_position', lang),
                     'weight': '30%',
                     'contribution': breakdown['house']['score'],
                     'factors_detail': breakdown['house']['factors']
                 },
                 {
                     'component': 'dasha',
-                    'component_tamil': 'தசா பலம்',
+                    'component_label': get_text('dasha_effect', lang),
                     'weight': '15%',
                     'contribution': breakdown['dasha']['score'],
                     'factors_detail': breakdown['dasha']['factors']
                 },
                 {
                     'component': 'transit',
-                    'component_tamil': 'கோச்சார பலம்',
+                    'component_label': get_text('transit_effect', lang),
                     'weight': '15%',
                     'contribution': breakdown['transit']['score'],
                     'factors_detail': breakdown['transit']['factors']
@@ -372,16 +543,16 @@ class LifeAreasService:
         }
         return tamil_names.get(planet, planet)
 
-    def _get_status(self, score: int) -> str:
+    def _get_status(self, score: int, lang: str = 'ta') -> str:
         """Get status label based on score"""
         if score >= 75:
-            return 'excellent'
+            return get_text('excellent', lang)
         elif score >= 60:
-            return 'good'
+            return get_text('good', lang)
         elif score >= 45:
-            return 'average'
+            return get_text('average', lang)
         else:
-            return 'challenging'
+            return get_text('challenging', lang)
 
     def _get_status_tamil(self, score: int) -> str:
         """Get Tamil status label"""
@@ -394,41 +565,11 @@ class LifeAreasService:
         else:
             return 'கவனம்'
 
-    def _get_suggestion(self, area: str, score: int, factors: List) -> str:
+    def _get_suggestion(self, area: str, score: int, factors: List, lang: str = 'ta') -> str:
         """Generate personalized suggestion based on area and score"""
-        suggestions = {
-            'love': {
-                'high': 'காதல் வாழ்க்கை சிறப்பாக உள்ளது. உறவுகளை பேணுங்கள்.',
-                'medium': 'வெள்ளிக்கிழமை விரதம் இருந்தால் காதல் வாழ்க்கை மேம்படும்',
-                'low': 'சுக்கிர பரிகாரம் செய்யுங்கள். வெள்ளை நிற உடை அணியுங்கள்.'
-            },
-            'career': {
-                'high': 'தொழில் வளர்ச்சிக்கு சிறந்த நேரம். புதிய முயற்சிகள் செய்யலாம்.',
-                'medium': 'சனிக்கிழமை ஹனுமான் வழிபாடு தொழில் வளர்ச்சிக்கு உதவும்',
-                'low': 'சனி பகவான் வழிபாடு செய்யுங்கள். நீல நிற ஆடை அணியுங்கள்.'
-            },
-            'education': {
-                'high': 'கல்வியில் சிறப்பு காலம். புதிய படிப்புகள் தொடங்கலாம்.',
-                'medium': 'புதன்கிழமை விஷ்ணு வழிபாடு கல்வி வளர்ச்சிக்கு நல்லது',
-                'low': 'புதன் மற்றும் குரு பரிகாரம் செய்யுங்கள்.'
-            },
-            'family': {
-                'high': 'குடும்ப உறவுகள் மிகவும் சிறப்பாக உள்ளன.',
-                'medium': 'திங்கள்கிழமை சிவ வழிபாடு குடும்ப ஒற்றுமைக்கு நல்லது',
-                'low': 'சந்திர பரிகாரம் செய்யுங்கள். குடும்பத்துடன் நேரம் செலவிடுங்கள்.'
-            },
-            'health': {
-                'high': 'ஆரோக்கியம் சிறப்பாக உள்ளது. உடற்பயிற்சி தொடருங்கள்.',
-                'medium': 'ஞாயிறு காயத்ரி ஜபம் ஆரோக்கியத்திற்கு நல்லது',
-                'low': 'சூரிய பரிகாரம் செய்யுங்கள். காலை நடை பயிற்சி செய்யுங்கள்.'
-            }
-        }
-
-        area_suggestions = suggestions.get(area, suggestions['career'])
-
         if score >= 70:
-            return area_suggestions['high']
+            return get_text(f'{area}_high', lang)
         elif score >= 50:
-            return area_suggestions['medium']
+            return get_text(f'{area}_medium', lang)
         else:
-            return area_suggestions['low']
+            return get_text(f'{area}_low', lang)

@@ -16,10 +16,11 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Path, Circle } from 'react-native-svg';
+import Svg, { Path, Circle, Defs, RadialGradient, Stop, Ellipse } from 'react-native-svg';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { mobileAPI } from '../services/api';
+import { populateScoreCache } from '../services/scoringService';
 import notificationService from '../services/notificationService';
 
 const { width } = Dimensions.get('window');
@@ -260,6 +261,54 @@ const translateEventLabel = (event, language, t) => {
   if (language === 'ta') return event.label_tamil || event.label;
   return event.label || event.label_tamil;
 };
+
+// ============== DECORATIVE COMPONENTS ==============
+
+// Simple decorative border - subtle golden line with dots
+const DecorativeBorder = ({ style }) => {
+  return (
+    <View style={[{ width: '100%', alignItems: 'center', paddingVertical: 6 }, style]}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', width: '85%' }}>
+        <View style={{ flex: 1, height: 1, backgroundColor: '#fcd34d' }} />
+        <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#f97316', marginHorizontal: 12 }} />
+        <View style={{ flex: 1, height: 1, backgroundColor: '#fcd34d' }} />
+      </View>
+    </View>
+  );
+};
+
+// Detailed Diya (Oil Lamp) Icon - Traditional style
+const DiyaIcon = ({ size = 40, color = '#d97706' }) => (
+  <Svg width={size} height={size} viewBox="0 0 100 100">
+    <Defs>
+      <RadialGradient id="flameGlow" cx="50%" cy="20%" r="60%">
+        <Stop offset="0%" stopColor="#fbbf24" stopOpacity="1" />
+        <Stop offset="50%" stopColor="#f97316" stopOpacity="0.6" />
+        <Stop offset="100%" stopColor="#f97316" stopOpacity="0" />
+      </RadialGradient>
+    </Defs>
+    {/* Flame glow */}
+    <Ellipse cx="50" cy="22" rx="18" ry="22" fill="url(#flameGlow)" />
+    {/* Outer flame */}
+    <Path d="M50 5 Q58 18 55 30 Q52 38 50 42 Q48 38 45 30 Q42 18 50 5" fill="#f97316" />
+    {/* Inner flame */}
+    <Path d="M50 12 Q54 20 52 28 Q51 34 50 38 Q49 34 48 28 Q46 20 50 12" fill="#fbbf24" />
+    {/* Flame core */}
+    <Path d="M50 18 Q52 24 51 30 Q50 34 50 36 Q50 34 49 30 Q48 24 50 18" fill="#fff" opacity="0.8" />
+    {/* Lamp body */}
+    <Ellipse cx="50" cy="52" rx="28" ry="10" fill={color} />
+    <Path d="M22 52 Q22 68 32 78 L68 78 Q78 68 78 52" fill={color} />
+    {/* Lamp decorations */}
+    <Ellipse cx="50" cy="60" rx="20" ry="6" fill="#b45309" opacity="0.5" />
+    {/* Base */}
+    <Ellipse cx="50" cy="82" rx="22" ry="6" fill={color} />
+    <Ellipse cx="50" cy="88" rx="18" ry="4" fill="#92400e" />
+    {/* Highlight */}
+    <Ellipse cx="40" cy="52" rx="8" ry="3" fill="#fcd34d" opacity="0.4" />
+  </Svg>
+);
+
+
 
 // Animated Card Component
 const AnimatedCard = ({ children, delay = 0, style }) => {
@@ -613,7 +662,7 @@ const ScoreJustificationModal = ({ visible, onClose, data, t }) => {
               <View style={styles.dashaInfoBox}>
                 <Ionicons name="time" size={16} color="#8b5cf6" />
                 <Text style={styles.dashaInfoText}>
-                  {data.dasha_lord} {t('dashaLabel')} {data.bhukti_lord ? `- ${data.bhukti_lord} ${t('bhuktiLabel')}` : ''}
+                  {data.dasha_lord_label || data.dasha_lord} {t('dashaLabel')} {data.bhukti_lord ? `- ${data.bhukti_lord_label || data.bhukti_lord} ${t('bhuktiLabel')}` : ''}
                 </Text>
               </View>
             )}
@@ -623,7 +672,7 @@ const ScoreJustificationModal = ({ visible, onClose, data, t }) => {
             {/* Detailed Breakdown Section */}
             {stepByStep.length > 0 && (
               <>
-                <Text style={styles.modalSectionTitle}>📊 {t('scoreCalculation')}</Text>
+                <Text style={styles.modalSectionTitle}><Ionicons name="bar-chart" size={16} color="#ea580c" /> {t('scoreCalculation')}</Text>
                 <Text style={styles.formulaText}>{trace.formula}</Text>
 
                 {stepByStep.map((step, i) => {
@@ -635,7 +684,7 @@ const ScoreJustificationModal = ({ visible, onClose, data, t }) => {
                           <Ionicons name={compInfo.icon} size={16} color={compInfo.color} />
                         </View>
                         <View style={styles.breakdownTitleRow}>
-                          <Text style={styles.breakdownTitle}>{t(compInfo.key) || step.component}</Text>
+                          <Text style={styles.breakdownTitle}>{t(compInfo.key) || step.component_label || step.component}</Text>
                           <Text style={styles.breakdownWeight}>({step.weight})</Text>
                         </View>
                         <Text style={[styles.breakdownContribution, { color: compInfo.color }]}>
@@ -689,7 +738,7 @@ const ScoreJustificationModal = ({ visible, onClose, data, t }) => {
             {/* Simple Breakdown (if no detailed trace) */}
             {stepByStep.length === 0 && Object.keys(breakdown).length > 0 && (
               <>
-                <Text style={styles.modalSectionTitle}>📊 {t('scoreBreakdown')}</Text>
+                <Text style={styles.modalSectionTitle}><Ionicons name="bar-chart" size={16} color="#ea580c" /> {t('scoreBreakdown')}</Text>
                 {Object.entries(breakdown).map(([key, value], i) => {
                   const compInfo = COMPONENT_KEYS[key] || { key: key, icon: 'help', color: '#6b7280' };
                   return (
@@ -717,7 +766,7 @@ const ScoreJustificationModal = ({ visible, onClose, data, t }) => {
             {data.factors && data.factors.length > 0 && stepByStep.length === 0 && (
               <>
                 <View style={styles.modalDivider} />
-                <Text style={styles.modalSectionTitle}>📈 {t('keyFactors')}</Text>
+                <Text style={styles.modalSectionTitle}><Ionicons name="trending-up" size={16} color="#ea580c" /> {t('keyFactors')}</Text>
                 {data.factors.map((factor, i) => (
                   <View key={i} style={styles.factorItem}>
                     <View style={styles.factorHeader}>
@@ -737,7 +786,7 @@ const ScoreJustificationModal = ({ visible, onClose, data, t }) => {
             {data.area_scores && Object.keys(data.area_scores).length > 0 && (
               <>
                 <View style={styles.modalDivider} />
-                <Text style={styles.modalSectionTitle}>🎯 {t('lifeAreasLabel')}</Text>
+                <Text style={styles.modalSectionTitle}><Ionicons name="compass" size={16} color="#ea580c" /> {t('lifeAreasLabel')}</Text>
                 <View style={styles.areaScoresGrid}>
                   {Object.entries(data.area_scores).map(([area, score], i) => {
                     const areaInfo = AREA_KEYS[area] || { key: area, icon: 'help', color: '#6b7280' };
@@ -757,7 +806,7 @@ const ScoreJustificationModal = ({ visible, onClose, data, t }) => {
             {data.positives && data.positives.length > 0 && (
               <>
                 <View style={styles.modalDivider} />
-                <Text style={styles.modalSectionTitle}>✨ {t('goodOpportunities')}</Text>
+                <Text style={styles.modalSectionTitle}><Ionicons name="sparkles" size={16} color="#ea580c" /> {t('goodOpportunities')}</Text>
                 {data.positives.map((positive, i) => (
                   <View key={i} style={styles.positiveItem}>
                     <View style={styles.positiveIconBg}>
@@ -776,7 +825,7 @@ const ScoreJustificationModal = ({ visible, onClose, data, t }) => {
             {data.remedies && data.remedies.length > 0 && (
               <>
                 <View style={styles.modalDivider} />
-                <Text style={styles.modalSectionTitle}>🙏 {t('remediesLabel')}</Text>
+                <Text style={styles.modalSectionTitle}><Ionicons name="leaf" size={16} color="#ea580c" /> {t('remediesLabel')}</Text>
                 <View style={styles.remediesBox}>
                   {data.remedies.map((remedy, i) => (
                     <View key={i} style={styles.remedyItem}>
@@ -788,11 +837,11 @@ const ScoreJustificationModal = ({ visible, onClose, data, t }) => {
               </>
             )}
 
-            {/* Suggestion Section */}
-            {data.suggestion && (
+            {/* Suggestion/Recommendation Section */}
+            {(data.suggestion || data.recommendation) && (
               <View style={styles.suggestionBox}>
                 <Ionicons name="bulb" size={18} color="#f97316" />
-                <Text style={styles.suggestionText}>{data.suggestion}</Text>
+                <Text style={styles.suggestionText}>{data.suggestion || data.recommendation}</Text>
               </View>
             )}
 
@@ -856,16 +905,16 @@ const TimelineYearModal = ({ visible, onClose, data, language, t }) => {
 
             <View style={[styles.qualityBadge, { backgroundColor: scoreColor + '20' }]}>
               <Text style={[styles.qualityText, { color: scoreColor }]}>
-                {isPeak ? `⭐ ${t('peakYear')}` :
-                 isLow ? `⚠️ ${t('challenging')}` :
-                 `📊 ${t('normalYear')}`}
+                {isPeak ? t('peakYear') :
+                 isLow ? t('challenging') :
+                 t('normalYear')}
               </Text>
             </View>
 
             <View style={styles.modalDivider} />
 
             {/* Life Area Breakdown */}
-            <Text style={styles.modalSectionTitle}>📊 {t('lifeAreasBreakdown')}</Text>
+            <Text style={styles.modalSectionTitle}><Ionicons name="grid" size={16} color="#ea580c" /> {t('lifeAreasBreakdown')}</Text>
             <View style={styles.tlmAreaContainer}>
               {lifeAreas.map((area) => {
                 const score = scores[area.key] || 0;
@@ -888,7 +937,7 @@ const TimelineYearModal = ({ visible, onClose, data, language, t }) => {
             {trace.formula && (
               <>
                 <View style={styles.modalDivider} />
-                <Text style={styles.modalSectionTitle}>🔮 {t('calculation')}</Text>
+                <Text style={styles.modalSectionTitle}><Ionicons name="calculator" size={16} color="#ea580c" /> {t('calculation')}</Text>
                 <View style={styles.tlmTraceBox}>
                   <Text style={styles.tlmTraceVersion}>v{trace.engine_version || '2.3'}</Text>
                   <Text style={styles.tlmTraceFormula}>{trace.formula}</Text>
@@ -908,7 +957,7 @@ const TimelineYearModal = ({ visible, onClose, data, language, t }) => {
             {factors.length > 0 && (
               <>
                 <View style={styles.modalDivider} />
-                <Text style={styles.modalSectionTitle}>⚡ {t('keyFactors')}</Text>
+                <Text style={styles.modalSectionTitle}><Ionicons name="flash" size={16} color="#ea580c" /> {t('keyFactors')}</Text>
                 {factors.slice(0, 5).map((factor, i) => (
                   <View key={i} style={styles.factorItem}>
                     <Ionicons
@@ -932,7 +981,7 @@ const TimelineYearModal = ({ visible, onClose, data, language, t }) => {
             {events.length > 0 && (
               <>
                 <View style={styles.modalDivider} />
-                <Text style={styles.modalSectionTitle}>🎯 {t('events')}</Text>
+                <Text style={styles.modalSectionTitle}><Ionicons name="flag" size={16} color="#ea580c" /> {t('events')}</Text>
                 <View style={styles.tlmEventsGrid}>
                   {events.map((event, i) => (
                     <View key={i} style={[styles.tlmEventChip, { backgroundColor: event.color + '20', borderColor: event.color }]}>
@@ -973,6 +1022,8 @@ const TimelineYearModal = ({ visible, onClose, data, language, t }) => {
 export default function DashboardScreen({ navigation }) {
   const { userProfile } = useAuth();
   const { t, formatDate, language } = useLanguage();
+  // language is already 'ta', 'en', or 'kn' from LanguageContext
+  const apiLang = language;
   const [currentTime, setCurrentTime] = useState(new Date());
   const [panchangam, setPanchangam] = useState(null);
   const [jathagam, setJathagam] = useState(null);
@@ -1061,12 +1112,12 @@ export default function DashboardScreen({ navigation }) {
             return null;
           }),
           // Life Areas - pass language for translated content
-          mobileAPI.getLifeAreas(birthDetails, language).catch(err => {
+          mobileAPI.getLifeAreas(birthDetails, apiLang).catch(err => {
             console.error('Life Areas API error:', err);
             return null;
           }),
           // Future Projections - pass language for translated content
-          mobileAPI.getFutureProjections(birthDetails, language).catch(err => {
+          mobileAPI.getFutureProjections(birthDetails, apiLang).catch(err => {
             console.error('Future Projections API error:', err);
             return null;
           }),
@@ -1088,6 +1139,9 @@ export default function DashboardScreen({ navigation }) {
         setTransitsMap(transitsData);
         setDynamicLifeAreas(lifeAreasData);
         setDynamicProjections(projectionsData);
+
+        // Populate unified scoring cache so AstroFeed and UngalJothidan use the same scores
+        populateScoreCache(userProfile, lifeAreasData, transitsData, projectionsData);
 
         // Schedule transit notifications
         if (transitsData) {
@@ -1209,7 +1263,10 @@ export default function DashboardScreen({ navigation }) {
         breakdown: m.breakdown || {},
         calculation_trace: m.calculation_trace || {},
         dasha_lord: m.dasha_lord,
+        dasha_lord_label: m.dasha_lord_label,
         bhukti_lord: m.bhukti_lord,
+        bhukti_lord_label: m.bhukti_lord_label,
+        recommendation: m.recommendation || '',
         suggestion: m.recommendation || '',
         isPersonalized: true
       }));
@@ -1246,6 +1303,8 @@ export default function DashboardScreen({ navigation }) {
     // If dynamic projections are available from API, use them
     if (dynamicProjections?.projections?.yearly) {
       console.log('Using DYNAMIC yearly projections from API');
+      // V5.0 DEBUG: Log actual scores from backend
+      console.log('V5.0 Year Scores:', dynamicProjections.projections.yearly.map(y => `${y.year}: ${y.score}`).join(', '));
       return dynamicProjections.projections.yearly.map((y, i) => ({
         year: y.year,
         score: y.score,
@@ -1256,11 +1315,16 @@ export default function DashboardScreen({ navigation }) {
         factors: y.factors || [],
         breakdown: y.breakdown || {},
         calculation_trace: y.calculation_trace || {},
+        detailed_breakdown: y.detailed_breakdown || {},
         area_scores: y.area_scores || {},
+        area_recommendations: y.area_recommendations || {},
         dasha_lord: y.dasha_lord,
+        dasha_lord_label: y.dasha_lord_label,
         bhukti_lord: y.bhukti_lord,
+        bhukti_lord_label: y.bhukti_lord_label,
         positives: [],
         remedies: [],
+        recommendation: y.recommendation || '',
         suggestion: y.recommendation || '',
         isPersonalized: true
       }));
@@ -1309,8 +1373,8 @@ export default function DashboardScreen({ navigation }) {
   const yearProjections = getYearProjections();
 
   const quickActions = [
-    { icon: 'sparkles', label: t('remedy'), screen: 'Remedy', color: '#8b5cf6' },
-    { icon: 'chatbubbles', label: t('aiQuestion'), screen: 'Chat', color: '#ea580c' },
+    { icon: 'medkit', label: t('remedies'), screen: 'Remedy', color: '#8b5cf6' },
+    { icon: 'sparkles', label: t('astroFeed'), screen: 'AstroFeed', color: '#ea580c' },
     { icon: 'heart', label: t('matching'), screen: 'Matching', color: '#ef4444' },
     { icon: 'calendar', label: t('muhurtham'), screen: 'Muhurtham', color: '#16a34a' },
   ];
@@ -1346,8 +1410,11 @@ export default function DashboardScreen({ navigation }) {
       breakdown: month.breakdown,
       calculation_trace: month.calculation_trace,
       dasha_lord: month.dasha_lord,
+      dasha_lord_label: month.dasha_lord_label,
       bhukti_lord: month.bhukti_lord,
-      suggestion: month.suggestion
+      bhukti_lord_label: month.bhukti_lord_label,
+      suggestion: month.suggestion,
+      recommendation: month.recommendation
     });
     setShowScoreModal(true);
   };
@@ -1362,12 +1429,17 @@ export default function DashboardScreen({ navigation }) {
       factors: year.factors,
       breakdown: year.breakdown,
       calculation_trace: year.calculation_trace,
+      detailed_breakdown: year.detailed_breakdown,
       area_scores: year.area_scores,
+      area_recommendations: year.area_recommendations,
       dasha_lord: year.dasha_lord,
+      dasha_lord_label: year.dasha_lord_label,
       bhukti_lord: year.bhukti_lord,
+      bhukti_lord_label: year.bhukti_lord_label,
       positives: year.positives,
       remedies: year.remedies,
-      suggestion: year.suggestion
+      suggestion: year.suggestion,
+      recommendation: year.recommendation
     });
     setShowScoreModal(true);
   };
@@ -1375,21 +1447,26 @@ export default function DashboardScreen({ navigation }) {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#f97316" />
-        <Text style={styles.loadingText}>{t('loading')}</Text>
+        <View style={{ alignItems: 'center' }}>
+          <DiyaIcon size={60} />
+          <Text style={styles.loadingText}>{t('loading')}</Text>
+        </View>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <LinearGradient colors={['#fff7ed', '#ffffff', '#fff7ed']} style={styles.gradient}>
+      {/* Warm auspicious gradient background */}
+      <LinearGradient colors={['#fffbeb', '#fef3c7', '#fff7ed']} style={styles.gradient}>
         <ScrollView
           contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#f97316']} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#f97316']} tintColor="#f97316" />}
+          showsVerticalScrollIndicator={false}
         >
+          {/* Top accent bar */}
           <LinearGradient
-            colors={['#f97316', '#ef4444', '#f97316']}
+            colors={['#f97316', '#ea580c', '#f97316']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.headerBar}
@@ -1504,7 +1581,7 @@ export default function DashboardScreen({ navigation }) {
           {/* Tamil Calendar */}
           <AnimatedCard delay={100} style={styles.card}>
             <View style={styles.cardHeader}>
-              <Ionicons name="calendar" size={16} color="#ea580c" />
+              <DiyaIcon size={32} color="#d97706" />
               <Text style={styles.cardTitle}>{t('todayPanchangam')}</Text>
             </View>
             <View style={styles.panchangamGrid}>
@@ -1560,7 +1637,7 @@ export default function DashboardScreen({ navigation }) {
           {/* Life Areas */}
           <AnimatedCard delay={300} style={styles.card}>
             <View style={styles.cardHeader}>
-              <Ionicons name="star" size={16} color="#ea580c" />
+              <Ionicons name="heart" size={24} color="#ec4899" />
               <Text style={styles.cardTitle}>{t('lifeAreas')}</Text>
               {dynamicLifeAreas?.life_areas ? (
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 'auto', backgroundColor: '#dcfce7', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10, marginRight: 8 }}>
@@ -1730,7 +1807,10 @@ export default function DashboardScreen({ navigation }) {
 
           {/* Quick Actions */}
           <AnimatedCard delay={400} style={styles.card}>
-            <Text style={styles.cardTitle}>{t('quickActions')}</Text>
+            <View style={styles.cardHeader}>
+              <Ionicons name="flash" size={24} color="#f97316" />
+              <Text style={styles.cardTitle}>{t('quickActions')}</Text>
+            </View>
             <View style={styles.quickActionsGrid}>
               {quickActions.map((action, i) => (
                 <AnimatedQuickAction
@@ -1987,7 +2067,7 @@ export default function DashboardScreen({ navigation }) {
           {/* Aura Heatmap - Planet Strength Visualization */}
           {planetAura && (
             <AnimatedCard delay={600}>
-              <LinearGradient colors={['#1e1b4b', '#312e81']} style={[styles.card, styles.auraCard, { marginHorizontal: 0 }]}>
+              <LinearGradient colors={['#1e1b4b', '#312e81']} style={[styles.card, styles.auraCard]}>
                 <View style={styles.cardHeader}>
                   <Ionicons name="planet" size={16} color="#a78bfa" />
                   <Text style={[styles.cardTitle, { color: '#fff' }]}>
@@ -2130,7 +2210,7 @@ export default function DashboardScreen({ navigation }) {
                   {planetAura.dominant_planets?.length > 0 && (
                     <View style={styles.auraDominantSection}>
                       <Text style={styles.auraDominantLabel}>
-                        💪 {t('strong')}
+                        <Ionicons name="flash" size={14} color="#16a34a" /> {t('strong')}
                       </Text>
                       <View style={styles.auraDominantList}>
                         {planetAura.dominant_planets.slice(0, 2).map((p, i) => (
@@ -2142,7 +2222,7 @@ export default function DashboardScreen({ navigation }) {
                   {planetAura.challenged_planets?.length > 0 && (
                     <View style={styles.auraDominantSection}>
                       <Text style={styles.auraDominantLabel}>
-                        🙏 {t('needsRemedy')}
+                        <Ionicons name="leaf" size={14} color="#f97316" /> {t('needsRemedy')}
                       </Text>
                       <View style={styles.auraDominantList}>
                         {planetAura.challenged_planets.slice(0, 2).map((p, i) => (
@@ -2169,7 +2249,7 @@ export default function DashboardScreen({ navigation }) {
                 >
                   <View style={styles.transitsHeaderContent}>
                     <View style={styles.transitsHeaderLeft}>
-                      <Text style={styles.transitsHeaderIcon}>🪐</Text>
+                      <Ionicons name="planet" size={24} color="#a5b4fc" />
                       <View>
                         <Text style={styles.transitsHeaderTitle}>
                           {t('liveTransits')}
@@ -2224,7 +2304,7 @@ export default function DashboardScreen({ navigation }) {
                     {/* Countdown Timer */}
                     <View style={styles.countdownContainer}>
                       <Text style={styles.countdownLabel}>
-                        ⏱ {t('nextSignChange')}
+                        <Ionicons name="time" size={14} color="#a78bfa" /> {t('nextSignChange')}
                       </Text>
                       <View style={styles.countdownTimerRow}>
                         <View style={styles.countdownBox}>
@@ -2262,7 +2342,7 @@ export default function DashboardScreen({ navigation }) {
                 {/* Sky Map - Orbital View */}
                 <View style={styles.orbitalSection}>
                   <Text style={styles.orbitalTitle}>
-                    🌌 {t('celestialMap')}
+                    <Ionicons name="telescope" size={16} color="#6366f1" /> {t('celestialMap')}
                   </Text>
                   <View style={styles.orbitalContainer}>
                     {/* Outer Ring */}
@@ -2298,7 +2378,7 @@ export default function DashboardScreen({ navigation }) {
 
                     {/* Earth Center */}
                     <View style={styles.earthCenter}>
-                      <Text style={styles.earthEmoji}>🌍</Text>
+                      <Ionicons name="globe" size={20} color="#22c55e" />
                     </View>
                   </View>
                 </View>
@@ -2306,7 +2386,7 @@ export default function DashboardScreen({ navigation }) {
                 {/* Planet Cards - Horizontal Scroll */}
                 <View style={styles.planetCardsSection}>
                   <Text style={styles.planetCardsTitle}>
-                    📍 {t('planetPositions')}
+                    <Ionicons name="location" size={16} color="#6366f1" /> {t('planetPositions')}
                   </Text>
                   <ScrollView
                     horizontal
@@ -2344,7 +2424,7 @@ export default function DashboardScreen({ navigation }) {
                 {transitsMap.retrogrades?.length > 0 && (
                   <View style={styles.retroAlertSection}>
                     <View style={styles.retroAlertHeader}>
-                      <Text style={styles.retroAlertIcon}>⚡</Text>
+                      <Ionicons name="alert-circle" size={18} color="#fca5a5" />
                       <Text style={styles.retroAlertTitle}>
                         {t('retrogradeAlert')}
                       </Text>
@@ -2388,7 +2468,7 @@ export default function DashboardScreen({ navigation }) {
                 {transitsMap.upcoming_transits?.length > 0 && (
                   <View style={styles.upcomingSection}>
                     <Text style={styles.upcomingSectionTitle}>
-                      📅 {t('comingUp')}
+                      <Ionicons name="calendar" size={16} color="#6366f1" /> {t('comingUp')}
                     </Text>
                     {transitsMap.upcoming_transits.slice(0, 3).map((transit, index) => (
                       <View key={index} style={styles.upcomingCard}>
@@ -2427,6 +2507,9 @@ export default function DashboardScreen({ navigation }) {
               </View>
             </AnimatedCard>
           )}
+
+          {/* Bottom decorative section */}
+          <DecorativeBorder style={{ marginTop: 20, marginBottom: 10 }} />
         </ScrollView>
       </LinearGradient>
 
@@ -2456,11 +2539,12 @@ export default function DashboardScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   gradient: { flex: 1 },
-  scrollContent: {},
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff7ed' },
-  loadingText: { marginTop: 16, color: '#6b7280' },
+  scrollContent: { paddingHorizontal: 16 },
+
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fef3c7' },
+  loadingText: { marginTop: 16, color: '#92400e', fontSize: 16, fontWeight: '500' },
   headerBar: { height: 4 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#fed7aa' },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#fcd34d' },
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   logoIcon: { width: 28, height: 28 },
   appTitle: { fontSize: 20, fontWeight: 'bold', color: '#9a3412' },
@@ -2486,14 +2570,14 @@ const styles = StyleSheet.create({
   storyMoreCircle: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#fff7ed', borderWidth: 2, borderColor: '#fed7aa', borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center' },
   storyLabel: { fontSize: 10, color: '#6b7280', marginTop: 4, textAlign: 'center' },
 
-  card: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginHorizontal: 16, marginTop: 16, borderWidth: 1, borderColor: '#fed7aa' },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
-  cardTitle: { fontSize: 14, fontWeight: '600', color: '#1f2937', flex: 1 },
+  card: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginTop: 16, borderWidth: 1, borderColor: '#fcd34d', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
+  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 14 },
+  cardTitle: { fontSize: 16, fontWeight: '700', color: '#92400e', flex: 1 },
   tapHintSmall: { fontSize: 10, color: '#9ca3af' },
-  panchangamGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  panchangamItem: { flex: 1, minWidth: '45%', backgroundColor: '#fff7ed', borderRadius: 12, padding: 12 },
-  panchangamLabel: { fontSize: 10, color: '#6b7280', marginBottom: 4 },
-  panchangamValue: { fontSize: 12, fontWeight: '600', color: '#1f2937' },
+  panchangamGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  panchangamItem: { flex: 1, minWidth: '45%', backgroundColor: '#fef3c7', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: '#fcd34d' },
+  panchangamLabel: { fontSize: 11, color: '#92400e', marginBottom: 4, fontWeight: '500' },
+  panchangamValue: { fontSize: 13, fontWeight: '700', color: '#78350f' },
 
   scoreRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   scoreLabel: { fontSize: 12, color: '#6b7280' },
@@ -2510,7 +2594,7 @@ const styles = StyleSheet.create({
   insightText: { flex: 1, fontSize: 13, color: '#374151', lineHeight: 20 },
 
   lifeAreasRow: { flexDirection: 'row', gap: 10, marginBottom: 10 },
-  lifeAreaCard: { flex: 1, backgroundColor: '#fff', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: '#fed7aa', minHeight: 120 },
+  lifeAreaCard: { flex: 1, backgroundColor: '#fff', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: '#fcd34d', minHeight: 120, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 },
   lifeAreaHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
   lifeAreaIconBg: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
   lifeAreaBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
@@ -2709,7 +2793,7 @@ const styles = StyleSheet.create({
   peakLowText: { fontSize: 12, color: '#cbd5e1' },
 
   // Aura Heatmap styles
-  auraCard: { borderColor: '#8b5cf6', marginHorizontal: 16, marginTop: 16 },
+  auraCard: { borderColor: '#8b5cf6', marginTop: 16 },
   auraBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
   auraBadgeText: { fontSize: 14, fontWeight: '700' },
   auraOverview: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
@@ -2768,7 +2852,7 @@ const styles = StyleSheet.create({
   auraDominantPlanet: { fontSize: 12, color: '#22c55e', fontWeight: '500' },
 
   // Transits Map - Premium Styles
-  transitsContainer: { marginHorizontal: 16, marginTop: 16, borderRadius: 20, overflow: 'hidden', backgroundColor: '#0f0a1e' },
+  transitsContainer: { marginTop: 16, borderRadius: 20, overflow: 'hidden', backgroundColor: '#0f0a1e' },
   transitsHeader: { padding: 16, borderBottomWidth: 1, borderBottomColor: 'rgba(139, 92, 246, 0.2)' },
   transitsHeaderContent: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   transitsHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },

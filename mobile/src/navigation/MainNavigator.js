@@ -8,7 +8,7 @@ import { useLanguage } from '../context/LanguageContext';
 import DashboardScreen from '../screens/DashboardScreen';
 import AstroFeedScreen from '../screens/AstroFeedScreen';
 import MatchingScreen from '../screens/MatchingScreen';
-import ChatScreen from '../screens/ChatScreen';
+import UngalJothidanScreen from '../screens/UngalJothidanScreen';
 import MuhurthamScreen from '../screens/MuhurthamScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
@@ -57,8 +57,8 @@ export default function MainNavigator() {
             iconName = focused ? 'sparkles' : 'sparkles-outline';
           } else if (route.name === 'Matching') {
             iconName = focused ? 'heart' : 'heart-outline';
-          } else if (route.name === 'Chat') {
-            iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
+          } else if (route.name === 'UngalJothidan') {
+            iconName = focused ? 'sunny' : 'sunny-outline';
           } else if (route.name === 'Muhurtham') {
             iconName = focused ? 'calendar' : 'calendar-outline';
           } else if (route.name === 'Profile') {
@@ -85,9 +85,9 @@ export default function MainNavigator() {
         options={{ tabBarLabel: t('matching') }}
       />
       <Tab.Screen
-        name="Chat"
-        component={ChatScreen}
-        options={{ tabBarLabel: t('chat') }}
+        name="UngalJothidan"
+        component={UngalJothidanScreen}
+        options={{ tabBarLabel: t('ungalJothidan') }}
       />
       <Tab.Screen
         name="Muhurtham"

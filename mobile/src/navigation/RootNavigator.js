@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import AuthNavigator from './AuthNavigator';
 import MainNavigator from './MainNavigator';
 import RemedyScreen from '../screens/RemedyScreen';
+import UngalJothidanScreen from '../screens/UngalJothidanScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -31,6 +32,14 @@ export default function RootNavigator() {
             options={{
               presentation: 'modal',
               animation: 'slide_from_bottom',
+            }}
+          />
+          <Stack.Screen
+            name="UngalJothidan"
+            component={UngalJothidanScreen}
+            options={{
+              presentation: 'card',
+              animation: 'slide_from_right',
             }}
           />
         </>

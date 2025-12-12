@@ -92,8 +92,10 @@ const AnimatedEventButton = ({ type, isActive, onPress, delay = 0 }) => {
         onPressOut={handlePressOut}
         activeOpacity={0.9}
       >
-        <Text style={styles.eventIcon}>{type.icon}</Text>
-        <Text style={styles.eventLabel} numberOfLines={1}>{type.label}</Text>
+        <View style={[styles.eventIconContainer, isActive && { backgroundColor: type.iconColor + '20' }]}>
+          <Ionicons name={type.iconName} size={24} color={isActive ? type.iconColor : '#6b7280'} />
+        </View>
+        <Text style={[styles.eventLabel, isActive && { color: type.iconColor, fontWeight: '600' }]} numberOfLines={1}>{type.label}</Text>
       </TouchableOpacity>
     </Animated.View>
   );
@@ -212,20 +214,23 @@ const PulsingCalendarIcon = () => {
   );
 };
 
-// Event type IDs for translation lookup
+// Event type IDs for translation lookup - using Ionicons instead of emojis
 const eventTypeIds = [
-  { id: 'marriage', icon: '💒', labelKey: 'marriage' },
-  { id: 'griha_pravesam', icon: '🏠', labelKey: 'housewarming' },
-  { id: 'vehicle', icon: '🚗', labelKey: 'vehicle' },
-  { id: 'business', icon: '💼', labelKey: 'business' },
-  { id: 'travel', icon: '✈️', labelKey: 'travel' },
-  { id: 'general', icon: '⭐', labelKey: 'general' },
+  { id: 'marriage', iconName: 'heart', iconColor: '#ec4899', labelKey: 'marriage' },
+  { id: 'griha_pravesam', iconName: 'home', iconColor: '#f59e0b', labelKey: 'housewarming' },
+  { id: 'vehicle', iconName: 'car', iconColor: '#3b82f6', labelKey: 'vehicle' },
+  { id: 'business', iconName: 'briefcase', iconColor: '#6366f1', labelKey: 'business' },
+  { id: 'travel', iconName: 'airplane', iconColor: '#06b6d4', labelKey: 'travel' },
+  { id: 'general', iconName: 'star', iconColor: '#f97316', labelKey: 'general' },
 ];
 
 export default function MuhurthamScreen() {
   const insets = useSafeAreaInsets();
   const bottomPadding = Platform.OS === 'android' ? Math.max(insets.bottom, 80) : insets.bottom + 80;
-  const { t, getMonthName, getShortDayName } = useLanguage();
+  const { t, getMonthName, getShortDayName, language } = useLanguage();
+
+  // language is already 'ta', 'en', or 'kn' from LanguageContext
+  const apiLang = language;
 
   // Build translated event types
   const eventTypes = eventTypeIds.map(et => ({
@@ -257,7 +262,7 @@ export default function MuhurthamScreen() {
     fetchCalendar();
     setSelectedDate(null);
     setDayDetails(null);
-  }, [currentMonth]);
+  }, [currentMonth, apiLang]);
 
   const fetchCalendar = async () => {
     setLoadingCalendar(true);
@@ -265,11 +270,11 @@ export default function MuhurthamScreen() {
     try {
       const month = currentMonth.getMonth() + 1;
       const year = currentMonth.getFullYear();
-      const data = await mobileAPI.getMuhurthamCalendar(month, year);
+      const data = await mobileAPI.getMuhurthamCalendar(month, year, apiLang);
       setCalendarData(data || []);
     } catch (err) {
       console.error('Failed to fetch calendar:', err);
-      setError('நாள்காட்டி தரவு ஏற்ற முடியவில்லை');
+      setError(t('calendarLoadError'));
       setCalendarData([]);
     } finally {
       setLoadingCalendar(false);
@@ -283,7 +288,7 @@ export default function MuhurthamScreen() {
       setLoadingDetails(true);
       try {
         const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(selectedDate).padStart(2, '0')}`;
-        const data = await mobileAPI.getMuhurthamDayDetails(dateStr);
+        const data = await mobileAPI.getMuhurthamDayDetails(dateStr, apiLang);
         setDayDetails(data);
       } catch (err) {
         console.error('Failed to fetch day details:', err);
@@ -294,7 +299,7 @@ export default function MuhurthamScreen() {
     };
 
     fetchDayDetails();
-  }, [selectedDate, currentMonth]);
+  }, [selectedDate, currentMonth, apiLang]);
 
   const getDaysInMonth = (date) => {
     const year = date.getFullYear();
@@ -484,15 +489,21 @@ export default function MuhurthamScreen() {
                   {/* Good Events */}
                   {dayDetails.good_for_events?.length > 0 && (
                     <View style={styles.goodEventsBox}>
-                      <Text style={styles.goodEventsTitle}>✓ {t('todayGoodFor')}:</Text>
+                      <View style={styles.goodEventsTitleRow}>
+                        <Ionicons name="checkmark-circle" size={14} color="#15803d" />
+                        <Text style={styles.goodEventsTitle}>{t('todayGoodFor')}:</Text>
+                      </View>
                       <View style={styles.goodEventsList}>
-                        {dayDetails.good_for_events.map((evt, i) => (
-                          <View key={i} style={styles.goodEventItem}>
-                            <Text style={styles.goodEventIcon}>{eventTypes.find(e => e.id === evt.type)?.icon}</Text>
-                            <Text style={styles.goodEventLabel}>{evt.tamil}</Text>
-                            <Text style={styles.goodEventScore}>{evt.score}%</Text>
-                          </View>
-                        ))}
+                        {dayDetails.good_for_events.map((evt, i) => {
+                          const eventConfig = eventTypes.find(e => e.id === evt.type);
+                          return (
+                            <View key={i} style={styles.goodEventItem}>
+                              <Ionicons name={eventConfig?.iconName || 'star'} size={14} color={eventConfig?.iconColor || '#16a34a'} />
+                              <Text style={styles.goodEventLabel}>{evt.label || evt.tamil}</Text>
+                              <Text style={styles.goodEventScore}>{evt.score}%</Text>
+                            </View>
+                          );
+                        })}
                       </View>
                     </View>
                   )}
@@ -501,21 +512,21 @@ export default function MuhurthamScreen() {
                   <View style={styles.panchangamBox}>
                     <View style={styles.panchangamRow}>
                       <View style={styles.panchangamItem}>
-                        <Text style={styles.panchangamLabel}>திதி</Text>
-                        <Text style={styles.panchangamValue}>{dayDetails.panchangam?.tithi?.tamil || '-'}</Text>
+                        <Text style={styles.panchangamLabel}>{t('tithi')}</Text>
+                        <Text style={styles.panchangamValue}>{dayDetails.panchangam?.tithi?.name || '-'}</Text>
                       </View>
                       <View style={styles.panchangamItem}>
-                        <Text style={styles.panchangamLabel}>நட்சத்திரம்</Text>
-                        <Text style={styles.panchangamValue}>{dayDetails.panchangam?.nakshatra?.tamil || '-'}</Text>
+                        <Text style={styles.panchangamLabel}>{t('nakshatra')}</Text>
+                        <Text style={styles.panchangamValue}>{dayDetails.panchangam?.nakshatra?.name || '-'}</Text>
                       </View>
                     </View>
                     <View style={styles.panchangamRow}>
                       <View style={styles.panchangamItem}>
-                        <Text style={styles.panchangamLabel}>யோகம்</Text>
-                        <Text style={styles.panchangamValue}>{dayDetails.panchangam?.yoga?.tamil || dayDetails.panchangam?.yoga?.name || '-'}</Text>
+                        <Text style={styles.panchangamLabel}>{t('yoga')}</Text>
+                        <Text style={styles.panchangamValue}>{dayDetails.panchangam?.yoga?.name || '-'}</Text>
                       </View>
                       <View style={styles.panchangamItem}>
-                        <Text style={styles.panchangamLabel}>கிழமை</Text>
+                        <Text style={styles.panchangamLabel}>{t('weekday')}</Text>
                         <Text style={styles.panchangamValue}>{dayDetails.panchangam?.vaaram || '-'}</Text>
                       </View>
                     </View>
@@ -540,7 +551,7 @@ export default function MuhurthamScreen() {
                     <View style={styles.recommendationBox}>
                       <Ionicons name="sparkles" size={14} color="#ea580c" />
                       <View style={{ flex: 1 }}>
-                        <Text style={styles.recommendationTitle}>AI பரிந்துரை</Text>
+                        <Text style={styles.recommendationTitle}>{t('aiRecommendation')}</Text>
                         <Text style={styles.recommendationText}>{dayDetails.recommendation}</Text>
                       </View>
                     </View>
@@ -548,7 +559,7 @@ export default function MuhurthamScreen() {
                 </View>
               ) : (
                 <View style={styles.noDataContainer}>
-                  <Text style={styles.noDataText}>தரவு கிடைக்கவில்லை</Text>
+                  <Text style={styles.noDataText}>{t('noDataAvailable')}</Text>
                 </View>
               )}
             </AnimatedCard>
@@ -558,8 +569,8 @@ export default function MuhurthamScreen() {
           {!selectedDate && (
             <AnimatedCard delay={300} style={styles.promptCard}>
               <PulsingCalendarIcon />
-              <Text style={styles.promptTitle}>நாளை தேர்வு செய்யவும்</Text>
-              <Text style={styles.promptSubtitle}>சிறந்த நேரங்களை பார்க்க</Text>
+              <Text style={styles.promptTitle}>{t('selectDate')}</Text>
+              <Text style={styles.promptSubtitle}>{t('viewBestTimes')}</Text>
             </AnimatedCard>
           )}
         </ScrollView>
@@ -644,9 +655,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff7ed',
     borderColor: '#f97316',
   },
-  eventIcon: {
-    fontSize: 24,
-    marginBottom: 4,
+  eventIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#f3f4f6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
   },
   eventLabel: {
     fontSize: 10,
@@ -787,11 +803,16 @@ const styles = StyleSheet.create({
     borderColor: '#bbf7d0',
     marginBottom: 12,
   },
+  goodEventsTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 8,
+  },
   goodEventsTitle: {
     fontSize: 12,
     fontWeight: '500',
     color: '#15803d',
-    marginBottom: 8,
   },
   goodEventsList: {
     flexDirection: 'row',
@@ -808,9 +829,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#bbf7d0',
-  },
-  goodEventIcon: {
-    fontSize: 12,
   },
   goodEventLabel: {
     fontSize: 11,

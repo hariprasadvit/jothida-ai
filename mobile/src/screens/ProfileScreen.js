@@ -94,6 +94,84 @@ const YOGA_EFFECT_KANNADA = {
   'பெரிய யோகங்கள் இல்லை': 'ಯಾವುದೇ ಪ್ರಮುಖ ಯೋಗಗಳಿಲ್ಲ',
 };
 
+// Tithi (lunar day) translations - Tamil to English/Kannada
+const TITHI_TRANSLATIONS = {
+  // Shukla Paksha (Waxing Moon)
+  'பிரதமை': { en: 'Pratipada', kn: 'ಪ್ರತಿಪದ' },
+  'துவிதியை': { en: 'Dwitiya', kn: 'ದ್ವಿತೀಯ' },
+  'திருதியை': { en: 'Tritiya', kn: 'ತೃತೀಯ' },
+  'சதுர்த்தி': { en: 'Chaturthi', kn: 'ಚತುರ್ಥಿ' },
+  'பஞ்சமி': { en: 'Panchami', kn: 'ಪಂಚಮಿ' },
+  'சஷ்டி': { en: 'Shashti', kn: 'ಷಷ್ಠಿ' },
+  'சப்தமி': { en: 'Saptami', kn: 'ಸಪ್ತಮಿ' },
+  'அஷ்டமி': { en: 'Ashtami', kn: 'ಅಷ್ಟಮಿ' },
+  'நவமி': { en: 'Navami', kn: 'ನವಮಿ' },
+  'தசமி': { en: 'Dashami', kn: 'ದಶಮಿ' },
+  'ஏகாதசி': { en: 'Ekadashi', kn: 'ಏಕಾದಶಿ' },
+  'துவாதசி': { en: 'Dwadashi', kn: 'ದ್ವಾದಶಿ' },
+  'திரயோதசி': { en: 'Trayodashi', kn: 'ತ್ರಯೋದಶಿ' },
+  'சதுர்தசி': { en: 'Chaturdashi', kn: 'ಚತುರ್ದಶಿ' },
+  'பௌர்ணமி': { en: 'Pournami (Full Moon)', kn: 'ಪೌರ್ಣಮಿ' },
+  'அமாவாசை': { en: 'Amavasya (New Moon)', kn: 'ಅಮಾವಾಸ್ಯೆ' },
+};
+
+// Vaaram (weekday) translations - Tamil to English/Kannada
+const VAARAM_TRANSLATIONS = {
+  'ஞாயிறு': { en: 'Sunday', kn: 'ಭಾನುವಾರ' },
+  'திங்கள்': { en: 'Monday', kn: 'ಸೋಮವಾರ' },
+  'செவ்வாய்': { en: 'Tuesday', kn: 'ಮಂಗಳವಾರ' },
+  'புதன்': { en: 'Wednesday', kn: 'ಬುಧವಾರ' },
+  'வியாழன்': { en: 'Thursday', kn: 'ಗುರುವಾರ' },
+  'வெள்ளி': { en: 'Friday', kn: 'ಶುಕ್ರವಾರ' },
+  'சனி': { en: 'Saturday', kn: 'ಶನಿವಾರ' },
+};
+
+// Yoga (panchang yoga) translations - Tamil to English/Kannada
+const PANCHANG_YOGA_TRANSLATIONS = {
+  'விஷ்கம்பம்': { en: 'Vishkambha', kn: 'ವಿಷ್ಕಂಭ' },
+  'பிரீதி': { en: 'Priti', kn: 'ಪ್ರೀತಿ' },
+  'ஆயுஷ்மான்': { en: 'Ayushman', kn: 'ಆಯುಷ್ಮಾನ್' },
+  'சௌபாக்கியம்': { en: 'Saubhagya', kn: 'ಸೌಭಾಗ್ಯ' },
+  'சோபனம்': { en: 'Shobhana', kn: 'ಶೋಭನ' },
+  'அதிகண்டம்': { en: 'Atiganda', kn: 'ಅತಿಗಂಡ' },
+  'சுகர்மம்': { en: 'Sukarma', kn: 'ಸುಕರ್ಮ' },
+  'திருதி': { en: 'Dhriti', kn: 'ಧೃತಿ' },
+  'சூலம்': { en: 'Shula', kn: 'ಶೂಲ' },
+  'கண்டம்': { en: 'Ganda', kn: 'ಗಂಡ' },
+  'விருத்தி': { en: 'Vriddhi', kn: 'ವೃದ್ಧಿ' },
+  'துருவம்': { en: 'Dhruva', kn: 'ಧ್ರುವ' },
+  'வியாகாதம்': { en: 'Vyaghata', kn: 'ವ್ಯಾಘಾತ' },
+  'ஹர்ஷணம்': { en: 'Harshana', kn: 'ಹರ್ಷಣ' },
+  'வஜ்ரம்': { en: 'Vajra', kn: 'ವಜ್ರ' },
+  'சித்தி': { en: 'Siddhi', kn: 'ಸಿದ್ಧಿ' },
+  'வியதீபாதம்': { en: 'Vyatipata', kn: 'ವ್ಯತೀಪಾತ' },
+  'வரியான்': { en: 'Variyan', kn: 'ವರೀಯಾನ್' },
+  'பரிகம்': { en: 'Parigha', kn: 'ಪರಿಘ' },
+  'சிவம்': { en: 'Shiva', kn: 'ಶಿವ' },
+  'சித்தம்': { en: 'Siddha', kn: 'ಸಿದ್ಧ' },
+  'சாத்தியம்': { en: 'Sadhya', kn: 'ಸಾಧ್ಯ' },
+  'சுபம்': { en: 'Shubha', kn: 'ಶುಭ' },
+  'சுக்லம்': { en: 'Shukla', kn: 'ಶುಕ್ಲ' },
+  'பிரம்மம்': { en: 'Brahma', kn: 'ಬ್ರಹ್ಮ' },
+  'ஐந்திரம்': { en: 'Indra', kn: 'ಐಂದ್ರ' },
+  'வைதிருதி': { en: 'Vaidhriti', kn: 'ವೈಧೃತಿ' },
+};
+
+// Karana translations - Tamil to English/Kannada
+const KARANA_TRANSLATIONS = {
+  'பவம்': { en: 'Bava', kn: 'ಬವ' },
+  'பாலவம்': { en: 'Balava', kn: 'ಬಾಲವ' },
+  'கௌலவம்': { en: 'Kaulava', kn: 'ಕೌಲವ' },
+  'தைதுலம்': { en: 'Taitila', kn: 'ತೈತಿಲ' },
+  'கரஜம்': { en: 'Garaja', kn: 'ಗರಜ' },
+  'வணிஜம்': { en: 'Vanija', kn: 'ವಣಿಜ' },
+  'விஷ்டி': { en: 'Vishti (Bhadra)', kn: 'ವಿಷ್ಟಿ' },
+  'சகுனி': { en: 'Shakuni', kn: 'ಶಕುನಿ' },
+  'சதுஷ்பாதம்': { en: 'Chatushpada', kn: 'ಚತುಷ್ಪಾದ' },
+  'நாகவம்': { en: 'Nagava', kn: 'ನಾಗವ' },
+  'கிம்ஸ்துக்னம்': { en: 'Kimstughna', kn: 'ಕಿಂಸ್ತುಘ್ನ' },
+};
+
 // Helper function to translate yoga effect
 const translateYogaEffect = (effect, language) => {
   if (!effect) return effect;
@@ -102,6 +180,50 @@ const translateYogaEffect = (effect, language) => {
     return YOGA_EFFECT_KANNADA[effect] || effect;
   }
   return YOGA_EFFECT_ENGLISH[effect] || effect;
+};
+
+// Helper function to translate tithi
+const translateTithi = (tithi, language) => {
+  if (!tithi) return tithi;
+  if (language === 'ta') return tithi;
+  const translation = TITHI_TRANSLATIONS[tithi];
+  if (translation) {
+    return language === 'kn' ? translation.kn : translation.en;
+  }
+  return tithi;
+};
+
+// Helper function to translate vaaram (weekday)
+const translateVaaram = (vaaram, language) => {
+  if (!vaaram) return vaaram;
+  if (language === 'ta') return vaaram;
+  const translation = VAARAM_TRANSLATIONS[vaaram];
+  if (translation) {
+    return language === 'kn' ? translation.kn : translation.en;
+  }
+  return vaaram;
+};
+
+// Helper function to translate panchang yoga
+const translatePanchangYoga = (yoga, language) => {
+  if (!yoga) return yoga;
+  if (language === 'ta') return yoga;
+  const translation = PANCHANG_YOGA_TRANSLATIONS[yoga];
+  if (translation) {
+    return language === 'kn' ? translation.kn : translation.en;
+  }
+  return yoga;
+};
+
+// Helper function to translate karana
+const translateKarana = (karana, language) => {
+  if (!karana) return karana;
+  if (language === 'ta') return karana;
+  const translation = KARANA_TRANSLATIONS[karana];
+  if (translation) {
+    return language === 'kn' ? translation.kn : translation.en;
+  }
+  return karana;
 };
 
 // Helper functions for translation
@@ -986,11 +1108,11 @@ export default function ProfileScreen({ navigation }) {
               </View>
               <View style={styles.panchagamGrid}>
                 {[
-                  { label: t('tithi'), value: chartData?.panchagam?.tithi || '-' },
-                  { label: t('vaaram'), value: chartData?.panchagam?.vaaram || '-' },
+                  { label: t('tithi'), value: translateTithi(chartData?.panchagam?.tithi, language) || '-' },
+                  { label: t('vaaram'), value: translateVaaram(chartData?.panchagam?.vaaram, language) || '-' },
                   { label: t('nakshatram'), value: translateNakshatraName(chartData?.moon_sign?.nakshatra, language, t) || '-' },
-                  { label: t('yogam'), value: chartData?.panchagam?.yogam || '-' },
-                  { label: t('karanam'), value: chartData?.panchagam?.karanam || '-' },
+                  { label: t('yogam'), value: translatePanchangYoga(chartData?.panchagam?.yogam, language) || '-' },
+                  { label: t('karanam'), value: translateKarana(chartData?.panchagam?.karanam, language) || '-' },
                 ].map((item, i) => (
                   <View key={i} style={styles.panchagamItem}>
                     <Text style={styles.panchagamLabel}>{item.label}</Text>

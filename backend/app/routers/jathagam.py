@@ -37,6 +37,16 @@ class MoonSign(BaseModel):
     nakshatra: str
     nakshatra_pada: int
 
+class PanchagamData(BaseModel):
+    tithi: str
+    vaaram: str
+    nakshatra: str
+    yogam: str
+    karanam: str
+    tamil_month: str
+    tamil_date: str
+    paksha: str
+
 class JathagamResponse(BaseModel):
     name: str
     birth_details: dict
@@ -48,6 +58,7 @@ class JathagamResponse(BaseModel):
     dasha: dict
     overall_strength: float
     yogas: list[dict]
+    panchagam: Optional[PanchagamData] = None  # Panchagam for birth date
 
 @router.post("/generate", response_model=JathagamResponse)
 async def generate_jathagam(request: Request, birth: BirthDetails):

@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from app.routers import panchangam, jathagam, matching, chat, muhurtham, user, forecast
-from app.routers import auth, admin, mobile_auth, report, remedy
+from app.routers import auth, admin, mobile_auth, report, remedy, ungal_jothidan
 from app.services.ephemeris import EphemerisService
 from app.database import init_db
 
@@ -58,6 +58,7 @@ app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 app.include_router(mobile_auth.router, prefix="/api/mobile", tags=["Mobile Auth"])
 app.include_router(report.router, prefix="/api/report", tags=["PDF Reports"])
 app.include_router(remedy.router, prefix="/api/remedy", tags=["AI Remedy Engine"])
+app.include_router(ungal_jothidan.router, prefix="/api/ungal-jothidan", tags=["Ungal Jothidan"])
 
 @app.get("/")
 async def root():

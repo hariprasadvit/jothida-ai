@@ -18,7 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { mobileAPI } from '../services/api';
+import { fetchUnifiedScores, calculateFallbackScore } from '../services/scoringService';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const width = screenWidth;
@@ -320,50 +320,36 @@ export default function AstroFeedScreen({ navigation }) {
 
   const STORY_DURATION = 8000; // 8 seconds per story
 
-  // Fetch the same life areas data as Dashboard to get consistent score
+  // Fetch scores using unified scoring service (same as Dashboard)
   useEffect(() => {
     const fetchDailyScore = async () => {
       try {
         if (userProfile?.birthDate) {
-          const birthDate = new Date(userProfile.birthDate);
-          const birthPlace = userProfile.birthPlace || 'Chennai, India';
+          // Use unified scoring service - SAME as Dashboard
+          const unifiedData = await fetchUnifiedScores(userProfile, language);
 
-          const birthDetails = {
-            year: birthDate.getFullYear(),
-            month: birthDate.getMonth() + 1,
-            day: birthDate.getDate(),
-            hour: userProfile.birthTime ? parseInt(userProfile.birthTime.split(':')[0]) : 6,
-            minute: userProfile.birthTime ? parseInt(userProfile.birthTime.split(':')[1]) : 0,
-            place: birthPlace,
-          };
-
-          const lifeAreasData = await mobileAPI.getLifeAreas(birthDetails);
-
-          if (lifeAreasData?.life_areas) {
-            const areas = lifeAreasData.life_areas;
-            const areaKeys = ['love', 'career', 'education', 'family'];
-            const validScores = areaKeys
-              .map(key => areas[key]?.score)
-              .filter(score => score !== undefined && score !== null);
-
-            if (validScores.length > 0) {
-              const avgScore = Math.round(validScores.reduce((sum, s) => sum + s, 0) / validScores.length);
-              setDailyScore(avgScore);
-              setScoreLoaded(true);
-              return;
-            }
+          if (unifiedData?.overallScore) {
+            console.log('[AstroFeed] Using unified score:', unifiedData.overallScore);
+            setDailyScore(unifiedData.overallScore);
+            setScoreLoaded(true);
+            return;
           }
         }
-        // Fallback: mark as loaded with null (will use hash)
+        // Fallback: use deterministic hash-based score
+        const fallbackScore = calculateFallbackScore(userProfile);
+        console.log('[AstroFeed] Using fallback score:', fallbackScore);
+        setDailyScore(fallbackScore);
         setScoreLoaded(true);
       } catch (error) {
-        console.error('Failed to fetch daily score for AstroFeed:', error);
+        console.error('[AstroFeed] Failed to fetch daily score:', error);
+        const fallbackScore = calculateFallbackScore(userProfile);
+        setDailyScore(fallbackScore);
         setScoreLoaded(true);
       }
     };
 
     fetchDailyScore();
-  }, [userProfile]);
+  }, [userProfile, language]);
 
   // Generate personalized stories based on user profile
   const generateStories = useCallback((apiScore) => {
@@ -409,18 +395,11 @@ export default function AstroFeedScreen({ navigation }) {
     });
 
     // Story 3: Daily Insight for User
-    // Use API score if available (same as Dashboard), otherwise fallback to hash
+    // Use API score if available (same as Dashboard), otherwise use passed fallback
     let scoreToUse = apiScore;
     if (scoreToUse === null || scoreToUse === undefined) {
-      // Fallback: Calculate deterministic score based on date + rasi + nakshatra hash
-      const dateStr = today.toISOString().split('T')[0];
-      const hashInput = `${dateStr}-${userRasi}-${userNakshatra}`;
-      let hash = 0;
-      for (let i = 0; i < hashInput.length; i++) {
-        hash = ((hash << 5) - hash) + hashInput.charCodeAt(i);
-        hash = hash & hash;
-      }
-      scoreToUse = 65 + Math.abs(hash % 30); // 65-94, deterministic per day/user
+      // This should rarely happen as fetchDailyScore already calculates fallback
+      scoreToUse = calculateFallbackScore(userProfile);
     }
     generatedStories.push({
       id: '3',

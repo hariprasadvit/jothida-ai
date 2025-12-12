@@ -77,9 +77,13 @@ export const translations = {
     normalDay: 'சாதாரணம்',
     avoidDay: 'தவிர்க்கவும்',
     selectDate: 'நாளை தேர்வு செய்யவும்',
+    viewBestTimes: 'சிறந்த நேரங்களை பார்க்க',
     bestTimes: 'சிறந்த நேரங்கள்',
     todayGoodFor: 'இன்று நல்ல நாள்',
     aiRecommendation: 'AI பரிந்துரை',
+    calendarLoadError: 'நாள்காட்டி தரவு ஏற்ற முடியவில்லை',
+    noDataAvailable: 'தரவு கிடைக்கவில்லை',
+    weekday: 'கிழமை',
 
     // Chat
     askQuestion: 'கேள்வி கேளுங்கள்...',
@@ -178,6 +182,16 @@ export const translations = {
     // Remedy
     remedy: 'பரிகாரம்',
     needsRemedy: 'பரிகாரம் தேவை',
+
+    // Ungal Jothidan (Your Astrologer)
+    ungalJothidan: 'உங்கள் ஜோதிடர்',
+    yourAstrologer: 'உங்கள் தனிப்பட்ட ஜோதிடர்',
+    todaysConfidence: 'இன்றைய நம்பிக்கை',
+    loadingInsights: 'தினசரி நுண்ணறிவுகளை ஏற்றுகிறது...',
+    confidence: 'நம்பிக்கை',
+    score: 'மதிப்பெண்',
+    signals: 'சமிக்ஞைகள்',
+    errorFetchingData: 'தரவை ஏற்ற முடியவில்லை',
 
     // Zodiac Signs (Rasi)
     aries: 'மேஷம்',
@@ -530,9 +544,13 @@ export const translations = {
     normalDay: 'ಸಾಮಾನ್ಯ',
     avoidDay: 'ತಪ್ಪಿಸಿ',
     selectDate: 'ದಿನಾಂಕ ಆಯ್ಕೆಮಾಡಿ',
+    viewBestTimes: 'ಉತ್ತಮ ಸಮಯಗಳನ್ನು ನೋಡಿ',
     bestTimes: 'ಉತ್ತಮ ಸಮಯಗಳು',
     todayGoodFor: 'ಇಂದು ಒಳ್ಳೆಯ ದಿನ',
     aiRecommendation: 'AI ಶಿಫಾರಸು',
+    calendarLoadError: 'ಕ್ಯಾಲೆಂಡರ್ ಡೇಟಾ ಲೋಡ್ ಆಗಲಿಲ್ಲ',
+    noDataAvailable: 'ಡೇಟಾ ಲಭ್ಯವಿಲ್ಲ',
+    weekday: 'ವಾರದ ದಿನ',
 
     // Chat
     askQuestion: 'ಪ್ರಶ್ನೆ ಕೇಳಿ...',
@@ -631,6 +649,16 @@ export const translations = {
     // Remedy
     remedy: 'ಪರಿಹಾರ',
     needsRemedy: 'ಪರಿಹಾರ ಬೇಕು',
+
+    // Ungal Jothidan (Your Astrologer)
+    ungalJothidan: 'ನಿಮ್ಮ ಜ್ಯೋತಿಷಿ',
+    yourAstrologer: 'ನಿಮ್ಮ ವೈಯಕ್ತಿಕ ಜ್ಯೋತಿಷಿ',
+    todaysConfidence: 'ಇಂದಿನ ವಿಶ್ವಾಸ',
+    loadingInsights: 'ದೈನಂದಿನ ಒಳನೋಟಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...',
+    confidence: 'ವಿಶ್ವಾಸ',
+    score: 'ಅಂಕ',
+    signals: 'ಸಂಕೇತಗಳು',
+    errorFetchingData: 'ಒಳನೋಟಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ',
 
     // Zodiac Signs (Rasi)
     aries: 'ಮೇಷ',
@@ -983,9 +1011,13 @@ export const translations = {
     normalDay: 'Normal',
     avoidDay: 'Avoid',
     selectDate: 'Select a date',
+    viewBestTimes: 'to view best times',
     bestTimes: 'Best Times',
     todayGoodFor: 'Today is good for',
     aiRecommendation: 'AI Recommendation',
+    calendarLoadError: 'Failed to load calendar data',
+    noDataAvailable: 'No data available',
+    weekday: 'Weekday',
 
     // Chat
     askQuestion: 'Ask a question...',
@@ -1084,6 +1116,16 @@ export const translations = {
     // Remedy
     remedy: 'Remedy',
     needsRemedy: 'Needs Remedy',
+
+    // Ungal Jothidan (Your Astrologer)
+    ungalJothidan: 'Ungal Jothidan',
+    yourAstrologer: 'Your Personal Astrologer',
+    todaysConfidence: "Today's Confidence",
+    loadingInsights: 'Loading your daily insights...',
+    confidence: 'Confidence',
+    score: 'Score',
+    signals: 'Signals',
+    errorFetchingData: 'Failed to load insights',
 
     // Zodiac Signs (Rasi)
     aries: 'Aries',
