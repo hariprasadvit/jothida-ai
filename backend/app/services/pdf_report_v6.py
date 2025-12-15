@@ -276,11 +276,11 @@ class V6ReportGenerator:
             except Exception:
                 pass
 
-        # V6.2+ Initialize FutureProjectionService (takes ephemeris as optional arg)
+        # V6.2+ Initialize FutureProjectionService
         self.future_service = None
         if FUTURE_PROJECTION_AVAILABLE and FutureProjectionService:
             try:
-                self.future_service = FutureProjectionService()
+                self.future_service = FutureProjectionService(chart_data, language)
             except Exception:
                 pass
 
