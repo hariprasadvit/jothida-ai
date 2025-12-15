@@ -10,16 +10,16 @@ import {
   Platform,
   Animated,
   Easing,
+  Modal,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { mobileAPI, CITY_COORDINATES } from '../services/api';
-
-const cities = Object.keys(CITY_COORDINATES);
 
 const rasis = [
   { english: 'Mesha', tamil: 'மேஷம்' },
@@ -342,19 +342,76 @@ export default function MatchingScreen() {
     name: '',
     birthDate: '',
     birthTime: '',
-    birthPlace: 'Chennai',
+    birthPlace: '',
     rasi: '',
   });
   const [brideData, setBrideData] = useState({
     name: '',
     birthDate: '',
     birthTime: '',
-    birthPlace: 'Chennai',
+    birthPlace: '',
     rasi: '',
   });
   const [matchResult, setMatchResult] = useState(null);
   const [error, setError] = useState(null);
   const [expandedPorutham, setExpandedPorutham] = useState(null);
+
+  // Date picker states
+  const [showGroomDatePicker, setShowGroomDatePicker] = useState(false);
+  const [showBrideDatePicker, setShowBrideDatePicker] = useState(false);
+  const [groomDate, setGroomDate] = useState(new Date(1990, 0, 1));
+  const [brideDate, setBrideDate] = useState(new Date(1990, 0, 1));
+
+  // Time picker states
+  const [showGroomTimePicker, setShowGroomTimePicker] = useState(false);
+  const [showBrideTimePicker, setShowBrideTimePicker] = useState(false);
+  const [groomTime, setGroomTime] = useState(new Date(2000, 0, 1, 6, 0));
+  const [brideTime, setBrideTime] = useState(new Date(2000, 0, 1, 6, 0));
+
+  const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const formatTime = (date) => {
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
+
+  const handleGroomDateChange = (event, selectedDate) => {
+    setShowGroomDatePicker(false);
+    if (selectedDate) {
+      setGroomDate(selectedDate);
+      setGroomData({ ...groomData, birthDate: formatDate(selectedDate) });
+    }
+  };
+
+  const handleBrideDateChange = (event, selectedDate) => {
+    setShowBrideDatePicker(false);
+    if (selectedDate) {
+      setBrideDate(selectedDate);
+      setBrideData({ ...brideData, birthDate: formatDate(selectedDate) });
+    }
+  };
+
+  const handleGroomTimeChange = (event, selectedTime) => {
+    setShowGroomTimePicker(false);
+    if (selectedTime) {
+      setGroomTime(selectedTime);
+      setGroomData({ ...groomData, birthTime: formatTime(selectedTime) });
+    }
+  };
+
+  const handleBrideTimeChange = (event, selectedTime) => {
+    setShowBrideTimePicker(false);
+    if (selectedTime) {
+      setBrideTime(selectedTime);
+      setBrideData({ ...brideData, birthTime: formatTime(selectedTime) });
+    }
+  };
 
   useEffect(() => {
     if (userProfile) {
@@ -471,39 +528,95 @@ export default function MatchingScreen() {
               <View style={styles.row}>
                 <View style={styles.halfInput}>
                   <Text style={styles.label}>{t('birthDate')} *</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={groomData.birthDate}
-                    onChangeText={(text) => setGroomData({ ...groomData, birthDate: text })}
-                    placeholder="YYYY-MM-DD"
-                    keyboardType="numbers-and-punctuation"
-                  />
+                  {Platform.OS === 'web' ? (
+                    <input
+                      type="date"
+                      style={{
+                        padding: 12,
+                        borderRadius: 8,
+                        border: '1px solid #d1d5db',
+                        fontSize: 14,
+                        width: '100%',
+                        backgroundColor: '#fff',
+                        color: '#1f2937',
+                      }}
+                      value={groomData.birthDate}
+                      max={new Date().toISOString().split('T')[0]}
+                      min="1920-01-01"
+                      onChange={(e) => setGroomData({ ...groomData, birthDate: e.target.value })}
+                    />
+                  ) : (
+                    <TouchableOpacity
+                      style={styles.datePickerButton}
+                      onPress={() => setShowGroomDatePicker(true)}
+                    >
+                      <Text style={groomData.birthDate ? styles.datePickerText : styles.datePickerPlaceholder}>
+                        {groomData.birthDate || 'Select Date'}
+                      </Text>
+                      <Ionicons name="calendar" size={18} color="#6b7280" />
+                    </TouchableOpacity>
+                  )}
                 </View>
                 <View style={styles.halfInput}>
                   <Text style={styles.label}>{t('birthTime')} *</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={groomData.birthTime}
-                    onChangeText={(text) => setGroomData({ ...groomData, birthTime: text })}
-                    placeholder="HH:MM"
-                    keyboardType="numbers-and-punctuation"
-                  />
+                  {Platform.OS === 'web' ? (
+                    <input
+                      type="time"
+                      style={{
+                        padding: 12,
+                        borderRadius: 8,
+                        border: '1px solid #d1d5db',
+                        fontSize: 14,
+                        width: '100%',
+                        backgroundColor: '#fff',
+                        color: '#1f2937',
+                      }}
+                      value={groomData.birthTime}
+                      onChange={(e) => setGroomData({ ...groomData, birthTime: e.target.value })}
+                    />
+                  ) : (
+                    <TouchableOpacity
+                      style={styles.datePickerButton}
+                      onPress={() => setShowGroomTimePicker(true)}
+                    >
+                      <Text style={groomData.birthTime ? styles.datePickerText : styles.datePickerPlaceholder}>
+                        {groomData.birthTime || 'Select Time'}
+                      </Text>
+                      <Ionicons name="time" size={18} color="#6b7280" />
+                    </TouchableOpacity>
+                  )}
                 </View>
               </View>
 
+              {showGroomDatePicker && Platform.OS === 'android' && (
+                <DateTimePicker
+                  value={groomDate}
+                  mode="date"
+                  display="default"
+                  onChange={handleGroomDateChange}
+                  maximumDate={new Date()}
+                  minimumDate={new Date(1920, 0, 1)}
+                />
+              )}
+
+              {showGroomTimePicker && Platform.OS === 'android' && (
+                <DateTimePicker
+                  value={groomTime}
+                  mode="time"
+                  display="default"
+                  onChange={handleGroomTimeChange}
+                  is24Hour={true}
+                />
+              )}
+
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>{t('birthPlace')} *</Text>
-                <View style={styles.pickerContainer}>
-                  <Picker
-                    selectedValue={groomData.birthPlace}
-                    onValueChange={(value) => setGroomData({ ...groomData, birthPlace: value })}
-                    style={styles.picker}
-                  >
-                    {cities.map((city) => (
-                      <Picker.Item key={city} label={city} value={city} />
-                    ))}
-                  </Picker>
-                </View>
+                <TextInput
+                  style={styles.input}
+                  value={groomData.birthPlace}
+                  onChangeText={(text) => setGroomData({ ...groomData, birthPlace: text })}
+                  placeholder={t('enterBirthPlace') || 'Enter birth place'}
+                />
               </View>
 
               <View style={styles.inputGroup}>
@@ -543,39 +656,95 @@ export default function MatchingScreen() {
               <View style={styles.row}>
                 <View style={styles.halfInput}>
                   <Text style={styles.label}>{t('birthDate')} *</Text>
-                  <TextInput
-                    style={[styles.input, styles.brideInput]}
-                    value={brideData.birthDate}
-                    onChangeText={(text) => setBrideData({ ...brideData, birthDate: text })}
-                    placeholder="YYYY-MM-DD"
-                    keyboardType="numbers-and-punctuation"
-                  />
+                  {Platform.OS === 'web' ? (
+                    <input
+                      type="date"
+                      style={{
+                        padding: 12,
+                        borderRadius: 8,
+                        border: '1px solid #f9a8d4',
+                        fontSize: 14,
+                        width: '100%',
+                        backgroundColor: '#fff',
+                        color: '#1f2937',
+                      }}
+                      value={brideData.birthDate}
+                      max={new Date().toISOString().split('T')[0]}
+                      min="1920-01-01"
+                      onChange={(e) => setBrideData({ ...brideData, birthDate: e.target.value })}
+                    />
+                  ) : (
+                    <TouchableOpacity
+                      style={[styles.datePickerButton, styles.brideDatePicker]}
+                      onPress={() => setShowBrideDatePicker(true)}
+                    >
+                      <Text style={brideData.birthDate ? styles.datePickerText : styles.datePickerPlaceholder}>
+                        {brideData.birthDate || 'Select Date'}
+                      </Text>
+                      <Ionicons name="calendar" size={18} color="#db2777" />
+                    </TouchableOpacity>
+                  )}
                 </View>
                 <View style={styles.halfInput}>
                   <Text style={styles.label}>{t('birthTime')} *</Text>
-                  <TextInput
-                    style={[styles.input, styles.brideInput]}
-                    value={brideData.birthTime}
-                    onChangeText={(text) => setBrideData({ ...brideData, birthTime: text })}
-                    placeholder="HH:MM"
-                    keyboardType="numbers-and-punctuation"
-                  />
+                  {Platform.OS === 'web' ? (
+                    <input
+                      type="time"
+                      style={{
+                        padding: 12,
+                        borderRadius: 8,
+                        border: '1px solid #f9a8d4',
+                        fontSize: 14,
+                        width: '100%',
+                        backgroundColor: '#fff',
+                        color: '#1f2937',
+                      }}
+                      value={brideData.birthTime}
+                      onChange={(e) => setBrideData({ ...brideData, birthTime: e.target.value })}
+                    />
+                  ) : (
+                    <TouchableOpacity
+                      style={[styles.datePickerButton, styles.brideDatePicker]}
+                      onPress={() => setShowBrideTimePicker(true)}
+                    >
+                      <Text style={brideData.birthTime ? styles.datePickerText : styles.datePickerPlaceholder}>
+                        {brideData.birthTime || 'Select Time'}
+                      </Text>
+                      <Ionicons name="time" size={18} color="#db2777" />
+                    </TouchableOpacity>
+                  )}
                 </View>
               </View>
 
+              {showBrideDatePicker && Platform.OS === 'android' && (
+                <DateTimePicker
+                  value={brideDate}
+                  mode="date"
+                  display="default"
+                  onChange={handleBrideDateChange}
+                  maximumDate={new Date()}
+                  minimumDate={new Date(1920, 0, 1)}
+                />
+              )}
+
+              {showBrideTimePicker && Platform.OS === 'android' && (
+                <DateTimePicker
+                  value={brideTime}
+                  mode="time"
+                  display="default"
+                  onChange={handleBrideTimeChange}
+                  is24Hour={true}
+                />
+              )}
+
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>{t('birthPlace')} *</Text>
-                <View style={[styles.pickerContainer, styles.bridePicker]}>
-                  <Picker
-                    selectedValue={brideData.birthPlace}
-                    onValueChange={(value) => setBrideData({ ...brideData, birthPlace: value })}
-                    style={styles.picker}
-                  >
-                    {cities.map((city) => (
-                      <Picker.Item key={city} label={city} value={city} />
-                    ))}
-                  </Picker>
-                </View>
+                <TextInput
+                  style={[styles.input, styles.brideInput]}
+                  value={brideData.birthPlace}
+                  onChangeText={(text) => setBrideData({ ...brideData, birthPlace: text })}
+                  placeholder={t('enterBirthPlace') || 'Enter birth place'}
+                />
               </View>
 
               <View style={styles.inputGroup}>
@@ -614,6 +783,133 @@ export default function MatchingScreen() {
               </AnimatedButton>
             </AnimatedCard>
           </ScrollView>
+
+          {/* iOS Date/Time Picker Modals */}
+          {Platform.OS === 'ios' && (
+            <>
+              <Modal
+                visible={showGroomDatePicker}
+                transparent={true}
+                animationType="slide"
+              >
+                <View style={styles.modalOverlay}>
+                  <View style={styles.modalContent}>
+                    <View style={styles.modalHeader}>
+                      <Text style={styles.modalTitle}>{t('birthDate')} - {t('groomDetails')}</Text>
+                      <TouchableOpacity onPress={() => setShowGroomDatePicker(false)}>
+                        <Text style={styles.modalDone}>Done</Text>
+                      </TouchableOpacity>
+                    </View>
+                    <DateTimePicker
+                      value={groomDate}
+                      mode="date"
+                      display="spinner"
+                      onChange={(event, date) => {
+                        if (date) {
+                          setGroomDate(date);
+                          setGroomData({ ...groomData, birthDate: formatDate(date) });
+                        }
+                      }}
+                      maximumDate={new Date()}
+                      minimumDate={new Date(1920, 0, 1)}
+                      style={{ height: 200 }}
+                    />
+                  </View>
+                </View>
+              </Modal>
+
+              <Modal
+                visible={showGroomTimePicker}
+                transparent={true}
+                animationType="slide"
+              >
+                <View style={styles.modalOverlay}>
+                  <View style={styles.modalContent}>
+                    <View style={styles.modalHeader}>
+                      <Text style={styles.modalTitle}>{t('birthTime')} - {t('groomDetails')}</Text>
+                      <TouchableOpacity onPress={() => setShowGroomTimePicker(false)}>
+                        <Text style={styles.modalDone}>Done</Text>
+                      </TouchableOpacity>
+                    </View>
+                    <DateTimePicker
+                      value={groomTime}
+                      mode="time"
+                      display="spinner"
+                      onChange={(event, time) => {
+                        if (time) {
+                          setGroomTime(time);
+                          setGroomData({ ...groomData, birthTime: formatTime(time) });
+                        }
+                      }}
+                      is24Hour={true}
+                      style={{ height: 200 }}
+                    />
+                  </View>
+                </View>
+              </Modal>
+
+              <Modal
+                visible={showBrideDatePicker}
+                transparent={true}
+                animationType="slide"
+              >
+                <View style={styles.modalOverlay}>
+                  <View style={styles.modalContent}>
+                    <View style={styles.modalHeader}>
+                      <Text style={styles.modalTitle}>{t('birthDate')} - {t('brideDetails')}</Text>
+                      <TouchableOpacity onPress={() => setShowBrideDatePicker(false)}>
+                        <Text style={styles.modalDone}>Done</Text>
+                      </TouchableOpacity>
+                    </View>
+                    <DateTimePicker
+                      value={brideDate}
+                      mode="date"
+                      display="spinner"
+                      onChange={(event, date) => {
+                        if (date) {
+                          setBrideDate(date);
+                          setBrideData({ ...brideData, birthDate: formatDate(date) });
+                        }
+                      }}
+                      maximumDate={new Date()}
+                      minimumDate={new Date(1920, 0, 1)}
+                      style={{ height: 200 }}
+                    />
+                  </View>
+                </View>
+              </Modal>
+
+              <Modal
+                visible={showBrideTimePicker}
+                transparent={true}
+                animationType="slide"
+              >
+                <View style={styles.modalOverlay}>
+                  <View style={styles.modalContent}>
+                    <View style={styles.modalHeader}>
+                      <Text style={styles.modalTitle}>{t('birthTime')} - {t('brideDetails')}</Text>
+                      <TouchableOpacity onPress={() => setShowBrideTimePicker(false)}>
+                        <Text style={styles.modalDone}>Done</Text>
+                      </TouchableOpacity>
+                    </View>
+                    <DateTimePicker
+                      value={brideTime}
+                      mode="time"
+                      display="spinner"
+                      onChange={(event, time) => {
+                        if (time) {
+                          setBrideTime(time);
+                          setBrideData({ ...brideData, birthTime: formatTime(time) });
+                        }
+                      }}
+                      is24Hour={true}
+                      style={{ height: 200 }}
+                    />
+                  </View>
+                </View>
+              </Modal>
+            </>
+          )}
         </LinearGradient>
       </View>
     );
@@ -771,6 +1067,35 @@ const styles = StyleSheet.create({
     color: '#9ca3af',
     fontSize: 12,
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 40,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  modalDone: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ef4444',
+  },
   floatingHeartsContainer: {
     position: 'absolute',
     width: 100,
@@ -869,6 +1194,28 @@ const styles = StyleSheet.create({
   },
   brideInput: {
     borderColor: '#fbcfe8',
+  },
+  datePickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: '#fff',
+  },
+  brideDatePicker: {
+    borderColor: '#fbcfe8',
+  },
+  datePickerText: {
+    fontSize: 14,
+    color: '#374151',
+  },
+  datePickerPlaceholder: {
+    fontSize: 14,
+    color: '#9ca3af',
   },
   row: {
     flexDirection: 'row',

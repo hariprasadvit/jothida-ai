@@ -20,8 +20,9 @@ import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage, languageOptions } from '../context/LanguageContext';
-import { mobileAPI } from '../services/api';
+import { mobileAPI, reportAPI } from '../services/api';
 import { generateComprehensivePDFHTML } from '../services/reportGenerator';
+import * as FileSystem from 'expo-file-system';
 
 // Tamil to translation key mappings for ProfileScreen
 const TAMIL_PLANET_MAP = {
@@ -728,32 +729,77 @@ export default function ProfileScreen({ navigation }) {
   };
 
   const generatePDF = async () => {
-    if (!chartData) {
+    if (!userProfile) {
       Alert.alert(t('error'), t('noChartData'));
       return;
     }
 
     setPdfLoading(true);
     try {
-      // Use comprehensive report generator for detailed 20-30 page report
-      const html = generateComprehensivePDFHTML(userProfile, chartData);
-      const { uri } = await Print.printToFileAsync({
-        html,
-        base64: false,
+      // Use backend API for comprehensive 60+ page report with Chakra analysis
+      const pdfBlob = await reportAPI.generateReport({
+        name: userProfile.name,
+        birthDate: userProfile.birthDate,
+        birthTime: userProfile.birthTime,
+        birthPlace: userProfile.birthPlace,
       });
 
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(uri, {
-          mimeType: 'application/pdf',
-          dialogTitle: t('downloadPDF'),
-          UTI: 'com.adobe.pdf'
-        });
+      // For web platform, create download link
+      if (Platform.OS === 'web') {
+        const url = URL.createObjectURL(pdfBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Jathagam_Report_${userProfile.name.replace(/\s+/g, '_')}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        Alert.alert(t('pdfSuccess'), t('pdfCreated'));
       } else {
-        Alert.alert(t('pdfSuccess'), t('pdfCreated') + ': ' + uri);
+        // For mobile, save to file and share
+        const fileUri = FileSystem.documentDirectory + `Jathagam_Report_${userProfile.name.replace(/\s+/g, '_')}.pdf`;
+
+        // Convert blob to base64
+        const reader = new FileReader();
+        reader.readAsDataURL(pdfBlob);
+        reader.onloadend = async () => {
+          const base64data = reader.result.split(',')[1];
+          await FileSystem.writeAsStringAsync(fileUri, base64data, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+
+          if (await Sharing.isAvailableAsync()) {
+            await Sharing.shareAsync(fileUri, {
+              mimeType: 'application/pdf',
+              dialogTitle: t('downloadPDF'),
+              UTI: 'com.adobe.pdf'
+            });
+          } else {
+            Alert.alert(t('pdfSuccess'), t('pdfCreated') + ': ' + fileUri);
+          }
+        };
       }
     } catch (err) {
       console.error('PDF generation error:', err);
-      Alert.alert(t('error'), t('pdfError'));
+      // Fallback to local HTML generation if backend fails
+      try {
+        const html = generateComprehensivePDFHTML(userProfile, chartData);
+        const { uri } = await Print.printToFileAsync({
+          html,
+          base64: false,
+        });
+
+        if (await Sharing.isAvailableAsync()) {
+          await Sharing.shareAsync(uri, {
+            mimeType: 'application/pdf',
+            dialogTitle: t('downloadPDF'),
+            UTI: 'com.adobe.pdf'
+          });
+        }
+      } catch (fallbackErr) {
+        console.error('Fallback PDF error:', fallbackErr);
+        Alert.alert(t('error'), t('pdfError'));
+      }
     } finally {
       setPdfLoading(false);
     }

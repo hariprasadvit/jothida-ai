@@ -879,6 +879,20 @@ class FutureProjectionService:
 
         return ' '.join(recommendations[:3])  # Max 3 recommendations
 
+    def _get_score_quality_label(self, score: float, lang: str = 'ta') -> str:
+        """Get quality label based on score - V6.2 thresholds for more positive output"""
+        if score >= 75:
+            quality = 'excellent'
+        elif score >= 60:
+            quality = 'good'
+        elif score >= 45:
+            quality = 'average'
+        elif score >= 30:
+            quality = 'challenging'
+        else:
+            quality = 'difficult'
+        return get_quality_label(quality, lang)
+
     def _generate_detailed_breakdown(self, result: Dict, dasha_lord: str, lang: str = 'ta') -> Dict:
         """Generate detailed breakdown explanation"""
         breakdown = result.get('breakdown', {})
@@ -1272,6 +1286,48 @@ class FutureProjectionService:
             )
             yearly_projections.append(projection)
 
+        # Generate past 2 years using V6.2 TimeAdaptiveEngine with 'past' mode
+        past_yearly_projections = []
+        for i in range(2, 0, -1):  # 2 years ago, 1 year ago
+            target_year = current_year - i
+            target_date = date(target_year, 6, 15)  # Mid-year
+
+            # Get correct dasha for that past year
+            if dasha_timeline:
+                dasha_for_year = self._get_dasha_for_date(target_date, dasha_timeline)
+            else:
+                dasha_for_year = dasha_info
+
+            dasha_lord = dasha_for_year.get('mahadasha_lord') or dasha_for_year.get('mahadasha', 'Jupiter')
+
+            # Use TimeAdaptiveEngine with 'past' mode for accurate past analysis
+            if V41_ENGINE_AVAILABLE:
+                engine = TimeAdaptiveEngine(jathagam)
+                result = engine.calculate_prediction_v41(
+                    target_date=target_date,
+                    life_area='general',
+                    mode_hint='past',
+                    dasha_lord=dasha_lord
+                )
+                past_score = result.get('final_score', 50)
+            else:
+                engine = AstroPercentEngine(jathagam)
+                result = engine.calculate_prediction_score(
+                    target_date=target_date,
+                    life_area='general',
+                    dasha_lord=dasha_lord
+                )
+                past_score = result.get('score', 50)
+
+            past_yearly_projections.append({
+                'year': target_year,
+                'score': round(past_score, 1),
+                'dasha': dasha_lord,
+                'dasha_label': get_planet_name(dasha_lord, lang),
+                'quality': self._get_score_quality_label(past_score, lang),
+                'is_past': True
+            })
+
         # Summary statistics
         avg_monthly = sum(p['score'] for p in monthly_projections) / len(monthly_projections)
         best_month = max(monthly_projections, key=lambda x: x['score'])
@@ -1280,6 +1336,7 @@ class FutureProjectionService:
         return {
             'monthly': monthly_projections,
             'yearly': yearly_projections,
+            'past_years': past_yearly_projections,
             'summary': {
                 'average_score': round(avg_monthly, 1),
                 'best_month': best_month['name'],

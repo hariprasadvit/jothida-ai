@@ -7,6 +7,7 @@ import AuthNavigator from './AuthNavigator';
 import MainNavigator from './MainNavigator';
 import RemedyScreen from '../screens/RemedyScreen';
 import UngalJothidanScreen from '../screens/UngalJothidanScreen';
+import ChakraScreen from '../screens/ChakraScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -37,6 +38,14 @@ export default function RootNavigator() {
           <Stack.Screen
             name="UngalJothidan"
             component={UngalJothidanScreen}
+            options={{
+              presentation: 'card',
+              animation: 'slide_from_right',
+            }}
+          />
+          <Stack.Screen
+            name="Chakra"
+            component={ChakraScreen}
             options={{
               presentation: 'card',
               animation: 'slide_from_right',

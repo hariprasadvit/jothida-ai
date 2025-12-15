@@ -1,38 +1,61 @@
 """
-Astro Engine v6.0 - Time Adaptive Tensor-Derived Multi-Module Scoring Engine
-============================================================================
+Astro Engine v7.0 - Pressure-Outcome Dual-Track Engine with Dignity Preservation
+================================================================================
 
-This engine extends the base AstroPercentEngine with dynamic time-mode adaptation.
-It automatically adjusts weights, multipliers, and tensor interactions based on
-whether the prediction is for:
-- Past analysis (historical event verification)
-- Future prediction (forecasting)
-- Month-wise calculation (period-sliced)
-- Year overlay (Varshaphal integration)
+This engine extends the base AstroPercentEngine with dynamic time-mode adaptation
+and V7.0 philosophy: "Difficulty ≠ Bad Outcome"
+
+V7.0 CORE PHILOSOPHY:
+- Pressure (effort required) and Outcome (potential gains) are SEPARATE dimensions
+- High pressure can still have positive outcomes!
+- Everyone has inherent dignity (minimum score 45%)
+- Malefics dampen (multiply), not punish (subtract)
+- Positives compound when multiple factors align
+
+V7.0 KEY FEATURES:
+1. DUAL-TRACK SCORING:
+   - Pressure Score: Measures effort cost, not bad outcome
+   - Outcome Score: Measures potential gains, independent of effort
+   - Final Score: Blend of base calculation and outcome score
+
+2. TIME DECAY (impact = base × e^(-months_elapsed / k)):
+   - Mars: k=3 (fast decay - 3 months)
+   - Saturn: k=6 (medium decay - 6 months)
+   - Rahu/Ketu: k=9 (slow decay - 9 months)
+
+3. DAMPENERS INSTEAD OF PENALTIES:
+   - Saturn active → outcome × 0.85 (not -15)
+   - Mars active → outcome × 0.90
+   - Rahu/Ketu active → outcome × 0.88
+
+4. POSITIVE COMPOUNDING:
+   - 2+ positives align → positive_gain × 1.20
+   - 3+ positives align → positive_gain × 1.40
+   - 4+ positives align → positive_gain × 1.55
+
+5. DIGNITY FLOOR: Minimum score 45% (no one is doomed)
+
+6. NEGATIVITY CAP: Max 30 points of negative impact per period
+
+7. PHASE LABELS (never use "bad"):
+   - "Effort Phase" (high pressure + good outcome)
+   - "Flow Phase" (low pressure + good outcome)
+   - "Growth Phase" (neutral pressure + positive outcome)
+   - "Challenge Phase" (high pressure + building foundation)
+   - "Steady Phase" (neutral period)
+
+8. BALANCED OUTPUT: Show 2 positives + 1 challenge (2:1 ratio)
 
 Key Concepts:
-- POI: Planet Operational Intensity = Shadbala-based dignity + transit_dignity + retrograde_mod + combustion + aspects
-- HAI: House Activation Index = house_lord_POI + transit_overlay + jupiter_support - saturn_pressure + dasha_activation
-- NavamsaSupport: D9 uplift = Δ(dignity_D9 - dignity_D1) + compatibility bonuses
+- POI: Planet Operational Intensity
+- HAI: House Activation Index
+- NavamsaSupport: D9 uplift
 
-v6.0 Refinements (STRONGLY POSITIVE - Reduce negativity by 75-80%):
-- CORE PRINCIPLE: Strongly positive output, minimal negative effects
-- Global Numeric Safety: clamp_min=0.50 (high floor), clamp_max=0.88
-- Dasha Baseline Power: benefic=0.78, neutral=0.70, malefic=0.62 (malefics nearly neutral)
-- POI Floor: 5.5-8.0 range (high floor for positive baseline)
-- Transit Cap: Max 0.82 (raised)
-- Saturn Penalty Cap: Single -0.01 max (minimal)
-- Malefic Penalties: All reduced by 80% via malefic_penalty_reduction factor
-- Dosha Penalties: Base values reduced 80%, minimal activation
+v6.0 Features (retained):
+- Global Numeric Safety: clamp_min=0.50, clamp_max=0.92
+- Dasha Baseline Power: benefic=0.78, neutral=0.70, malefic=0.62
 - Jupiter Support: Strongly boosted (3.5x direct, 1.8x aspect)
-- Yoga Presence Score: 0.07 even when dormant, 0.12 for activation
-- Negative Yoga Cap: -0.005 max dosha impact (nearly none)
-
-v5.8/5.9 Features (retained):
-- No module produces punitive scores
-- Dasha baseline power independent of POI
-- Transit Effect Fix: Jupiter/Saturn affect houses RULED BY dasha lord
-- Yoga Activation STRICT: ONLY if yoga planet = dasha OR bhukti lord
+- Yoga Presence Score: 0.07 dormant, 0.12 active
 """
 
 from datetime import datetime, date, timedelta
@@ -54,45 +77,123 @@ class TimeMode(Enum):
 
 class TimeAdaptiveEngine(AstroPercentEngine):
     """
-    v6.0 Time-Adaptive Astro Scoring Engine
+    V7.0 Time-Adaptive Astro Scoring Engine with Dual-Track Scoring
 
-    Extends AstroPercentEngine with dynamic time-mode adaptation.
-    Automatically modifies weights, multipliers, and tensor calculations
-    based on the temporal context of the prediction.
+    Extends AstroPercentEngine with dynamic time-mode adaptation and
+    V7.0 philosophy: "Difficulty ≠ Bad Outcome"
 
-    V6.0 Core Principle: STRONGLY POSITIVE - reduce negativity by 75-80%
-    - Module score floor: 0.50 (high - no score below 50%)
-    - Module score ceiling: 0.88
-    - All malefic penalties reduced by 80%
-    - Dasha baseline power: malefic=0.62 (nearly neutral)
-    - POI range: 5.5-8.0 (high floor)
-    - Transit cap: 0.82 max
-    - Saturn penalty cap: -0.01 (minimal)
-    - Jupiter support: strongly boosted (3.5x)
-    - Yoga presence: 0.07 always, 0.12 for activation
-    - Dosha penalties: minimal (nearly none)
+    V7.0 Core Principles:
+    - Pressure and Outcome are SEPARATE dimensions
+    - Dampeners (multiply) instead of penalties (subtract)
+    - Time decay on long-running malefic factors
+    - Dignity floor: minimum score 45%
+    - Negativity cap: max 30 points per period
+    - Positive compounding: 1.2x for 2+, 1.4x for 3+, 1.55x for 4+
+    - Phase labels: "Effort Phase", "Flow Phase", "Growth Phase" (never "bad")
+    - Balanced output: 2 positives + 1 challenge (2:1 ratio)
+
+    Time Modes:
+    - Past Analysis: Historical event verification
+    - Future Prediction: Forward-looking forecast
+    - Month-wise: Period-sliced calculation
+    - Year Overlay: Varshaphal integration
     """
 
-    ENGINE_VERSION = "6.0"
-    ENGINE_TYPE = "Tensor-Derived Multi-Module Astro Scoring Engine with Astrological Weighting"
+    ENGINE_VERSION = "7.0"
+    ENGINE_TYPE = "Pressure-Outcome Dual-Track Engine with Dignity Preservation"
 
-    # ==================== V6.0 GLOBAL NUMERIC SAFETY ====================
-    # V6.0 Core Principle: STRONGLY POSITIVE - reduce all negative effects by 75-80%
-    # High minimum scores, minimal penalties, optimistic and encouraging output
+    # ==================== V7.0 CORE PRINCIPLES ====================
+    # V7.0 Philosophy: Difficulty ≠ Bad Outcome
+    # - Split scoring into PRESSURE (effort cost) and OUTCOME (potential gain)
+    # - Convert penalties to dampeners (multiply, don't subtract)
+    # - Add time decay to long-running factors
+    # - Cap total negativity per period
+    # - Compound positives on alignment
+    # - Preserve dignity (minimum score 45)
+    # - Resilience memory for surviving tough periods
+
+    # ==================== V7.0 GLOBAL NUMERIC SAFETY ====================
     GLOBAL_NUMERIC_SAFETY = {
-        'clamp_min': 0.50,       # V6.0: High floor - no score below 50%
-        'clamp_max': 0.88,       # V6.0: Raised ceiling
-        'meta_multiplier_min': 1.00,  # V6.0: Never below 1.0
-        'meta_multiplier_max': 1.12,  # V6.0: Raised max multiplier
-        'poi_min': 5.5,          # V6.0: High POI floor - all planets have decent strength
-        'poi_max': 8.0,          # V6.0: Raised POI ceiling
-        'hai_min': 2.0,          # V6.0: HAI floor raised
+        'clamp_min': 0.50,       # V7.0: High floor - no score below 50%
+        'clamp_max': 0.92,       # V7.0: Raised ceiling for compound positives
+        'meta_multiplier_min': 1.00,  # V7.0: Never below 1.0
+        'meta_multiplier_max': 1.18,  # V7.0: Higher for compound positives
+        'poi_min': 5.5,          # V7.0: High POI floor
+        'poi_max': 8.5,          # V7.0: Raised ceiling
+        'hai_min': 2.0,          # V7.0: HAI floor raised
         'hai_max': 10.0,         # HAI ceiling
-        'house_suppression_threshold': 0.30,  # V6.0: Lower threshold - less suppression
-        'saturn_penalty_cap': -0.01,  # V6.0: Minimal Saturn penalty
-        'transit_cap': 0.82,     # V6.0: Raised transit cap
-        'malefic_penalty_reduction': 0.80,  # V6.0: Reduce malefic penalties by 80%
+        'house_suppression_threshold': 0.30,
+        'saturn_penalty_cap': -0.01,  # V7.0: Minimal Saturn penalty
+        'transit_cap': 0.85,     # V7.0: Raised transit cap
+        'malefic_penalty_reduction': 0.85,  # V7.0: Reduce malefic penalties by 85%
+        # V7.0 NEW: Dignity floor and negativity cap
+        'dignity_floor': 45,     # V7.0: Minimum final score (never below 45%)
+        'max_negativity_per_period': 30,  # V7.0: Cap on total negative impact
+        'pressure_outcome_split': True,  # V7.0: Enable dual-track scoring
     }
+
+    # ==================== V7.0 PRESSURE VS OUTCOME SYSTEM ====================
+    # Difficulty = effort cost (pressure), not bad outcome
+    # Outcome = separate dimension (potential gains)
+    PRESSURE_OUTCOME_CONFIG = {
+        # Pressure decay rates (k value for e^(-months/k))
+        'time_decay_rates': {
+            'Mars': 3,      # Fast decay - 3 months
+            'Saturn': 6,    # Medium decay - 6 months
+            'Rahu': 9,      # Slow decay - 9 months
+            'Ketu': 9,      # Slow decay - 9 months
+        },
+        # Convert penalties to dampeners (multiply instead of subtract)
+        # V7.0.2: Further softened - malefics slow progress, don't block it
+        'penalty_to_dampener': {
+            'Saturn': 0.94,   # Saturn active → outcome × 0.94 (discipline, not punishment)
+            'Mars': 0.96,     # Mars active → outcome × 0.96 (energy, not aggression)
+            'Rahu': 0.95,     # Rahu active → outcome × 0.95 (ambition, not confusion)
+            'Ketu': 0.95,     # Ketu active → outcome × 0.95 (spirituality, not detachment)
+        },
+        # Positive compound multipliers
+        'positive_compound': {
+            2: 1.20,  # 2+ positives align → × 1.20
+            3: 1.40,  # 3+ positives align → × 1.40
+            4: 1.55,  # 4+ positives align → × 1.55
+        },
+    }
+
+    # ==================== V7.0 PHASE LABELS (NOT "BAD") ====================
+    PHASE_LABELS = {
+        'en': {
+            'high_pressure_neutral_outcome': 'Effort Phase',
+            'neutral_pressure_positive_outcome': 'Growth Phase',
+            'high_pressure_negative_outcome': 'Challenge Phase',
+            'low_pressure_positive_outcome': 'Flow Phase',
+            'neutral': 'Steady Phase',
+            # Never use these words
+            'banned': ['bad', 'unfavorable', 'negative', 'difficult', 'harmful'],
+            # Use these instead
+            'allowed': ['high-effort', 'delayed-reward', 'low-visibility progress', 'building', 'preparing']
+        },
+        'ta': {
+            'high_pressure_neutral_outcome': 'முயற்சி காலம்',
+            'neutral_pressure_positive_outcome': 'வளர்ச்சி காலம்',
+            'high_pressure_negative_outcome': 'சவால் காலம்',
+            'low_pressure_positive_outcome': 'சீரான காலம்',
+            'neutral': 'நிலையான காலம்',
+        }
+    }
+
+    # ==================== V7.0 RESILIENCE MEMORY ====================
+    # Hidden stat that increases when user survives tough periods
+    RESILIENCE_CONFIG = {
+        'enabled': True,
+        'base_resilience': 1.0,
+        'growth_per_tough_period': 0.05,  # +5% per tough period survived
+        'max_resilience': 1.25,  # Cap at 25% bonus
+        'penalty_softening_factor': 0.15,  # Each resilience point softens penalties by 15%
+    }
+
+    # ==================== V7.0 MALEFIC PLANETS (for pressure tracking) ====================
+    PRESSURE_PLANETS = ['Saturn', 'Mars', 'Rahu', 'Ketu']
+    BENEFIC_OUTCOME_PLANETS = ['Jupiter', 'Venus', 'Mercury', 'Moon']
 
     # V6.0 DASHA BASELINE POWER (significantly raised - malefics much less punishing)
     DASHA_BASELINE_POWER = {
@@ -2336,7 +2437,7 @@ class TimeAdaptiveEngine(AstroPercentEngine):
         # 5. Calculate meta multiplier
         meta_multiplier = self._calculate_meta_multiplier_v41(modules, target_date)
 
-        # 6. Calculate final score
+        # 6. Calculate final score (base calculation)
         final_score = weighted_sum * meta_multiplier * 100
         final_score = max(0, min(100, final_score))
 
@@ -2345,10 +2446,43 @@ class TimeAdaptiveEngine(AstroPercentEngine):
             power = self.NON_LINEAR_CONFIG.get('final_smoothing_power', 0.92)
             final_score = math.pow(final_score / 100, power) * 100
 
+        # ==================== V7.0 DUAL-TRACK SCORING ====================
+        # V7.0: Calculate pressure and outcome separately
+        pressure_result = self._calculate_pressure_score_v70(modules, target_date, dasha_lord)
+        outcome_result = self._calculate_outcome_score_v70(modules, target_date, dasha_lord)
+
+        # V7.0: Blend old score with new outcome score
+        # outcome_score is more optimistic, so we use it to lift the final score
+        # Formula: final = (old_score × 0.6) + (outcome_score × 0.4)
+        v70_blended_score = (final_score * 0.6) + (outcome_result['outcome_score'] * 0.4)
+
+        # V7.0: Apply dignity floor (minimum 45%)
+        v70_blended_score = self._apply_dignity_floor_v70(v70_blended_score)
+
+        # V7.0: Apply positive compound multiplier to final score
+        if outcome_result['compound_multiplier'] > 1.0:
+            # Boost the score above 50 by compound multiplier
+            if v70_blended_score > 50:
+                boost = (v70_blended_score - 50) * (outcome_result['compound_multiplier'] - 1)
+                v70_blended_score = min(92, v70_blended_score + boost)
+
+        # V7.0: Get phase label based on pressure and outcome
+        phase_info = self._get_phase_label_v70(
+            pressure_result['pressure_score'],
+            outcome_result['outcome_score'],
+            'en'  # Default to English, can be made configurable
+        )
+
+        # V7.0: Get balanced factors (2 positives + 1 challenge)
+        balanced_factors = self._get_balanced_factors_v70(pressure_result, outcome_result)
+
+        # Use V7.0 blended score as final
+        final_score = round(v70_blended_score, 1)
+
         # 7. Calculate confidence
         confidence = self._calculate_confidence_v41(modules, target_date)
 
-        # 8. Identify top drivers
+        # 8. Identify top drivers (V7.0: prefer balanced factors)
         positive_drivers = self._get_top_drivers(modules, positive=True)
         negative_drivers = self._get_top_drivers(modules, positive=False)
 
@@ -2376,21 +2510,39 @@ class TimeAdaptiveEngine(AstroPercentEngine):
             # Final calculations
             'weighted_sum': round(weighted_sum, 4),
             'meta_multiplier': round(meta_multiplier, 4),
-            'final_score': round(final_score, 1),
+            'final_score': final_score,
+
+            # V7.0: Dual-track scoring results
+            'v70_scoring': {
+                'pressure': pressure_result,
+                'outcome': outcome_result,
+                'phase': phase_info,
+                'balanced_factors': balanced_factors,
+                'dignity_floor_applied': self.GLOBAL_NUMERIC_SAFETY.get('dignity_floor', 45),
+                'compound_multiplier': outcome_result['compound_multiplier']
+            },
 
             # Confidence and interpretation
             'confidence': confidence,
 
-            # Drivers
+            # Drivers (V7.0: includes balanced factors)
             'top_positive_drivers': positive_drivers,
             'top_negative_drivers': negative_drivers,
 
             # Reasoning trace
             'reasoning_trace': {
-                'formula': 'final = Σ(module_normalized × weight) × meta_multiplier × 100',
-                'calculation': f"{weighted_sum:.4f} × {meta_multiplier:.4f} × 100 = {final_score:.1f}",
+                'formula': 'V7.0: final = (base_score × 0.6 + outcome_score × 0.4) with dignity floor',
+                'calculation': f"({weighted_sum * meta_multiplier * 100:.1f} × 0.6) + ({outcome_result['outcome_score']:.1f} × 0.4) = {final_score:.1f}",
                 'smoothing_applied': self.NON_LINEAR_CONFIG.get('apply_smoothing', True),
-                'smoothing_power': self.NON_LINEAR_CONFIG.get('final_smoothing_power', 0.92)
+                'smoothing_power': self.NON_LINEAR_CONFIG.get('final_smoothing_power', 0.92),
+                'v70_enhancements': [
+                    'Pressure-Outcome dual-track scoring',
+                    'Time decay on malefic factors',
+                    'Dampeners instead of penalties',
+                    f'Dignity floor: {self.GLOBAL_NUMERIC_SAFETY.get("dignity_floor", 45)}%',
+                    f'Positive compound: {outcome_result["compound_multiplier"]}x',
+                    f'Max negativity cap: {self.GLOBAL_NUMERIC_SAFETY.get("max_negativity_per_period", 30)}'
+                ]
             },
 
             # Calculation trace log
@@ -3368,6 +3520,336 @@ class TimeAdaptiveEngine(AstroPercentEngine):
         drivers.sort(key=lambda x: abs(x['contribution']), reverse=True)
 
         return drivers[:top_n]
+
+    # ==================== V7.0 DUAL-TRACK SCORING METHODS ====================
+
+    def _calculate_pressure_score_v70(self, modules: Dict, target_date: date, dasha_lord: str = None) -> Dict:
+        """
+        V7.0: Calculate PRESSURE score (effort required, not bad outcome)
+
+        Pressure = effort cost, strain, challenge level
+        High pressure does NOT mean bad outcome - it means more effort required
+
+        Returns:
+            Dict with pressure_score (0-100), pressure_factors list, and phase_label
+        """
+        pressure_score = 0
+        pressure_factors = []
+
+        # 1. Check dasha lord - malefics add pressure
+        if dasha_lord in self.PRESSURE_PLANETS:
+            # Apply time decay based on how long the dasha has been running
+            decay_k = self.PRESSURE_OUTCOME_CONFIG['time_decay_rates'].get(dasha_lord, 6)
+            # Estimate months into dasha (simplified - use start of current year as reference)
+            months_elapsed = max(0, (target_date.month - 1))  # Simplified decay
+            decay_factor = math.exp(-months_elapsed / decay_k)
+
+            base_pressure = 20 if dasha_lord == 'Saturn' else 15
+            pressure_contribution = base_pressure * decay_factor
+
+            pressure_score += pressure_contribution
+            pressure_factors.append({
+                'factor': f'{dasha_lord} Dasha',
+                'contribution': round(pressure_contribution, 1),
+                'type': 'effort_phase',
+                'description_en': f'{dasha_lord} period requires sustained effort',
+                'description_ta': f'{dasha_lord} காலம் தொடர்ச்சியான முயற்சி தேவை'
+            })
+
+        # 2. Check Saturn transit influence
+        saturn_module = modules.get('transit', {})
+        transit_details = saturn_module.get('tensor_breakdown', {})
+
+        # Saturn pressure from transit
+        saturn_transit_pressure = abs(transit_details.get('saturn_pressure', 0)) * 10
+        if saturn_transit_pressure > 0:
+            decay_k = self.PRESSURE_OUTCOME_CONFIG['time_decay_rates']['Saturn']
+            saturn_transit_pressure *= math.exp(-target_date.month / decay_k)  # Time decay
+
+            pressure_score += min(saturn_transit_pressure, 15)  # Cap individual factor
+            if saturn_transit_pressure > 3:
+                pressure_factors.append({
+                    'factor': 'Saturn Transit',
+                    'contribution': round(min(saturn_transit_pressure, 15), 1),
+                    'type': 'delayed_reward',
+                    'description_en': 'Saturn transit brings delayed rewards',
+                    'description_ta': 'சனி கோச்சாரம் தாமதமான பலன்கள்'
+                })
+
+        # 3. Check Mars influence (short-term pressure)
+        mars_data = self.planets.get('Mars', {})
+        if mars_data.get('house') in [1, 4, 7, 8, 12]:  # Mars in challenging houses
+            decay_k = self.PRESSURE_OUTCOME_CONFIG['time_decay_rates']['Mars']
+            mars_pressure = 10 * math.exp(-target_date.month / decay_k)
+
+            pressure_score += mars_pressure
+            pressure_factors.append({
+                'factor': 'Mars Energy',
+                'contribution': round(mars_pressure, 1),
+                'type': 'action_required',
+                'description_en': 'Mars energy requires channeled action',
+                'description_ta': 'செவ்வாய் ஆற்றல் செயல்பாடு தேவை'
+            })
+
+        # 4. Cap total pressure at max_negativity_per_period
+        max_negativity = self.GLOBAL_NUMERIC_SAFETY.get('max_negativity_per_period', 30)
+        pressure_score = min(pressure_score, max_negativity)
+
+        # Determine phase label based on pressure level
+        if pressure_score >= 20:
+            phase = 'high_pressure_neutral_outcome'
+        elif pressure_score >= 10:
+            phase = 'neutral'
+        else:
+            phase = 'low_pressure_positive_outcome'
+
+        return {
+            'pressure_score': round(pressure_score, 1),
+            'pressure_factors': pressure_factors[:3],  # Top 3 factors
+            'phase_key': phase,
+            'max_capped': max_negativity
+        }
+
+    def _calculate_outcome_score_v70(self, modules: Dict, target_date: date, dasha_lord: str = None) -> Dict:
+        """
+        V7.0.2: Calculate OUTCOME score (potential gains)
+
+        Outcome = what you actually achieve, independent of effort
+        High pressure can still have positive outcome!
+        V7.0.2: Enhanced positive detection for more optimistic scores
+
+        Returns:
+            Dict with outcome_score, outcome_factors, and compound_multiplier
+        """
+        outcome_score = 55  # V7.0.2: Start at slightly positive baseline
+        outcome_factors = []
+        positive_count = 0
+
+        # 1. Jupiter influence (always positive)
+        jupiter_data = self.planets.get('Jupiter', {})
+        jupiter_dignity = jupiter_data.get('dignity', 'neutral')
+        jupiter_house = jupiter_data.get('house', 1)
+
+        if jupiter_dignity in ['exalted', 'own', 'mooltrikona']:
+            outcome_score += 12
+            positive_count += 1
+            outcome_factors.append({
+                'factor': 'Jupiter Strength',
+                'contribution': 12,
+                'type': 'blessing',
+                'description_en': 'Strong Jupiter brings expansion and wisdom',
+                'description_ta': 'வலுவான குரு விரிவாக்கம் தருகிறது'
+            })
+        elif jupiter_house in [1, 4, 5, 7, 9, 10, 11]:  # Kendras and trikonas
+            outcome_score += 8
+            positive_count += 1
+            outcome_factors.append({
+                'factor': 'Jupiter Position',
+                'contribution': 8,
+                'type': 'opportunity',
+                'description_en': 'Jupiter placement supports growth',
+                'description_ta': 'குரு நிலை வளர்ச்சிக்கு உதவுகிறது'
+            })
+
+        # 2. Venus influence (harmony and comfort)
+        venus_data = self.planets.get('Venus', {})
+        venus_dignity = venus_data.get('dignity', 'neutral')
+        venus_house = venus_data.get('house', 1)
+
+        if venus_dignity in ['exalted', 'own', 'mooltrikona']:
+            outcome_score += 10
+            positive_count += 1
+            outcome_factors.append({
+                'factor': 'Venus Strength',
+                'contribution': 10,
+                'type': 'harmony',
+                'description_en': 'Strong Venus brings comfort and harmony',
+                'description_ta': 'வலுவான சுக்கிரன் ஆறுதல் தருகிறது'
+            })
+        elif venus_house in [1, 2, 4, 5, 7, 9, 11]:  # Good houses for Venus
+            outcome_score += 5
+            positive_count += 1
+            outcome_factors.append({
+                'factor': 'Venus Position',
+                'contribution': 5,
+                'type': 'comfort',
+                'description_en': 'Venus placement brings material comfort',
+                'description_ta': 'சுக்கிரன் நிலை வசதி தருகிறது'
+            })
+
+        # 3. Saturn strength (V7.0.2: Saturn own/exalted is positive!)
+        saturn_data = self.planets.get('Saturn', {})
+        saturn_dignity = saturn_data.get('dignity', 'neutral')
+
+        if saturn_dignity in ['exalted', 'own', 'mooltrikona']:
+            outcome_score += 8
+            positive_count += 1
+            outcome_factors.append({
+                'factor': 'Saturn Discipline',
+                'contribution': 8,
+                'type': 'stability',
+                'description_en': 'Strong Saturn brings discipline and stability',
+                'description_ta': 'வலுவான சனி ஒழுக்கம் தருகிறது'
+            })
+
+        # 4. Mercury strength (intelligence)
+        mercury_data = self.planets.get('Mercury', {})
+        mercury_dignity = mercury_data.get('dignity', 'neutral')
+        mercury_house = mercury_data.get('house', 1)
+
+        if mercury_dignity in ['exalted', 'own', 'mooltrikona']:
+            outcome_score += 7
+            positive_count += 1
+            outcome_factors.append({
+                'factor': 'Mercury Intelligence',
+                'contribution': 7,
+                'type': 'wisdom',
+                'description_en': 'Strong Mercury brings communication skills',
+                'description_ta': 'வலுவான புதன் புத்திசாலித்தனம் தருகிறது'
+            })
+        elif mercury_house in [1, 2, 4, 5, 7, 10, 11]:
+            outcome_score += 4
+            positive_count += 1
+
+        # 5. Benefic dasha lord
+        if dasha_lord in self.BENEFIC_OUTCOME_PLANETS:
+            outcome_score += 10
+            positive_count += 1
+            outcome_factors.append({
+                'factor': f'{dasha_lord} Period',
+                'contribution': 10,
+                'type': 'favorable_period',
+                'description_en': f'{dasha_lord} period supports positive outcomes',
+                'description_ta': f'{dasha_lord} காலம் நல்ல பலன்கள்'
+            })
+
+        # 6. Yoga activation bonus
+        yoga_module = modules.get('yoga_dosha', {})
+        yoga_score = yoga_module.get('normalized', 0.5)
+        if yoga_score > 0.55:  # V7.0.2: Lower threshold
+            yoga_bonus = (yoga_score - 0.5) * 35  # V7.0.2: Higher multiplier
+            outcome_score += yoga_bonus
+            positive_count += 1
+            outcome_factors.append({
+                'factor': 'Yoga Activation',
+                'contribution': round(yoga_bonus, 1),
+                'type': 'special_combination',
+                'description_en': 'Auspicious yoga combination active',
+                'description_ta': 'சுப யோகம் செயல்படுகிறது'
+            })
+
+        # 7. V7.0.2: House module boost
+        house_module = modules.get('house_power', {})
+        house_score = house_module.get('normalized', 0.5)
+        if house_score > 0.55:
+            house_bonus = (house_score - 0.5) * 20
+            outcome_score += house_bonus
+
+        # 8. Apply dampeners instead of penalties for malefics
+        # V7.0.2: Malefics only slightly dampen, they don't block
+        dampener = 1.0
+        if dasha_lord in self.PRESSURE_PLANETS:
+            dampener *= self.PRESSURE_OUTCOME_CONFIG['penalty_to_dampener'].get(dasha_lord, 0.95)
+
+        # Apply dampener (only to the gains above baseline)
+        base = 55
+        outcome_score = base + (outcome_score - base) * dampener
+
+        # 9. Apply positive compound multiplier
+        compound_multiplier = 1.0
+        if positive_count >= 2:
+            compound_multiplier = self.PRESSURE_OUTCOME_CONFIG['positive_compound'].get(
+                min(positive_count, 4), 1.0
+            )
+            outcome_score = base + (outcome_score - base) * compound_multiplier
+
+        return {
+            'outcome_score': round(max(0, min(100, outcome_score)), 1),
+            'outcome_factors': outcome_factors[:3],  # Top 3 factors
+            'positive_count': positive_count,
+            'compound_multiplier': round(compound_multiplier, 2),
+            'dampener_applied': round(dampener, 2)
+        }
+
+    def _apply_dignity_floor_v70(self, raw_score: float) -> float:
+        """
+        V7.0: Apply dignity floor - no score below 45%
+
+        Philosophy: Everyone has inherent dignity and potential.
+        Even in the most challenging periods, there is always hope and opportunity.
+        """
+        dignity_floor = self.GLOBAL_NUMERIC_SAFETY.get('dignity_floor', 45)
+        return max(raw_score, dignity_floor)
+
+    def _get_phase_label_v70(self, pressure_score: float, outcome_score: float, lang: str = 'en') -> Dict:
+        """
+        V7.0: Get appropriate phase label based on pressure and outcome
+
+        High pressure + good outcome = "Effort Phase" (working hard but succeeding)
+        Low pressure + good outcome = "Flow Phase" (easy success)
+        High pressure + neutral outcome = "Building Phase" (effort now, reward later)
+        """
+        labels = self.PHASE_LABELS.get(lang, self.PHASE_LABELS['en'])
+
+        if pressure_score >= 20:
+            if outcome_score >= 60:
+                phase_key = 'high_pressure_neutral_outcome'  # Effort but rewarded
+                phase_description = 'High effort leading to growth' if lang == 'en' else 'அதிக முயற்சி வளர்ச்சிக்கு'
+            else:
+                phase_key = 'high_pressure_negative_outcome'  # Challenge phase
+                phase_description = 'Building foundation for future' if lang == 'en' else 'எதிர்காலத்திற்கு அடித்தளம்'
+        elif outcome_score >= 65:
+            phase_key = 'low_pressure_positive_outcome'  # Flow state
+            phase_description = 'Natural momentum and ease' if lang == 'en' else 'இயல்பான வேகம்'
+        elif outcome_score >= 55:
+            phase_key = 'neutral_pressure_positive_outcome'  # Growth phase
+            phase_description = 'Steady progress and growth' if lang == 'en' else 'நிலையான வளர்ச்சி'
+        else:
+            phase_key = 'neutral'  # Steady phase
+            phase_description = 'Stable period for planning' if lang == 'en' else 'திட்டமிடும் காலம்'
+
+        return {
+            'phase_key': phase_key,
+            'phase_label': labels.get(phase_key, 'Steady Phase'),
+            'phase_description': phase_description
+        }
+
+    def _get_balanced_factors_v70(self, pressure_result: Dict, outcome_result: Dict) -> Dict:
+        """
+        V7.0: Show 2 positives + 1 challenge (balanced perspective)
+
+        Never show only negatives. Always lead with positives.
+        """
+        positives = []
+        challenges = []
+
+        # Collect positive outcome factors
+        for factor in outcome_result.get('outcome_factors', []):
+            positives.append({
+                'text_en': factor.get('description_en', ''),
+                'text_ta': factor.get('description_ta', ''),
+                'type': factor.get('type', 'positive'),
+                'contribution': factor.get('contribution', 0)
+            })
+
+        # Collect challenge factors (reworded)
+        for factor in pressure_result.get('pressure_factors', []):
+            challenges.append({
+                'text_en': factor.get('description_en', '').replace('difficult', 'effort').replace('bad', 'building'),
+                'text_ta': factor.get('description_ta', ''),
+                'type': 'effort_required',
+                'contribution': factor.get('contribution', 0)
+            })
+
+        # Sort by contribution
+        positives.sort(key=lambda x: x['contribution'], reverse=True)
+        challenges.sort(key=lambda x: x['contribution'], reverse=True)
+
+        return {
+            'positives': positives[:2],  # Top 2 positives
+            'challenge': challenges[0] if challenges else None,  # 1 challenge (may be None)
+            'balance_ratio': '2:1'  # V7.0 ratio
+        }
 
     # ==================== MONTH-WISE CALCULATION ====================
 

@@ -289,7 +289,7 @@ class LifeTimelineService:
         # Use Astro-Percent Engine if available
         if AstroPercentEngine:
             return self._generate_year_with_engine(
-                year, age, active_dasha, dasha_effects, jathagam
+                year, age, active_dasha, dasha_effects, jathagam, birth_year
             )
 
         # Fallback to basic calculation
@@ -297,11 +297,11 @@ class LifeTimelineService:
         dasha_planet = planets.get(active_dasha, {})
         strength_modifier = (dasha_planet.get("strength", 50) - 50) / 100
 
-        # Calculate scores for each area
-        career_score = min(100, max(20, dasha_effects["career"] + strength_modifier * 20 + self._year_variation(year, "career")))
-        relationship_score = min(100, max(20, dasha_effects["relationships"] + strength_modifier * 15 + self._year_variation(year, "love")))
-        finance_score = min(100, max(20, dasha_effects["finances"] + strength_modifier * 20 + self._year_variation(year, "finance")))
-        health_score = min(100, max(20, dasha_effects["health"] + strength_modifier * 10 + self._year_variation(year, "health")))
+        # Calculate scores for each area with birth-year based variation
+        career_score = min(100, max(20, dasha_effects["career"] + strength_modifier * 20 + self._year_variation(year, "career", birth_year)))
+        relationship_score = min(100, max(20, dasha_effects["relationships"] + strength_modifier * 15 + self._year_variation(year, "relationships", birth_year)))
+        finance_score = min(100, max(20, dasha_effects["finances"] + strength_modifier * 20 + self._year_variation(year, "finances", birth_year)))
+        health_score = min(100, max(20, dasha_effects["health"] + strength_modifier * 10 + self._year_variation(year, "health", birth_year)))
 
         # Overall score
         overall_score = (career_score * 0.3 + relationship_score * 0.25 + finance_score * 0.25 + health_score * 0.2)
@@ -331,7 +331,7 @@ class LifeTimelineService:
         }
 
     def _generate_year_with_engine(
-        self, year: int, age: int, active_dasha: str, dasha_effects: Dict, jathagam: Dict
+        self, year: int, age: int, active_dasha: str, dasha_effects: Dict, jathagam: Dict, birth_year: int = 1990
     ) -> Dict:
         """Generate year prediction using V6.0 TimeAdaptiveEngine (strongly positive output)"""
         target_date = date(year, 6, 15)  # Mid-year
@@ -364,7 +364,10 @@ class LifeTimelineService:
                 life_area=engine_area,
                 dasha_lord=active_dasha,
             )
-            area_scores[area_key] = result['score']
+            # Add dynamic variation based on astrological cycles (birth-year personalized)
+            base_score = result['score']
+            variation = self._year_variation(year, area_key, birth_year)
+            area_scores[area_key] = min(95, max(25, base_score + variation))
             all_factors.extend(result.get('top_factors', []))
 
             # Store calculation trace from first result
@@ -485,11 +488,38 @@ class LifeTimelineService:
                 return dasha["lord"]
         return dasha_periods[0]["lord"] if dasha_periods else "Sun"
 
-    def _year_variation(self, year: int, area: str) -> float:
-        """Add natural variation to predictions"""
+    def _year_variation(self, year: int, area: str, birth_year: int = 1990) -> float:
+        """Add natural variation to predictions - highly dynamic based on astrology cycles"""
         import hashlib
-        seed = int(hashlib.md5(f"{year}{area}".encode()).hexdigest()[:8], 16)
-        return ((seed % 30) - 15)  # -15 to +15 variation
+
+        # Create unique seed based on year, area, and birth year for personalized variation
+        seed_str = f"{year}{area}{birth_year}"
+        seed = int(hashlib.md5(seed_str.encode()).hexdigest()[:8], 16)
+
+        # Primary variation: -25 to +25 based on hash
+        base_variation = ((seed % 50) - 25)
+
+        # Dasha-like 9-year cycle variation (major life changes every ~9 years)
+        dasha_cycle = math.sin((year - birth_year) * 0.7) * 12  # -12 to +12
+
+        # Transit-like 12-year Jupiter cycle (opportunities/growth)
+        jupiter_cycle = math.cos((year - birth_year) * 0.523) * 8  # -8 to +8
+
+        # Saturn 7-year cycle (challenges/lessons)
+        saturn_cycle = math.sin((year - birth_year) * 0.898 + hash(area) % 4) * 6  # -6 to +6
+
+        # Area-specific variation (each life area has different timing)
+        area_offset = {
+            'career': ((year % 3) - 1) * 5,      # 3-year career cycles
+            'relationships': ((year % 7) - 3) * 4,  # 7-year relationship cycles
+            'finances': ((year % 4) - 2) * 6,    # 4-year financial cycles
+            'health': ((year % 5) - 2) * 3,      # 5-year health cycles
+        }.get(area, 0)
+
+        # Combine all factors for total variation range: -56 to +56
+        total = base_variation + dasha_cycle + jupiter_cycle + saturn_cycle + area_offset
+
+        return total
 
     def _generate_year_events(
         self, year: int, career: float, love: float, finance: float, health: float, age: int, dasha: str

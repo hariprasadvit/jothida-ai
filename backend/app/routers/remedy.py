@@ -32,6 +32,7 @@ class RemedyRequest(BaseModel):
     latitude: Optional[float] = 13.0827
     longitude: Optional[float] = 80.2707
     goal: Optional[UserGoal] = None
+    language: Optional[str] = "ta"  # Language: ta, en, kn
 
 
 class RemedyItem(BaseModel):

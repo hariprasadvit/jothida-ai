@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.user import User, AstroProfile
-from app.services.pdf_report import generate_jathagam_report
+from app.services.pdf_report_v6 import generate_v6_report
 
 router = APIRouter()
 
@@ -24,6 +24,7 @@ class ReportRequest(BaseModel):
     birth_place: str
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    language: Optional[str] = 'ta'  # 'en', 'ta', or 'kn'
 
 
 @router.post("/generate")
@@ -93,9 +94,10 @@ async def generate_report(request: Request, data: ReportRequest):
         'longitude': data.longitude or 80.2707
     }
 
-    # Generate PDF
+    # Generate PDF with V6 Super Jyotish Engine
+    language = data.language or 'ta'
     try:
-        pdf_bytes = generate_jathagam_report(chart_data, user_data)
+        pdf_bytes = generate_v6_report(chart_data, user_data, language)
     except Exception as e:
         print(f"Error generating PDF: {e}")
         import traceback
@@ -118,6 +120,7 @@ async def generate_report(request: Request, data: ReportRequest):
 async def download_user_report(
     request: Request,
     user_id: int,
+    language: str = 'ta',
     db: Session = Depends(get_db)
 ):
     """
@@ -181,9 +184,9 @@ async def download_user_report(
         'longitude': profile.birth_longitude or 80.2707
     }
 
-    # Generate PDF
+    # Generate PDF with V6 Super Jyotish Engine
     try:
-        pdf_bytes = generate_jathagam_report(chart_data, user_data)
+        pdf_bytes = generate_v6_report(chart_data, user_data, language)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate PDF: {str(e)}")
 
@@ -228,6 +231,6 @@ async def preview_report_info():
             "Yearly Predictions",
             "Glossary & Appendix"
         ],
-        "languages": ["English", "Tamil"],
+        "languages": ["English", "Tamil", "Kannada"],
         "format": "PDF (A4 size)"
     }

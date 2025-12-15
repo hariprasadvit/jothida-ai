@@ -262,6 +262,262 @@ const translateEventLabel = (event, language, t) => {
   return event.label || event.label_tamil;
 };
 
+// ============== RASHI PALAN DATA & COMPONENT ==============
+
+// 12 Zodiac signs with symbols and ruling planets
+const RASHI_DATA = [
+  { key: 'aries', symbol: '♈', ruler: 'Mars', element: 'fire', ta: 'மேஷம்' },
+  { key: 'taurus', symbol: '♉', ruler: 'Venus', element: 'earth', ta: 'ரிஷபம்' },
+  { key: 'gemini', symbol: '♊', ruler: 'Mercury', element: 'air', ta: 'மிதுனம்' },
+  { key: 'cancer', symbol: '♋', ruler: 'Moon', element: 'water', ta: 'கடகம்' },
+  { key: 'leo', symbol: '♌', ruler: 'Sun', element: 'fire', ta: 'சிம்மம்' },
+  { key: 'virgo', symbol: '♍', ruler: 'Mercury', element: 'earth', ta: 'கன்னி' },
+  { key: 'libra', symbol: '♎', ruler: 'Venus', element: 'air', ta: 'துலாம்' },
+  { key: 'scorpio', symbol: '♏', ruler: 'Mars', element: 'water', ta: 'விருச்சிகம்' },
+  { key: 'sagittarius', symbol: '♐', ruler: 'Jupiter', element: 'fire', ta: 'தனுசு' },
+  { key: 'capricorn', symbol: '♑', ruler: 'Saturn', element: 'earth', ta: 'மகரம்' },
+  { key: 'aquarius', symbol: '♒', ruler: 'Saturn', element: 'air', ta: 'கும்பம்' },
+  { key: 'pisces', symbol: '♓', ruler: 'Jupiter', element: 'water', ta: 'மீனம்' },
+];
+
+// Calculate dynamic Rashi score based on current transits and date
+const calculateRashiScore = (rashiKey, transits, currentDate) => {
+  // Base score varies by day of month (creates daily variation)
+  const day = currentDate.getDate();
+  const month = currentDate.getMonth();
+  const rashiIndex = RASHI_DATA.findIndex(r => r.key === rashiKey);
+
+  // Seed based on rashi position and date for consistent daily scores
+  const seed = (rashiIndex * 7 + day * 3 + month * 11) % 100;
+
+  // Base score between 55-85
+  let score = 55 + (seed % 31);
+
+  // Adjust based on element and current month
+  const rashi = RASHI_DATA[rashiIndex];
+  const monthElement = ['earth', 'earth', 'air', 'fire', 'fire', 'earth', 'air', 'water', 'fire', 'earth', 'air', 'water'][month];
+
+  if (rashi.element === monthElement) score += 8;
+  else if ((rashi.element === 'fire' && monthElement === 'air') ||
+           (rashi.element === 'earth' && monthElement === 'water')) score += 5;
+
+  // Adjust based on ruling planet transits if available
+  if (transits) {
+    const rulerTransit = transits[rashi.ruler.toLowerCase()] || transits[rashi.ruler];
+    if (rulerTransit) {
+      if (rulerTransit.is_retrograde) score -= 5;
+      if (rulerTransit.dignity === 'exalted' || rulerTransit.dignity === 'own_sign') score += 7;
+      if (rulerTransit.dignity === 'debilitated') score -= 5;
+    }
+  }
+
+  // Ensure score is within bounds
+  return Math.min(95, Math.max(45, Math.round(score)));
+};
+
+// Rashi Palan Ticker Component - News Bulletin Style Auto-Scroll
+const RashiPalanTicker = ({ transits, language, t, userRashi, onRashiPress }) => {
+  const scrollX = useRef(new Animated.Value(0)).current;
+  const blinkAnim = useRef(new Animated.Value(1)).current;
+  const [currentDate] = useState(new Date());
+  const animationRef = useRef(null);
+  const ITEM_WIDTH = 120; // Width of each rashi item + margin
+  const TOTAL_WIDTH = ITEM_WIDTH * 12; // Total width for 12 items
+
+  // Calculate scores for all rashis
+  const rashiScores = RASHI_DATA.map(rashi => ({
+    ...rashi,
+    score: calculateRashiScore(rashi.key, transits, currentDate),
+    name: language === 'ta' ? rashi.ta : t(rashi.key),
+  }));
+
+  // Triple the items for seamless infinite scroll
+  const tickerItems = [...rashiScores, ...rashiScores, ...rashiScores];
+
+  // Blinking LIVE dot animation
+  useEffect(() => {
+    const blink = Animated.loop(
+      Animated.sequence([
+        Animated.timing(blinkAnim, { toValue: 0.2, duration: 600, useNativeDriver: true }),
+        Animated.timing(blinkAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
+      ])
+    );
+    blink.start();
+    return () => blink.stop();
+  }, []);
+
+  // Auto-scroll animation - continuous loop
+  useEffect(() => {
+    const duration = TOTAL_WIDTH * 30; // 30ms per pixel for smooth scroll
+
+    const animate = () => {
+      scrollX.setValue(0);
+      animationRef.current = Animated.timing(scrollX, {
+        toValue: -TOTAL_WIDTH,
+        duration: duration,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      });
+      animationRef.current.start(({ finished }) => {
+        if (finished) animate();
+      });
+    };
+
+    animate();
+    return () => animationRef.current?.stop();
+  }, []);
+
+  // Get score color
+  const getScoreColor = (score) => {
+    if (score >= 75) return '#22c55e';
+    if (score >= 60) return '#fbbf24';
+    return '#ef4444';
+  };
+
+  return (
+    <View style={rashiTickerStyles.container}>
+      {/* Header Bar */}
+      <View style={rashiTickerStyles.header}>
+        <View style={rashiTickerStyles.liveIndicator}>
+          <Animated.View style={[rashiTickerStyles.liveDot, { opacity: blinkAnim }]} />
+          <Text style={rashiTickerStyles.liveText}>LIVE</Text>
+        </View>
+        <Text style={rashiTickerStyles.title}>
+          {language === 'ta' ? '⭐ இன்றைய ராசி பலன்' : '⭐ Today\'s Rashi Palan'}
+        </Text>
+        <Text style={rashiTickerStyles.date}>
+          {currentDate.toLocaleDateString(language === 'ta' ? 'ta-IN' : 'en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}
+        </Text>
+      </View>
+
+      {/* Scrolling Ticker */}
+      <View style={rashiTickerStyles.tickerWrapper}>
+        <Animated.View
+          style={[
+            rashiTickerStyles.tickerContent,
+            { transform: [{ translateX: scrollX }] }
+          ]}
+        >
+          {tickerItems.map((rashi, index) => {
+            const isUserRashi = userRashi && (
+              userRashi.toLowerCase() === rashi.key ||
+              userRashi === rashi.ta ||
+              userRashi.toLowerCase().includes(rashi.key.substring(0, 4))
+            );
+
+            return (
+              <View key={`${rashi.key}-${index}`} style={rashiTickerStyles.rashiItem}>
+                <Text style={rashiTickerStyles.rashiSymbol}>{rashi.symbol}</Text>
+                <Text style={[
+                  rashiTickerStyles.rashiName,
+                  isUserRashi && rashiTickerStyles.rashiNameHighlight
+                ]}>
+                  {rashi.name}
+                </Text>
+                <Text style={[rashiTickerStyles.scoreText, { color: getScoreColor(rashi.score) }]}>
+                  {rashi.score}%
+                </Text>
+                {isUserRashi && <Text style={rashiTickerStyles.youIndicator}>★</Text>}
+                <Text style={rashiTickerStyles.separator}>│</Text>
+              </View>
+            );
+          })}
+        </Animated.View>
+      </View>
+    </View>
+  );
+};
+
+// Rashi Ticker Styles - News Bulletin Style
+const rashiTickerStyles = StyleSheet.create({
+  container: {
+    backgroundColor: '#0c0c0c',
+    marginTop: 4,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: '#b91c1c',
+    gap: 8,
+  },
+  liveIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 3,
+    gap: 4,
+  },
+  liveDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#dc2626',
+  },
+  liveText: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#dc2626',
+    letterSpacing: 0.5,
+  },
+  title: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  date: {
+    fontSize: 11,
+    color: '#fecaca',
+    fontWeight: '600',
+  },
+  tickerWrapper: {
+    overflow: 'hidden',
+    backgroundColor: '#111',
+    paddingVertical: 10,
+  },
+  tickerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  rashiItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+    gap: 5,
+  },
+  rashiSymbol: {
+    fontSize: 16,
+  },
+  rashiName: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  rashiNameHighlight: {
+    color: '#fbbf24',
+    fontWeight: '800',
+  },
+  scoreText: {
+    fontSize: 14,
+    fontWeight: '800',
+    minWidth: 40,
+  },
+  youIndicator: {
+    fontSize: 12,
+    color: '#fbbf24',
+    marginLeft: -2,
+  },
+  separator: {
+    fontSize: 16,
+    color: '#444',
+    marginHorizontal: 8,
+  },
+});
+
 // ============== DECORATIVE COMPONENTS ==============
 
 // Simple decorative border - subtle golden line with dots
@@ -621,18 +877,203 @@ const AREA_KEYS = {
   relationships: { key: 'relationshipsLabel', icon: 'people', color: '#ec4899' },
 };
 
-// Score Justification Modal
-const ScoreJustificationModal = ({ visible, onClose, data, t }) => {
+// Generate truly dynamic AI Summary based on actual birth chart data
+const generateAISummary = (data, score, t, language = 'en') => {
+  const lang = language === 'ta' ? 'ta' : 'en';
+  const scoreLevel = score >= 75 ? 'excellent' : score >= 60 ? 'good' : score >= 45 ? 'moderate' : 'challenging';
+
+  // Extract actual birth chart factors
+  const dashaLord = data.dasha_lord_label || data.dasha_lord || '';
+  const bhuktiLord = data.bhukti_lord_label || data.bhukti_lord || '';
+  const breakdown = data.breakdown || {};
+  const trace = data.calculation_trace || {};
+  const factors = data.factors || [];
+
+  // Determine life area
+  let area = data.area || 'general';
+  const title = (data.title || data.name || '').toLowerCase();
+  if (title.includes('love') || title.includes('காதல்')) area = 'love';
+  else if (title.includes('career') || title.includes('தொழில்')) area = 'career';
+  else if (title.includes('education') || title.includes('கல்வி')) area = 'education';
+  else if (title.includes('family') || title.includes('குடும்ப')) area = 'family';
+  else if (title.includes('health') || title.includes('ஆரோக்கிய')) area = 'health';
+
+  // Build dynamic summary from actual data
+  let summary = '';
+  let highlights = [];
+  let advice = '';
+
+  // Area-specific house lords from Jyotish
+  const areaHouses = {
+    love: { house: 7, karaka: 'Venus', ta: { house: '7ஆம் வீடு', karaka: 'சுக்கிரன்' }},
+    career: { house: 10, karaka: 'Saturn', ta: { house: '10ஆம் வீடு', karaka: 'சனி' }},
+    education: { house: 4, karaka: 'Mercury', ta: { house: '4ஆம் வீடு', karaka: 'புதன்' }},
+    family: { house: 4, karaka: 'Moon', ta: { house: '4ஆம் வீடு', karaka: 'சந்திரன்' }},
+    health: { house: 1, karaka: 'Sun', ta: { house: 'லக்னம்', karaka: 'சூரியன்' }},
+    general: { house: 1, karaka: 'Sun', ta: { house: 'லக்னம்', karaka: 'சூரியன்' }}
+  };
+
+  const houseInfo = areaHouses[area] || areaHouses.general;
+
+  // Build summary based on score + dasha + area
+  if (lang === 'ta') {
+    if (dashaLord) {
+      summary = `${dashaLord} தசையில் ${houseInfo.ta.house} ${score >= 60 ? 'பலமாக' : 'கவனம் தேவை'}. `;
+      if (bhuktiLord) summary += `${bhuktiLord} புக்தி ${score >= 70 ? 'ஆதரவு தருகிறது' : 'சவால்களை கொண்டு வரலாம்'}. `;
+    }
+    summary += `உங்கள் மதிப்பெண் ${score}/100 - ${scoreLevel === 'excellent' ? 'மிகச்சிறந்த நிலை' : scoreLevel === 'good' ? 'நல்ல நிலை' : scoreLevel === 'moderate' ? 'சராசரி நிலை' : 'கவனம் தேவை'}.`;
+  } else {
+    if (dashaLord) {
+      summary = `In ${dashaLord} dasha, your ${area === 'general' ? 'overall' : area} sector (House ${houseInfo.house}) is ${score >= 60 ? 'strong' : 'needing attention'}. `;
+      if (bhuktiLord) summary += `${bhuktiLord} bhukti ${score >= 70 ? 'supports growth' : 'brings challenges to navigate'}. `;
+    }
+    summary += `Your score is ${score}/100 - ${scoreLevel === 'excellent' ? 'excellent position' : scoreLevel === 'good' ? 'favorable conditions' : scoreLevel === 'moderate' ? 'mixed influences' : 'caution advised'}.`;
+  }
+
+  // Build highlights from actual breakdown/factors
+  if (factors.length > 0) {
+    highlights = factors.slice(0, 3).map(f => {
+      const isPositive = f.impact > 0 || f.type === 'positive';
+      const icon = isPositive ? '✅' : '⚠️';
+      return `${icon} ${f.description || f.factor || f.name}`;
+    });
+  } else if (Object.keys(breakdown).length > 0) {
+    // Build from breakdown
+    Object.entries(breakdown).slice(0, 3).forEach(([key, val]) => {
+      const value = typeof val === 'object' ? val.value || val.score : val;
+      const isGood = value >= 60;
+      highlights.push(`${isGood ? '✅' : '⚠️'} ${key.replace(/_/g, ' ')}: ${value}%`);
+    });
+  }
+
+  // Default highlights if none from data
+  if (highlights.length === 0) {
+    if (lang === 'ta') {
+      if (area === 'love') {
+        highlights = score >= 60
+          ? [`💕 ${houseInfo.ta.karaka} பலமாக உள்ளது`, `🤝 உறவுகள் வளரும்`, `💫 புரிதல் அதிகரிக்கும்`]
+          : [`⚠️ ${houseInfo.ta.karaka} பலவீனம்`, `🛡️ பொறுமை தேவை`, `🙏 தொடர்பில் கவனம்`];
+      } else if (area === 'career') {
+        highlights = score >= 60
+          ? [`📈 ${houseInfo.ta.house} பலமாக`, `💼 வளர்ச்சி வாய்ப்புகள்`, `🏆 முயற்சி வெற்றி`]
+          : [`⚠️ வேலை சுமை அதிகம்`, `🛡️ மோதல்களைத் தவிர்க்கவும்`, `⏸️ பெரிய மாற்றங்கள் வேண்டாம்`];
+      } else if (area === 'education') {
+        highlights = score >= 60
+          ? [`📚 கற்றல் எளிது`, `🧠 நினைவாற்றல் சிறப்பு`, `🎓 தேர்வு வெற்றி`]
+          : [`⚠️ கவனம் சிதறும்`, `📅 திட்டமிடல் அவசியம்`, `💪 கூடுதல் முயற்சி தேவை`];
+      } else if (area === 'family') {
+        highlights = score >= 60
+          ? [`🏠 வீட்டில் மகிழ்ச்சி`, `👨‍👩‍👧‍👦 ஒற்றுமை`, `💝 அன்பு பெருகும்`]
+          : [`⚠️ கருத்து வேறுபாடுகள்`, `🕊️ சமரசம் தேவை`, `🙏 பொறுமை முக்கியம்`];
+      } else if (area === 'health') {
+        highlights = score >= 60
+          ? [`💪 ஆற்றல் அதிகம்`, `😊 மன அமைதி`, `🏃 உடற்பயிற்சி நல்லது`]
+          : [`⚠️ ஓய்வு எடுங்கள்`, `🏥 பரிசோதனை செய்யுங்கள்`, `🧘 மன அழுத்தம் குறைக்கவும்`];
+      } else {
+        highlights = score >= 60
+          ? [`✨ சாதகமான காலம்`, `📈 முன்னேற்றம்`, `🎯 இலக்குகள் அடையலாம்`]
+          : [`⚠️ கவனமாக இருங்கள்`, `⏸️ பெரிய முடிவுகள் வேண்டாம்`, `🙏 பொறுமை தேவை`];
+      }
+    } else {
+      if (area === 'love') {
+        highlights = score >= 60
+          ? [`💕 ${houseInfo.karaka} is strong in your chart`, `🤝 Relationships will flourish`, `💫 Understanding deepens`]
+          : [`⚠️ ${houseInfo.karaka} needs strengthening`, `🛡️ Patience required`, `🙏 Focus on communication`];
+      } else if (area === 'career') {
+        highlights = score >= 60
+          ? [`📈 House ${houseInfo.house} is well-placed`, `💼 Growth opportunities ahead`, `🏆 Efforts will be recognized`]
+          : [`⚠️ Heavy workload expected`, `🛡️ Avoid workplace conflicts`, `⏸️ Delay major changes`];
+      } else if (area === 'education') {
+        highlights = score >= 60
+          ? [`📚 Learning comes easy`, `🧠 Sharp memory and focus`, `🎓 Success in exams`]
+          : [`⚠️ Concentration may waver`, `📅 Study plan essential`, `💪 Extra effort needed`];
+      } else if (area === 'family') {
+        highlights = score >= 60
+          ? [`🏠 Harmony at home`, `👨‍👩‍👧‍👦 Family unity strong`, `💝 Love and bonding increase`]
+          : [`⚠️ Differences may arise`, `🕊️ Compromise needed`, `🙏 Patience is key`];
+      } else if (area === 'health') {
+        highlights = score >= 60
+          ? [`💪 Energy levels high`, `😊 Mental peace`, `🏃 Good time for fitness`]
+          : [`⚠️ Take adequate rest`, `🏥 Get checkups done`, `🧘 Reduce stress`];
+      } else {
+        highlights = score >= 60
+          ? [`✨ Favorable period`, `📈 Progress expected`, `🎯 Goals achievable`]
+          : [`⚠️ Be cautious`, `⏸️ Delay major decisions`, `🙏 Patience needed`];
+      }
+    }
+  }
+
+  // Build advice based on dasha lord + area + score
+  const dashaAdvice = {
+    'Sun': { good: 'leadership', bad: 'ego', ta_good: 'தலைமை', ta_bad: 'கர்வம்' },
+    'Moon': { good: 'intuition', bad: 'emotions', ta_good: 'உள்ளுணர்வு', ta_bad: 'உணர்ச்சி' },
+    'Mars': { good: 'action', bad: 'aggression', ta_good: 'செயல்பாடு', ta_bad: 'கோபம்' },
+    'Mercury': { good: 'communication', bad: 'overthinking', ta_good: 'தொடர்பு', ta_bad: 'அதிக சிந்தனை' },
+    'Jupiter': { good: 'wisdom', bad: 'overconfidence', ta_good: 'ஞானம்', ta_bad: 'அதிக நம்பிக்கை' },
+    'Venus': { good: 'harmony', bad: 'indulgence', ta_good: 'இணக்கம்', ta_bad: 'ஆடம்பரம்' },
+    'Saturn': { good: 'discipline', bad: 'delays', ta_good: 'ஒழுக்கம்', ta_bad: 'தாமதம்' },
+    'Rahu': { good: 'ambition', bad: 'confusion', ta_good: 'லட்சியம்', ta_bad: 'குழப்பம்' },
+    'Ketu': { good: 'spirituality', bad: 'detachment', ta_good: 'ஆன்மீகம்', ta_bad: 'பற்றின்மை' },
+  };
+
+  const dInfo = dashaAdvice[dashaLord] || dashaAdvice['Jupiter'];
+
+  if (lang === 'ta') {
+    if (score >= 60) {
+      advice = `${dashaLord || 'கிரக'} காலத்தில் ${dInfo.ta_good} பயன்படுத்துங்கள். `;
+      if (area === 'love') advice += 'உறவுகளில் நேர்மையாக இருங்கள்.';
+      else if (area === 'career') advice += 'புதிய வாய்ப்புகளை தேடுங்கள்.';
+      else if (area === 'education') advice += 'கற்றலில் தொடர்ந்து கவனம் செலுத்துங்கள்.';
+      else if (area === 'family') advice += 'குடும்பத்துடன் நேரம் செலவிடுங்கள்.';
+      else if (area === 'health') advice += 'உடற்பயிற்சியை தொடருங்கள்.';
+      else advice += 'இந்த சாதகமான நேரத்தை பயன்படுத்துங்கள்.';
+    } else {
+      advice = `${dInfo.ta_bad} தவிர்க்கவும். `;
+      if (area === 'love') advice += 'பொறுமையாக இருங்கள், சண்டையை தவிர்க்கவும்.';
+      else if (area === 'career') advice += 'வேலையில் கவனமாக இருங்கள், மாற்றங்களை தள்ளி வையுங்கள்.';
+      else if (area === 'education') advice += 'திட்டமிட்டு படியுங்கள், கவனச்சிதறலை தவிர்க்கவும்.';
+      else if (area === 'family') advice += 'சமரசத்துடன் இருங்கள், கோபத்தை கட்டுப்படுத்துங்கள்.';
+      else if (area === 'health') advice += 'ஓய்வு எடுங்கள், கடினமான உடற்பயிற்சியை தவிர்க்கவும்.';
+      else advice += 'பெரிய முடிவுகளை தள்ளி வையுங்கள்.';
+    }
+  } else {
+    if (score >= 60) {
+      advice = `Use the ${dInfo.good} energy of ${dashaLord || 'this'} period. `;
+      if (area === 'love') advice += 'Be open and honest in relationships.';
+      else if (area === 'career') advice += 'Explore new opportunities and take initiative.';
+      else if (area === 'education') advice += 'Maintain focus and consistency in studies.';
+      else if (area === 'family') advice += 'Spend quality time with loved ones.';
+      else if (area === 'health') advice += 'Continue your fitness routine.';
+      else advice += 'Take advantage of this favorable period.';
+    } else {
+      advice = `Watch out for ${dInfo.bad} tendencies. `;
+      if (area === 'love') advice += 'Be patient, avoid arguments.';
+      else if (area === 'career') advice += 'Be careful at work, delay major changes.';
+      else if (area === 'education') advice += 'Follow a strict study schedule, avoid distractions.';
+      else if (area === 'family') advice += 'Practice compromise, control temper.';
+      else if (area === 'health') advice += 'Take rest, avoid strenuous activities.';
+      else advice += 'Delay major decisions.';
+    }
+  }
+
+  return { summary, highlights, advice, scoreLevel, area };
+};
+
+// Score Justification Modal with Tabs
+const ScoreJustificationModal = ({ visible, onClose, data, t, language = 'en' }) => {
+  const [activeTab, setActiveTab] = useState('summary'); // 'summary' or 'detailed'
+
   if (!data) return null;
 
   const breakdown = data.breakdown || {};
   const trace = data.calculation_trace || {};
   const stepByStep = trace.step_by_step || [];
+  const aiSummary = generateAISummary(data, data.score, t, language);
 
   return (
     <Modal transparent visible={visible} animationType="slide">
       <View style={styles.modalOverlay}>
-        <ScrollView style={styles.modalScrollView}>
+        <ScrollView style={styles.modalScrollView} contentContainerStyle={{ paddingBottom: 100 }}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <View style={[styles.modalIconBg, { backgroundColor: (data.color || '#f97316') + '20' }]}>
@@ -657,192 +1098,280 @@ const ScoreJustificationModal = ({ visible, onClose, data, t }) => {
               </View>
             )}
 
-            {/* Dasha/Bhukti Info */}
-            {(data.dasha_lord || data.bhukti_lord) && (
-              <View style={styles.dashaInfoBox}>
-                <Ionicons name="time" size={16} color="#8b5cf6" />
-                <Text style={styles.dashaInfoText}>
-                  {data.dasha_lord_label || data.dasha_lord} {t('dashaLabel')} {data.bhukti_lord ? `- ${data.bhukti_lord_label || data.bhukti_lord} ${t('bhuktiLabel')}` : ''}
+            {/* Tab Switcher */}
+            <View style={styles.modalTabContainer}>
+              <TouchableOpacity
+                style={[styles.modalTab, activeTab === 'summary' && styles.modalTabActive]}
+                onPress={() => setActiveTab('summary')}
+              >
+                <Ionicons name="bulb" size={16} color={activeTab === 'summary' ? '#f97316' : '#9ca3af'} />
+                <Text style={[styles.modalTabText, activeTab === 'summary' && styles.modalTabTextActive]}>
+                  {t('aiSummary') || 'AI Summary'}
                 </Text>
-              </View>
-            )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalTab, activeTab === 'detailed' && styles.modalTabActive]}
+                onPress={() => setActiveTab('detailed')}
+              >
+                <Ionicons name="analytics" size={16} color={activeTab === 'detailed' ? '#f97316' : '#9ca3af'} />
+                <Text style={[styles.modalTabText, activeTab === 'detailed' && styles.modalTabTextActive]}>
+                  {t('detailed') || 'Detailed'}
+                </Text>
+              </TouchableOpacity>
+            </View>
 
-            <View style={styles.modalDivider} />
-
-            {/* Detailed Breakdown Section */}
-            {stepByStep.length > 0 && (
-              <>
-                <Text style={styles.modalSectionTitle}><Ionicons name="bar-chart" size={16} color="#ea580c" /> {t('scoreCalculation')}</Text>
-                <Text style={styles.formulaText}>{trace.formula}</Text>
-
-                {stepByStep.map((step, i) => {
-                  const compInfo = COMPONENT_KEYS[step.component] || { key: step.component, icon: 'help', color: '#6b7280' };
-                  return (
-                    <View key={i} style={styles.breakdownCard}>
-                      <View style={styles.breakdownHeader}>
-                        <View style={[styles.breakdownIconBg, { backgroundColor: compInfo.color + '20' }]}>
-                          <Ionicons name={compInfo.icon} size={16} color={compInfo.color} />
-                        </View>
-                        <View style={styles.breakdownTitleRow}>
-                          <Text style={styles.breakdownTitle}>{t(compInfo.key) || step.component_label || step.component}</Text>
-                          <Text style={styles.breakdownWeight}>({step.weight})</Text>
-                        </View>
-                        <Text style={[styles.breakdownContribution, { color: compInfo.color }]}>
-                          {step.contribution}
-                        </Text>
-                      </View>
-
-                      {/* Progress bar for contribution */}
-                      <View style={styles.breakdownProgressBg}>
-                        <View style={[styles.breakdownProgressFill, {
-                          width: `${Math.min(100, step.contribution * 3.33)}%`,
-                          backgroundColor: compInfo.color
-                        }]} />
-                      </View>
-
-                      {/* Factors for this component */}
-                      {step.factors_detail && step.factors_detail.length > 0 && (
-                        <View style={styles.breakdownFactors}>
-                          {step.factors_detail.slice(0, 3).map((f, j) => (
-                            <View key={j} style={styles.miniFactorRow}>
-                              <Ionicons
-                                name={f.positive !== false ? 'add-circle' : 'remove-circle'}
-                                size={12}
-                                color={f.positive !== false ? '#16a34a' : '#dc2626'}
-                              />
-                              <Text style={styles.miniFactorText} numberOfLines={1}>
-                                {f.name}{f.detail ? ` (${f.detail})` : ''}
-                              </Text>
-                              <Text style={[styles.miniFactorValue, { color: f.positive !== false ? '#16a34a' : '#dc2626' }]}>
-                                {f.positive !== false ? '+' : ''}{f.value}
-                              </Text>
-                            </View>
-                          ))}
-                        </View>
-                      )}
-                    </View>
-                  );
-                })}
-
-                {/* Final Calculation */}
-                {trace.final_calculation && (
-                  <View style={styles.finalCalcBox}>
-                    <Text style={styles.finalCalcLabel}>{t('total')}:</Text>
-                    <Text style={styles.finalCalcFormula}>{trace.final_calculation.sum_of_contributions}</Text>
-                    <Text style={styles.finalCalcResult}>= {trace.final_calculation.total}%</Text>
+            {/* AI Summary Tab Content */}
+            {activeTab === 'summary' && (
+              <View style={styles.aiSummaryContainer}>
+                {/* Summary Card */}
+                <View style={[styles.aiSummaryCard, {
+                  backgroundColor: aiSummary.scoreLevel === 'excellent' ? '#f0fdf4' :
+                                   aiSummary.scoreLevel === 'good' ? '#eff6ff' :
+                                   aiSummary.scoreLevel === 'moderate' ? '#fffbeb' : '#fef2f2',
+                  borderColor: aiSummary.scoreLevel === 'excellent' ? '#86efac' :
+                               aiSummary.scoreLevel === 'good' ? '#93c5fd' :
+                               aiSummary.scoreLevel === 'moderate' ? '#fde68a' : '#fecaca',
+                }]}>
+                  <View style={styles.aiSummaryHeader}>
+                    <Ionicons name="sparkles" size={20} color="#f97316" />
+                    <Text style={styles.aiSummaryTitle}>{t('whatThisMeans') || 'What This Means'}</Text>
                   </View>
-                )}
-              </>
-            )}
-
-            {/* Simple Breakdown (if no detailed trace) */}
-            {stepByStep.length === 0 && Object.keys(breakdown).length > 0 && (
-              <>
-                <Text style={styles.modalSectionTitle}><Ionicons name="bar-chart" size={16} color="#ea580c" /> {t('scoreBreakdown')}</Text>
-                {Object.entries(breakdown).map(([key, value], i) => {
-                  const compInfo = COMPONENT_KEYS[key] || { key: key, icon: 'help', color: '#6b7280' };
-                  return (
-                    <View key={i} style={styles.simpleBreakdownRow}>
-                      <View style={styles.simpleBreakdownLeft}>
-                        <Ionicons name={compInfo.icon} size={14} color={compInfo.color} />
-                        <Text style={styles.simpleBreakdownLabel}>{t(compInfo.key) || key}</Text>
-                      </View>
-                      <View style={styles.simpleBreakdownRight}>
-                        <View style={[styles.simpleProgressBg]}>
-                          <View style={[styles.simpleProgressFill, {
-                            width: `${Math.min(100, value * 3.33)}%`,
-                            backgroundColor: compInfo.color
-                          }]} />
-                        </View>
-                        <Text style={styles.simpleBreakdownValue}>{value}</Text>
-                      </View>
-                    </View>
-                  );
-                })}
-              </>
-            )}
-
-            {/* Factors Section (for simple factor display) */}
-            {data.factors && data.factors.length > 0 && stepByStep.length === 0 && (
-              <>
-                <View style={styles.modalDivider} />
-                <Text style={styles.modalSectionTitle}><Ionicons name="trending-up" size={16} color="#ea580c" /> {t('keyFactors')}</Text>
-                {data.factors.map((factor, i) => (
-                  <View key={i} style={styles.factorItem}>
-                    <View style={styles.factorHeader}>
-                      <Ionicons name={factor.positive ? 'add-circle' : 'remove-circle'} size={18} color={factor.positive ? '#16a34a' : '#dc2626'} />
-                      <Text style={styles.factorName}>{factor.name}</Text>
-                      <Text style={[styles.factorScore, { color: factor.positive ? '#16a34a' : '#dc2626' }]}>
-                        {factor.positive ? '+' : ''}{factor.value}
-                      </Text>
-                    </View>
-                    {factor.detail && <Text style={styles.factorDesc}>{factor.detail}</Text>}
-                  </View>
-                ))}
-              </>
-            )}
-
-            {/* Area Scores (for yearly) */}
-            {data.area_scores && Object.keys(data.area_scores).length > 0 && (
-              <>
-                <View style={styles.modalDivider} />
-                <Text style={styles.modalSectionTitle}><Ionicons name="compass" size={16} color="#ea580c" /> {t('lifeAreasLabel')}</Text>
-                <View style={styles.areaScoresGrid}>
-                  {Object.entries(data.area_scores).map(([area, score], i) => {
-                    const areaInfo = AREA_KEYS[area] || { key: area, icon: 'help', color: '#6b7280' };
-                    return (
-                      <View key={i} style={[styles.areaScoreCard, { borderColor: areaInfo.color + '40' }]}>
-                        <Ionicons name={areaInfo.icon} size={16} color={areaInfo.color} />
-                        <Text style={styles.areaScoreLabel}>{t(areaInfo.key) || area}</Text>
-                        <Text style={[styles.areaScoreValue, { color: areaInfo.color }]}>{score}%</Text>
-                      </View>
-                    );
-                  })}
+                  <Text style={styles.aiSummaryText}>{aiSummary.summary}</Text>
                 </View>
-              </>
-            )}
 
-            {/* Positives Section */}
-            {data.positives && data.positives.length > 0 && (
-              <>
-                <View style={styles.modalDivider} />
-                <Text style={styles.modalSectionTitle}><Ionicons name="sparkles" size={16} color="#ea580c" /> {t('goodOpportunities')}</Text>
-                {data.positives.map((positive, i) => (
-                  <View key={i} style={styles.positiveItem}>
-                    <View style={styles.positiveIconBg}>
-                      <Ionicons name={positive.icon || 'checkmark-circle'} size={20} color="#16a34a" />
-                    </View>
-                    <View style={styles.positiveContent}>
-                      <Text style={styles.positiveTitle}>{positive.title}</Text>
-                      <Text style={styles.positiveDesc}>{positive.description}</Text>
-                    </View>
-                  </View>
-                ))}
-              </>
-            )}
-
-            {/* Remedies Section */}
-            {data.remedies && data.remedies.length > 0 && (
-              <>
-                <View style={styles.modalDivider} />
-                <Text style={styles.modalSectionTitle}><Ionicons name="leaf" size={16} color="#ea580c" /> {t('remediesLabel')}</Text>
-                <View style={styles.remediesBox}>
-                  {data.remedies.map((remedy, i) => (
-                    <View key={i} style={styles.remedyItem}>
-                      <Ionicons name="chevron-forward" size={14} color="#f97316" />
-                      <Text style={styles.remedyText}>{remedy}</Text>
+                {/* Highlights */}
+                <View style={styles.aiHighlightsContainer}>
+                  <Text style={styles.aiHighlightsTitle}>{t('keyTakeaways') || 'Key Takeaways'}</Text>
+                  {aiSummary.highlights.map((highlight, i) => (
+                    <View key={i} style={styles.aiHighlightItem}>
+                      <Text style={styles.aiHighlightText}>{highlight}</Text>
                     </View>
                   ))}
                 </View>
-              </>
+
+                {/* Advice Card */}
+                <View style={styles.aiAdviceCard}>
+                  <View style={styles.aiAdviceHeader}>
+                    <Ionicons name="hand-right" size={18} color="#8b5cf6" />
+                    <Text style={styles.aiAdviceTitle}>{t('whatToDo') || 'What You Can Do'}</Text>
+                  </View>
+                  <Text style={styles.aiAdviceText}>{aiSummary.advice}</Text>
+                </View>
+
+                {/* Dasha Info in simple terms */}
+                {(data.dasha_lord || data.bhukti_lord) && (
+                  <View style={styles.aiDashaCard}>
+                    <View style={styles.aiDashaHeader}>
+                      <Ionicons name="time" size={16} color="#8b5cf6" />
+                      <Text style={styles.aiDashaTitle}>{t('currentPeriod') || 'Current Period'}</Text>
+                    </View>
+                    <Text style={styles.aiDashaText}>
+                      {t('youAreIn') || "You're in"} <Text style={styles.aiDashaBold}>{data.dasha_lord_label || data.dasha_lord}</Text> {t('periodWhichInfluences') || 'period, which influences your overall energy and opportunities.'}
+                    </Text>
+                  </View>
+                )}
+
+                {/* Suggestion if available */}
+                {(data.suggestion || data.recommendation) && (
+                  <View style={styles.suggestionBox}>
+                    <Ionicons name="bulb" size={18} color="#f97316" />
+                    <Text style={styles.suggestionText}>{data.suggestion || data.recommendation}</Text>
+                  </View>
+                )}
+              </View>
             )}
 
-            {/* Suggestion/Recommendation Section */}
-            {(data.suggestion || data.recommendation) && (
-              <View style={styles.suggestionBox}>
-                <Ionicons name="bulb" size={18} color="#f97316" />
-                <Text style={styles.suggestionText}>{data.suggestion || data.recommendation}</Text>
-              </View>
+            {/* Detailed Tab Content */}
+            {activeTab === 'detailed' && (
+              <>
+                {/* Dasha/Bhukti Info */}
+                {(data.dasha_lord || data.bhukti_lord) && (
+                  <View style={styles.dashaInfoBox}>
+                    <Ionicons name="time" size={16} color="#8b5cf6" />
+                    <Text style={styles.dashaInfoText}>
+                      {data.dasha_lord_label || data.dasha_lord} {t('dashaLabel')} {data.bhukti_lord ? `- ${data.bhukti_lord_label || data.bhukti_lord} ${t('bhuktiLabel')}` : ''}
+                    </Text>
+                  </View>
+                )}
+
+                <View style={styles.modalDivider} />
+
+                {/* Detailed Breakdown Section */}
+                {stepByStep.length > 0 && (
+                  <>
+                    <Text style={styles.modalSectionTitle}><Ionicons name="bar-chart" size={16} color="#ea580c" /> {t('scoreCalculation')}</Text>
+                    <Text style={styles.formulaText}>{trace.formula}</Text>
+
+                    {stepByStep.map((step, i) => {
+                      const compInfo = COMPONENT_KEYS[step.component] || { key: step.component, icon: 'help', color: '#6b7280' };
+                      return (
+                        <View key={i} style={styles.breakdownCard}>
+                          <View style={styles.breakdownHeader}>
+                            <View style={[styles.breakdownIconBg, { backgroundColor: compInfo.color + '20' }]}>
+                              <Ionicons name={compInfo.icon} size={16} color={compInfo.color} />
+                            </View>
+                            <View style={styles.breakdownTitleRow}>
+                              <Text style={styles.breakdownTitle}>{t(compInfo.key) || step.component_label || step.component}</Text>
+                              <Text style={styles.breakdownWeight}>({step.weight})</Text>
+                            </View>
+                            <Text style={[styles.breakdownContribution, { color: compInfo.color }]}>
+                              {step.contribution}
+                            </Text>
+                          </View>
+
+                          {/* Progress bar for contribution */}
+                          <View style={styles.breakdownProgressBg}>
+                            <View style={[styles.breakdownProgressFill, {
+                              width: `${Math.min(100, step.contribution * 3.33)}%`,
+                              backgroundColor: compInfo.color
+                            }]} />
+                          </View>
+
+                          {/* Factors for this component */}
+                          {step.factors_detail && step.factors_detail.length > 0 && (
+                            <View style={styles.breakdownFactors}>
+                              {step.factors_detail.slice(0, 3).map((f, j) => (
+                                <View key={j} style={styles.miniFactorRow}>
+                                  <Ionicons
+                                    name={f.positive !== false ? 'add-circle' : 'remove-circle'}
+                                    size={12}
+                                    color={f.positive !== false ? '#16a34a' : '#dc2626'}
+                                  />
+                                  <Text style={styles.miniFactorText} numberOfLines={1}>
+                                    {f.name}{f.detail ? ` (${f.detail})` : ''}
+                                  </Text>
+                                  <Text style={[styles.miniFactorValue, { color: f.positive !== false ? '#16a34a' : '#dc2626' }]}>
+                                    {f.positive !== false ? '+' : ''}{f.value}
+                                  </Text>
+                                </View>
+                              ))}
+                            </View>
+                          )}
+                        </View>
+                      );
+                    })}
+
+                    {/* Final Calculation */}
+                    {trace.final_calculation && (
+                      <View style={styles.finalCalcBox}>
+                        <Text style={styles.finalCalcLabel}>{t('total')}:</Text>
+                        <Text style={styles.finalCalcFormula}>{trace.final_calculation.sum_of_contributions}</Text>
+                        <Text style={styles.finalCalcResult}>= {trace.final_calculation.total}%</Text>
+                      </View>
+                    )}
+                  </>
+                )}
+
+                {/* Simple Breakdown (if no detailed trace) */}
+                {stepByStep.length === 0 && Object.keys(breakdown).length > 0 && (
+                  <>
+                    <Text style={styles.modalSectionTitle}><Ionicons name="bar-chart" size={16} color="#ea580c" /> {t('scoreBreakdown')}</Text>
+                    {Object.entries(breakdown).map(([key, value], i) => {
+                      const compInfo = COMPONENT_KEYS[key] || { key: key, icon: 'help', color: '#6b7280' };
+                      return (
+                        <View key={i} style={styles.simpleBreakdownRow}>
+                          <View style={styles.simpleBreakdownLeft}>
+                            <Ionicons name={compInfo.icon} size={14} color={compInfo.color} />
+                            <Text style={styles.simpleBreakdownLabel}>{t(compInfo.key) || key}</Text>
+                          </View>
+                          <View style={styles.simpleBreakdownRight}>
+                            <View style={[styles.simpleProgressBg]}>
+                              <View style={[styles.simpleProgressFill, {
+                                width: `${Math.min(100, value * 3.33)}%`,
+                                backgroundColor: compInfo.color
+                              }]} />
+                            </View>
+                            <Text style={styles.simpleBreakdownValue}>{value}</Text>
+                          </View>
+                        </View>
+                      );
+                    })}
+                  </>
+                )}
+
+                {/* Factors Section (for simple factor display) */}
+                {data.factors && data.factors.length > 0 && stepByStep.length === 0 && (
+                  <>
+                    <View style={styles.modalDivider} />
+                    <Text style={styles.modalSectionTitle}><Ionicons name="trending-up" size={16} color="#ea580c" /> {t('keyFactors')}</Text>
+                    {data.factors.map((factor, i) => (
+                      <View key={i} style={styles.factorItem}>
+                        <View style={styles.factorHeader}>
+                          <Ionicons name={factor.positive ? 'add-circle' : 'remove-circle'} size={18} color={factor.positive ? '#16a34a' : '#dc2626'} />
+                          <Text style={styles.factorName}>{factor.name}</Text>
+                          <Text style={[styles.factorScore, { color: factor.positive ? '#16a34a' : '#dc2626' }]}>
+                            {factor.positive ? '+' : ''}{factor.value}
+                          </Text>
+                        </View>
+                        {factor.detail && <Text style={styles.factorDesc}>{factor.detail}</Text>}
+                      </View>
+                    ))}
+                  </>
+                )}
+
+                {/* Area Scores (for yearly) */}
+                {data.area_scores && Object.keys(data.area_scores).length > 0 && (
+                  <>
+                    <View style={styles.modalDivider} />
+                    <Text style={styles.modalSectionTitle}><Ionicons name="compass" size={16} color="#ea580c" /> {t('lifeAreasLabel')}</Text>
+                    <View style={styles.areaScoresGrid}>
+                      {Object.entries(data.area_scores).map(([area, score], i) => {
+                        const areaInfo = AREA_KEYS[area] || { key: area, icon: 'help', color: '#6b7280' };
+                        return (
+                          <View key={i} style={[styles.areaScoreCard, { borderColor: areaInfo.color + '40' }]}>
+                            <Ionicons name={areaInfo.icon} size={16} color={areaInfo.color} />
+                            <Text style={styles.areaScoreLabel}>{t(areaInfo.key) || area}</Text>
+                            <Text style={[styles.areaScoreValue, { color: areaInfo.color }]}>{score}%</Text>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  </>
+                )}
+
+                {/* Positives Section */}
+                {data.positives && data.positives.length > 0 && (
+                  <>
+                    <View style={styles.modalDivider} />
+                    <Text style={styles.modalSectionTitle}><Ionicons name="sparkles" size={16} color="#ea580c" /> {t('goodOpportunities')}</Text>
+                    {data.positives.map((positive, i) => (
+                      <View key={i} style={styles.positiveItem}>
+                        <View style={styles.positiveIconBg}>
+                          <Ionicons name={positive.icon || 'checkmark-circle'} size={20} color="#16a34a" />
+                        </View>
+                        <View style={styles.positiveContent}>
+                          <Text style={styles.positiveTitle}>{positive.title}</Text>
+                          <Text style={styles.positiveDesc}>{positive.description}</Text>
+                        </View>
+                      </View>
+                    ))}
+                  </>
+                )}
+
+                {/* Remedies Section */}
+                {data.remedies && data.remedies.length > 0 && (
+                  <>
+                    <View style={styles.modalDivider} />
+                    <Text style={styles.modalSectionTitle}><Ionicons name="leaf" size={16} color="#ea580c" /> {t('remediesLabel')}</Text>
+                    <View style={styles.remediesBox}>
+                      {data.remedies.map((remedy, i) => (
+                        <View key={i} style={styles.remedyItem}>
+                          <Ionicons name="chevron-forward" size={14} color="#f97316" />
+                          <Text style={styles.remedyText}>{remedy}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </>
+                )}
+
+                {/* Suggestion/Recommendation Section */}
+                {(data.suggestion || data.recommendation) && (
+                  <View style={styles.suggestionBox}>
+                    <Ionicons name="bulb" size={18} color="#f97316" />
+                    <Text style={styles.suggestionText}>{data.suggestion || data.recommendation}</Text>
+                  </View>
+                )}
+              </>
             )}
 
             <TouchableOpacity style={styles.modalButton} onPress={onClose}>
@@ -1191,6 +1720,7 @@ export default function DashboardScreen({ navigation }) {
         const area = apiAreas[areaKey];
         const config = areaConfig[areaKey];
         return {
+          area: areaKey, // Add area key for AI Summary detection
           name: config.name,
           icon: config.icon,
           score: area?.score || 50,
@@ -1199,6 +1729,8 @@ export default function DashboardScreen({ navigation }) {
           suggestion: area?.suggestion || '',
           breakdown: area?.breakdown || {},
           calculation_trace: area?.calculation_trace || {},
+          dasha_lord: area?.dasha_lord || dynamicLifeAreas?.dasha_info?.dasha_lord,
+          dasha_lord_label: area?.dasha_lord_label || dynamicLifeAreas?.dasha_info?.dasha_lord,
           quality: area?.score >= 70 ? t('good') : area?.score >= 50 ? t('average') : t('caution')
         };
       });
@@ -1207,6 +1739,7 @@ export default function DashboardScreen({ navigation }) {
     // Fallback static data (should rarely be used now)
     return [
       {
+        area: 'love',
         name: t('love'),
         icon: 'heart',
         score: 65,
@@ -1215,6 +1748,7 @@ export default function DashboardScreen({ navigation }) {
         suggestion: ''
       },
       {
+        area: 'career',
         name: t('career'),
         icon: 'briefcase',
         score: 60,
@@ -1223,6 +1757,7 @@ export default function DashboardScreen({ navigation }) {
         suggestion: ''
       },
       {
+        area: 'education',
         name: t('education'),
         icon: 'school',
         score: 68,
@@ -1231,6 +1766,7 @@ export default function DashboardScreen({ navigation }) {
         suggestion: ''
       },
       {
+        area: 'family',
         name: t('family'),
         icon: 'home',
         score: 62,
@@ -1414,12 +1950,18 @@ export default function DashboardScreen({ navigation }) {
       bhukti_lord: month.bhukti_lord,
       bhukti_lord_label: month.bhukti_lord_label,
       suggestion: month.suggestion,
-      recommendation: month.recommendation
+      recommendation: month.recommendation,
+      month: month.monthNum || new Date().getMonth() + 1, // For month-specific AI content
+      area: 'general' // Monthly projections are general
     });
     setShowScoreModal(true);
   };
 
   const handleYearPress = (year) => {
+    const currentYear = new Date().getFullYear();
+    const isCurrentYear = parseInt(year.year) === currentYear;
+    const isNextYear = parseInt(year.year) === currentYear + 1;
+
     setSelectedScoreData({
       title: `${year.year}`,
       score: year.score,
@@ -1439,7 +1981,10 @@ export default function DashboardScreen({ navigation }) {
       positives: year.positives,
       remedies: year.remedies,
       suggestion: year.suggestion,
-      recommendation: year.recommendation
+      recommendation: year.recommendation,
+      year: year.year,
+      label: isCurrentYear ? 'Current Year' : isNextYear ? 'Next Year' : 'Future Year',
+      area: 'general' // Yearly projections are general
     });
     setShowScoreModal(true);
   };
@@ -1510,6 +2055,31 @@ export default function DashboardScreen({ navigation }) {
               </View>
             </View>
           </Animated.View>
+
+          {/* Rashi Palan Ticker - Shows all 12 zodiac signs with daily scores */}
+          <RashiPalanTicker
+            transits={transitsMap}
+            language={language}
+            t={t}
+            userRashi={userProfile?.rasi}
+            onRashiPress={(rashi) => {
+              // Show rashi detail when tapped
+              setSelectedScoreData({
+                title: rashi.name,
+                score: rashi.score,
+                icon: 'star',
+                color: rashi.score >= 75 ? '#16a34a' : rashi.score >= 60 ? '#f97316' : '#dc2626',
+                area: 'general',
+                dasha_lord: rashi.ruler,
+                dasha_lord_label: rashi.ruler,
+                factors: [
+                  { description: `${rashi.ruler} is the ruling planet`, type: 'info' },
+                  { description: `Element: ${rashi.element}`, type: 'info' },
+                ],
+              });
+              setShowScoreModal(true);
+            }}
+          />
 
           {/* Date Display */}
           <AnimatedCard delay={50} style={styles.dateCard}>
@@ -1830,10 +2400,70 @@ export default function DashboardScreen({ navigation }) {
             </View>
           </AnimatedCard>
 
+          {/* Today's Parigaram - Gamified Remedies */}
+          {planetAura?.challenged_planets?.length > 0 && (
+            <AnimatedCard delay={450}>
+              <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={() => navigation.getParent()?.navigate('Remedy')}
+              >
+                <LinearGradient
+                  colors={['#fef3c7', '#fde68a', '#fcd34d']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={[styles.card, styles.parigaramCard]}
+                >
+                  <View style={styles.parigaramHeader}>
+                    <View style={styles.parigaramIconBadge}>
+                      <Ionicons name="leaf" size={24} color="#92400e" />
+                    </View>
+                    <View style={styles.parigaramTitleSection}>
+                      <Text style={styles.parigaramTitle}>{t('todayParigaram')}</Text>
+                      <Text style={styles.parigaramSubtitle}>{t('tapForRemedies')}</Text>
+                    </View>
+                    <View style={styles.parigaramArrow}>
+                      <Ionicons name="chevron-forward" size={20} color="#92400e" />
+                    </View>
+                  </View>
+
+                  <View style={styles.parigaramPlanets}>
+                    {planetAura.challenged_planets.slice(0, 3).map((planet, i) => (
+                      <View key={i} style={styles.parigaramPlanetBadge}>
+                        <Text style={styles.parigaramPlanetIcon}>
+                          {planet.name === 'Saturn' ? '♄' : planet.name === 'Mars' ? '♂' :
+                           planet.name === 'Rahu' ? '☊' : planet.name === 'Ketu' ? '☋' :
+                           planet.name === 'Sun' ? '☉' : planet.name === 'Moon' ? '☽' : '⭐'}
+                        </Text>
+                        <Text style={styles.parigaramPlanetName}>
+                          {translatePlanetString(planet.tamil, language, t)}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+
+                  <View style={styles.parigaramQuickTips}>
+                    <View style={styles.parigaramTip}>
+                      <Ionicons name="flower" size={16} color="#b45309" />
+                      <Text style={styles.parigaramTipText}>{t('puja')}</Text>
+                    </View>
+                    <View style={styles.parigaramTip}>
+                      <Ionicons name="water" size={16} color="#b45309" />
+                      <Text style={styles.parigaramTipText}>{t('charity')}</Text>
+                    </View>
+                    <View style={styles.parigaramTip}>
+                      <Ionicons name="musical-notes" size={16} color="#b45309" />
+                      <Text style={styles.parigaramTipText}>{t('mantra')}</Text>
+                    </View>
+                  </View>
+                </LinearGradient>
+              </TouchableOpacity>
+            </AnimatedCard>
+          )}
+
           {/* Current Dasha */}
           {jathagam?.dasha?.mahadasha && (
             <AnimatedCard delay={500}>
-              <LinearGradient colors={['#faf5ff', '#eef2ff']} style={[styles.card, styles.dashaCard, { marginHorizontal: 0 }]}>
+              <LinearGradient colors={['#faf5ff', '#eef2ff']} style={[styles.card, styles.dashaCard]}>
                 <View style={styles.cardHeader}>
                   <Ionicons name="sparkles" size={16} color="#7c3aed" />
                   <Text style={[styles.cardTitle, { color: '#6b21a8' }]}>{t('currentDasha')}</Text>
@@ -1858,211 +2488,82 @@ export default function DashboardScreen({ navigation }) {
             </AnimatedCard>
           )}
 
-          {/* Life Timeline - Kundli Prediction (Enhanced v2) */}
-          {lifeTimeline && (
-            <AnimatedCard delay={550}>
-              <LinearGradient colors={['#0f172a', '#1e293b']} style={[styles.card, styles.timelineCard, { marginHorizontal: 0 }]}>
-                <View style={styles.cardHeader}>
-                  <Ionicons name="time" size={16} color="#f97316" />
-                  <Text style={[styles.cardTitle, { color: '#fff' }]}>
-                    {t('lifeTimeline')}
+          {/* Chakra Analysis Section */}
+          <AnimatedCard delay={550}>
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => navigation.navigate('Chakra')}
+            >
+              <LinearGradient
+                colors={['#1e1b4b', '#4c1d95', '#5b21b6']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={[styles.card, styles.chakraCard]}
+              >
+                <View style={styles.chakraCardHeader}>
+                  <View style={styles.chakraIconContainer}>
+                    <Text style={styles.chakraIconLarge}>🧘</Text>
+                  </View>
+                  <View style={styles.chakraCardInfo}>
+                    <Text style={styles.chakraCardTitle}>
+                      {language === 'ta' ? 'சக்ர பகுப்பாய்வு' : 'Chakra Analysis'}
+                    </Text>
+                    <Text style={styles.chakraCardSubtitle}>
+                      {language === 'ta' ? '7 சக்ரங்கள் • ஜோதிட அடிப்படையில்' : '7 Chakras • Jyotish Based'}
+                    </Text>
+                  </View>
+                  <View style={styles.chakraArrowContainer}>
+                    <Ionicons name="chevron-forward" size={24} color="#c4b5fd" />
+                  </View>
+                </View>
+
+                {/* Chakra Mini Preview with Scores */}
+                <View style={styles.chakraMiniPreview}>
+                  {[
+                    { color: '#9333ea', score: 72, name: 'Crown', nameTa: 'கிரீடம்' },
+                    { color: '#4f46e5', score: 68, name: 'Third Eye', nameTa: '3வது கண்' },
+                    { color: '#0ea5e9', score: 61, name: 'Throat', nameTa: 'தொண்டை' },
+                    { color: '#22c55e', score: 78, name: 'Heart', nameTa: 'இதயம்' },
+                    { color: '#eab308', score: 65, name: 'Solar', nameTa: 'சூரியன்' },
+                    { color: '#f97316', score: 58, name: 'Sacral', nameTa: 'சேக்ரல்' },
+                    { color: '#ef4444', score: 70, name: 'Root', nameTa: 'வேர்' },
+                  ].map((chakra, idx) => (
+                    <View key={idx} style={styles.chakraMiniItem}>
+                      <View style={[styles.chakraMiniCircle, { backgroundColor: chakra.color }]}>
+                        <Text style={styles.chakraMiniScore}>{chakra.score}</Text>
+                      </View>
+                      <Text style={styles.chakraMiniName}>
+                        {language === 'ta' ? chakra.nameTa : chakra.name}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+
+                {/* Overall Energy */}
+                <View style={styles.chakraEnergyRow}>
+                  <View style={styles.chakraEnergyInfo}>
+                    <Ionicons name="flash" size={14} color="#a855f7" />
+                    <Text style={styles.chakraEnergyLabel}>
+                      {language === 'ta' ? 'ஒட்டுமொத்த ஆற்றல்' : 'Overall Energy'}
+                    </Text>
+                  </View>
+                  <View style={styles.chakraEnergyBar}>
+                    <View style={[styles.chakraEnergyFill, { width: '67%' }]} />
+                  </View>
+                  <Text style={styles.chakraEnergyPercent}>67%</Text>
+                </View>
+
+                <View style={styles.chakraCardFooter}>
+                  <Text style={styles.chakraCardHint}>
+                    {language === 'ta' ? 'விரிவான பகுப்பாய்வுக்கு தட்டவும்' : 'Tap for detailed analysis'}
                   </Text>
-                  <TouchableOpacity onPress={() => setShowTimelineModal(true)}>
-                    <Ionicons name="expand" size={18} color="#9ca3af" />
-                  </TouchableOpacity>
-                </View>
-
-                {/* Life Trend Summary */}
-                {lifeTimeline.life_trend && (
-                  <View style={styles.trendSummary}>
-                    <View style={[
-                      styles.trendBadge,
-                      {
-                        backgroundColor: lifeTimeline.life_trend.direction === 'ascending' ? '#22c55e20' :
-                                         lifeTimeline.life_trend.direction === 'descending' ? '#ef444420' : '#3b82f620'
-                      }
-                    ]}>
-                      <Ionicons
-                        name={lifeTimeline.life_trend.direction === 'ascending' ? 'trending-up' :
-                              lifeTimeline.life_trend.direction === 'descending' ? 'trending-down' : 'remove'}
-                        size={16}
-                        color={lifeTimeline.life_trend.direction === 'ascending' ? '#22c55e' :
-                               lifeTimeline.life_trend.direction === 'descending' ? '#ef4444' : '#3b82f6'}
-                      />
-                      <Text style={[
-                        styles.trendText,
-                        {
-                          color: lifeTimeline.life_trend.direction === 'ascending' ? '#22c55e' :
-                                 lifeTimeline.life_trend.direction === 'descending' ? '#ef4444' : '#3b82f6'
-                        }
-                      ]}>
-                        {translateDirection(lifeTimeline.life_trend.direction_tamil, t)}
-                      </Text>
-                    </View>
-                    <Text style={styles.trendAvg}>
-                      {t('avg')}: {lifeTimeline.life_trend.average_score}%
-                    </Text>
+                  <View style={styles.chakraNewBadge}>
+                    <Text style={styles.chakraNewText}>NEW</Text>
                   </View>
-                )}
-
-                {/* Legend - Life Areas */}
-                <View style={styles.timelineLegend}>
-                  <View style={styles.timelineLegendRow}>
-                    <View style={styles.timelineLegendItem}>
-                      <View style={[styles.timelineLegendDot, { backgroundColor: '#3b82f6' }]} />
-                      <Text style={styles.timelineLegendText}>{t('career')}</Text>
-                    </View>
-                    <View style={styles.timelineLegendItem}>
-                      <View style={[styles.timelineLegendDot, { backgroundColor: '#ec4899' }]} />
-                      <Text style={styles.timelineLegendText}>{t('relationships')}</Text>
-                    </View>
-                    <View style={styles.timelineLegendItem}>
-                      <View style={[styles.timelineLegendDot, { backgroundColor: '#22c55e' }]} />
-                      <Text style={styles.timelineLegendText}>{t('finances')}</Text>
-                    </View>
-                    <View style={styles.timelineLegendItem}>
-                      <View style={[styles.timelineLegendDot, { backgroundColor: '#f97316' }]} />
-                      <Text style={styles.timelineLegendText}>{t('health')}</Text>
-                    </View>
-                  </View>
-                  <View style={styles.timelineLegendRow}>
-                    <View style={styles.timelineLegendItem}>
-                      <View style={[styles.timelineLegendDot, { backgroundColor: '#22c55e', borderWidth: 2, borderColor: '#fff' }]} />
-                      <Text style={styles.timelineLegendText}>{t('high')} (≥72)</Text>
-                    </View>
-                    <View style={styles.timelineLegendItem}>
-                      <View style={[styles.timelineLegendDot, { backgroundColor: '#ef4444', borderWidth: 2, borderColor: '#fff' }]} />
-                      <Text style={styles.timelineLegendText}>{t('low')} (&lt;48)</Text>
-                    </View>
-                    <Text style={styles.timelineLegendVersion}>v2.3</Text>
-                  </View>
-                </View>
-
-                {/* Interactive Timeline Slider with Stacked Bars */}
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.timelineScrollContent}
-                >
-                  {lifeTimeline.yearly_timeline?.slice(0, 10).map((yearData, index) => {
-                    const isCurrentYear = yearData.year === new Date().getFullYear();
-                    const isPeak = yearData.period_type === 'high';
-                    const isLow = yearData.period_type === 'low';
-                    const scores = yearData.scores || {};
-
-                    // Calculate segment heights (proportional to max 80px bar height)
-                    const totalHeight = 80;
-                    const careerH = (scores.career || 0) / 100 * totalHeight * 0.25;
-                    const relationsH = (scores.relationships || 0) / 100 * totalHeight * 0.25;
-                    const financeH = (scores.finances || 0) / 100 * totalHeight * 0.25;
-                    const healthH = (scores.health || 0) / 100 * totalHeight * 0.25;
-
-                    return (
-                      <TouchableOpacity
-                        key={yearData.year}
-                        style={[
-                          styles.timelineYear,
-                          isCurrentYear && styles.timelineYearCurrent,
-                          isPeak && styles.timelineYearPeak,
-                          isLow && styles.timelineYearLow,
-                        ]}
-                        onPress={() => {
-                          setSelectedTimelineYear(yearData);
-                          setShowTimelineModal(true);
-                        }}
-                      >
-                        {/* Stacked Score Bar */}
-                        <View style={styles.timelineBarContainer}>
-                          {/* Health (top) */}
-                          <View style={[styles.timelineBarSegment, { height: healthH, backgroundColor: '#f97316' }]} />
-                          {/* Finance */}
-                          <View style={[styles.timelineBarSegment, { height: financeH, backgroundColor: '#22c55e' }]} />
-                          {/* Relations */}
-                          <View style={[styles.timelineBarSegment, { height: relationsH, backgroundColor: '#ec4899' }]} />
-                          {/* Career (bottom) */}
-                          <View style={[styles.timelineBarSegment, { height: careerH, backgroundColor: '#3b82f6', borderBottomLeftRadius: 14, borderBottomRightRadius: 14 }]} />
-                        </View>
-
-                        {/* Overall Score Badge */}
-                        <View style={[styles.timelineScoreBadge, {
-                          backgroundColor: isPeak ? '#22c55e' : isLow ? '#ef4444' : '#475569'
-                        }]}>
-                          <Text style={styles.timelineScoreText}>{Math.round(yearData.overall_score)}</Text>
-                        </View>
-
-                        {/* Year Label */}
-                        <Text style={[styles.timelineYearLabel, isCurrentYear && styles.timelineYearLabelCurrent]}>
-                          {yearData.year}
-                        </Text>
-
-                        {/* Age & Dasha */}
-                        <Text style={styles.timelineAge}>
-                          {yearData.age}{language === 'ta' ? 'வ' : language === 'kn' ? 'ವ' : 'y'}
-                        </Text>
-                        <Text style={styles.timelineDasha} numberOfLines={1}>
-                          {translateDashaName(yearData.dasha_tamil || yearData.dasha, language, t)?.substring(0, 3)}
-                        </Text>
-
-                        {/* Event Indicators */}
-                        {yearData.events?.length > 0 && (
-                          <View style={styles.timelineEventDots}>
-                            {yearData.events.slice(0, 3).map((event, i) => (
-                              <View
-                                key={i}
-                                style={[styles.timelineEventDot, { backgroundColor: event.color }]}
-                              />
-                            ))}
-                          </View>
-                        )}
-                      </TouchableOpacity>
-                    );
-                  })}
-                </ScrollView>
-
-                {/* Major Events Preview */}
-                {lifeTimeline.major_events?.length > 0 && (
-                  <View style={styles.majorEventsPreview}>
-                    <Text style={styles.majorEventsTitle}>
-                      {t('keyEvents')}
-                    </Text>
-                    <View style={styles.majorEventsList}>
-                      {lifeTimeline.major_events.slice(0, 3).map((event, index) => (
-                        <View key={index} style={styles.majorEventItem}>
-                          <View style={[styles.majorEventIcon, { backgroundColor: event.color + '30' }]}>
-                            <Ionicons name={event.icon} size={14} color={event.color} />
-                          </View>
-                          <Text style={styles.majorEventYear}>{event.year}</Text>
-                          <Text style={styles.majorEventLabel} numberOfLines={1}>
-                            {translateEventLabel(event, language, t)}
-                          </Text>
-                        </View>
-                      ))}
-                    </View>
-                  </View>
-                )}
-
-                {/* Peak/Low Years */}
-                <View style={styles.peakLowContainer}>
-                  {lifeTimeline.peak_periods?.[0] && (
-                    <View style={[styles.peakLowItem, { backgroundColor: '#22c55e15' }]}>
-                      <Ionicons name="arrow-up-circle" size={16} color="#22c55e" />
-                      <Text style={[styles.peakLowText, { color: '#22c55e' }]}>
-                        {t('best')}: {lifeTimeline.peak_periods[0].year}
-                      </Text>
-                    </View>
-                  )}
-                  {lifeTimeline.low_periods?.[0] && (
-                    <View style={[styles.peakLowItem, { backgroundColor: '#ef444415' }]}>
-                      <Ionicons name="alert-circle" size={16} color="#ef4444" />
-                      <Text style={[styles.peakLowText, { color: '#ef4444' }]}>
-                        {t('caution')}: {lifeTimeline.low_periods[0].year}
-                      </Text>
-                    </View>
-                  )}
                 </View>
               </LinearGradient>
-            </AnimatedCard>
-          )}
+            </TouchableOpacity>
+          </AnimatedCard>
 
           {/* Aura Heatmap - Planet Strength Visualization */}
           {planetAura && (
@@ -2519,6 +3020,7 @@ export default function DashboardScreen({ navigation }) {
         onClose={() => setShowScoreModal(false)}
         data={selectedScoreData}
         t={t}
+        language={language}
       />
 
       {/* Timeline Year Detail Modal */}
@@ -2570,7 +3072,7 @@ const styles = StyleSheet.create({
   storyMoreCircle: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#fff7ed', borderWidth: 2, borderColor: '#fed7aa', borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center' },
   storyLabel: { fontSize: 10, color: '#6b7280', marginTop: 4, textAlign: 'center' },
 
-  card: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginTop: 16, borderWidth: 1, borderColor: '#fcd34d', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
+  card: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginTop: 16, marginHorizontal: 16, borderWidth: 1, borderColor: '#fcd34d', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
   cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 14 },
   cardTitle: { fontSize: 16, fontWeight: '700', color: '#92400e', flex: 1 },
   tapHintSmall: { fontSize: 10, color: '#9ca3af' },
@@ -2651,11 +3153,52 @@ const styles = StyleSheet.create({
   quickActionBtn: { flex: 1, alignItems: 'center', backgroundColor: '#fff', borderRadius: 12, padding: 16, marginHorizontal: 4, borderWidth: 1, borderColor: '#fed7aa' },
   quickActionLabel: { fontSize: 11, color: '#6b7280', marginTop: 8 },
 
-  dashaCard: { borderColor: '#ddd6fe', marginHorizontal: 16 },
+  dashaCard: { borderColor: '#ddd6fe' },
   dashaGrid: { flexDirection: 'row', gap: 12 },
   dashaItem: { flex: 1, backgroundColor: 'rgba(255,255,255,0.5)', borderRadius: 12, padding: 12 },
   dashaLabel: { fontSize: 11, color: '#6b7280' },
   dashaValue: { fontSize: 14, fontWeight: '600', color: '#7c3aed', marginTop: 4 },
+
+  // Chakra Card Styles
+  chakraCard: { borderRadius: 20, padding: 16, borderWidth: 1, borderColor: 'rgba(168, 85, 247, 0.4)' },
+  chakraCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  chakraIconContainer: { width: 50, height: 50, borderRadius: 25, backgroundColor: 'rgba(168, 85, 247, 0.25)', justifyContent: 'center', alignItems: 'center' },
+  chakraIconLarge: { fontSize: 28 },
+  chakraCardInfo: { flex: 1 },
+  chakraCardTitle: { fontSize: 17, fontWeight: '700', color: '#fff' },
+  chakraCardSubtitle: { fontSize: 12, color: '#c4b5fd', marginTop: 2 },
+  chakraArrowContainer: { padding: 4 },
+  chakraMiniPreview: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 16, paddingVertical: 10, paddingHorizontal: 4, backgroundColor: 'rgba(0,0,0,0.25)', borderRadius: 12 },
+  chakraMiniItem: { alignItems: 'center', flex: 1, paddingHorizontal: 2 },
+  chakraMiniCircle: { width: 30, height: 30, borderRadius: 15, justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: 'rgba(255,255,255,0.3)' },
+  chakraMiniScore: { fontSize: 9, fontWeight: '800', color: '#fff' },
+  chakraMiniName: { fontSize: 7, color: '#a5b4fc', marginTop: 3, textAlign: 'center', maxWidth: 45 },
+  chakraEnergyRow: { flexDirection: 'row', alignItems: 'center', marginTop: 14, paddingTop: 12, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)' },
+  chakraEnergyInfo: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  chakraEnergyLabel: { fontSize: 11, color: '#c4b5fd', fontWeight: '500' },
+  chakraEnergyBar: { flex: 1, height: 6, backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 3, marginHorizontal: 10, overflow: 'hidden' },
+  chakraEnergyFill: { height: '100%', backgroundColor: '#a855f7', borderRadius: 3 },
+  chakraEnergyPercent: { fontSize: 14, fontWeight: '800', color: '#a855f7' },
+  chakraCardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 },
+  chakraCardHint: { fontSize: 12, color: '#a5b4fc' },
+  chakraNewBadge: { backgroundColor: '#22c55e', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
+  chakraNewText: { fontSize: 10, fontWeight: '800', color: '#fff' },
+
+  // Parigaram Card Styles - Gamified
+  parigaramCard: { borderColor: '#fbbf24', borderWidth: 2, shadowColor: '#f59e0b', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
+  parigaramHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  parigaramIconBadge: { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(146, 64, 14, 0.15)', justifyContent: 'center', alignItems: 'center' },
+  parigaramTitleSection: { flex: 1 },
+  parigaramTitle: { fontSize: 16, fontWeight: 'bold', color: '#92400e' },
+  parigaramSubtitle: { fontSize: 11, color: '#b45309', marginTop: 2 },
+  parigaramArrow: { padding: 4 },
+  parigaramPlanets: { flexDirection: 'row', gap: 10, marginTop: 14, marginBottom: 12 },
+  parigaramPlanetBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.7)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: '#fbbf24', gap: 6 },
+  parigaramPlanetIcon: { fontSize: 16, color: '#b45309' },
+  parigaramPlanetName: { fontSize: 12, fontWeight: '600', color: '#92400e' },
+  parigaramQuickTips: { flexDirection: 'row', justifyContent: 'space-around', paddingTop: 10, borderTopWidth: 1, borderTopColor: 'rgba(180, 83, 9, 0.2)' },
+  parigaramTip: { alignItems: 'center', gap: 4 },
+  parigaramTipText: { fontSize: 10, color: '#92400e', fontWeight: '500' },
 
   // Modal styles
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' },
@@ -2698,6 +3241,33 @@ const styles = StyleSheet.create({
   qualityText: { fontSize: 14, fontWeight: '600' },
   dashaInfoBox: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#f3e8ff', borderRadius: 10, paddingVertical: 8, paddingHorizontal: 12, marginBottom: 8 },
   dashaInfoText: { fontSize: 13, color: '#7c3aed', fontWeight: '500' },
+
+  // Modal Tab Styles
+  modalTabContainer: { flexDirection: 'row', backgroundColor: '#f3f4f6', borderRadius: 12, padding: 4, marginBottom: 16 },
+  modalTab: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, borderRadius: 10 },
+  modalTabActive: { backgroundColor: '#fff', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 },
+  modalTabText: { fontSize: 13, color: '#9ca3af', fontWeight: '500' },
+  modalTabTextActive: { color: '#f97316', fontWeight: '600' },
+
+  // AI Summary Styles
+  aiSummaryContainer: { gap: 16 },
+  aiSummaryCard: { borderRadius: 16, padding: 16, borderWidth: 1 },
+  aiSummaryHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
+  aiSummaryTitle: { fontSize: 15, fontWeight: '600', color: '#374151' },
+  aiSummaryText: { fontSize: 14, color: '#4b5563', lineHeight: 22 },
+  aiHighlightsContainer: { backgroundColor: '#f9fafb', borderRadius: 14, padding: 14 },
+  aiHighlightsTitle: { fontSize: 14, fontWeight: '600', color: '#374151', marginBottom: 10 },
+  aiHighlightItem: { paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#e5e7eb' },
+  aiHighlightText: { fontSize: 14, color: '#4b5563' },
+  aiAdviceCard: { backgroundColor: '#faf5ff', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: '#e9d5ff' },
+  aiAdviceHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
+  aiAdviceTitle: { fontSize: 14, fontWeight: '600', color: '#7c3aed' },
+  aiAdviceText: { fontSize: 14, color: '#6b21a8', lineHeight: 22 },
+  aiDashaCard: { backgroundColor: '#f5f3ff', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: '#ddd6fe' },
+  aiDashaHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 },
+  aiDashaTitle: { fontSize: 12, fontWeight: '600', color: '#8b5cf6' },
+  aiDashaText: { fontSize: 13, color: '#6b7280', lineHeight: 20 },
+  aiDashaBold: { fontWeight: '600', color: '#7c3aed' },
   formulaText: { fontSize: 11, color: '#6b7280', fontFamily: 'monospace', backgroundColor: '#f3f4f6', padding: 10, borderRadius: 8, marginBottom: 12, textAlign: 'center' },
 
   // Breakdown card styles
@@ -2736,35 +3306,51 @@ const styles = StyleSheet.create({
   areaScoreLabel: { fontSize: 11, color: '#6b7280', marginTop: 4 },
   areaScoreValue: { fontSize: 18, fontWeight: 'bold', marginTop: 2 },
 
-  // Life Timeline styles
-  timelineCard: { borderColor: '#c4b5fd', marginHorizontal: 16, marginTop: 16 },
-  trendSummary: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
-  trendBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
-  trendText: { fontSize: 13, fontWeight: '600' },
-  trendAvg: { fontSize: 12, color: '#94a3b8' },
-  // Legend styles
-  timelineLegend: { backgroundColor: 'rgba(51, 65, 85, 0.5)', borderRadius: 10, padding: 10, marginBottom: 12 },
-  timelineLegendRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
-  timelineLegendItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  timelineLegendDot: { width: 10, height: 10, borderRadius: 5 },
-  timelineLegendText: { fontSize: 10, color: '#94a3b8' },
-  timelineLegendVersion: { fontSize: 9, color: '#64748b', fontStyle: 'italic' },
-  timelineScrollContent: { paddingHorizontal: 4, paddingVertical: 8 },
-  timelineYear: { alignItems: 'center', marginRight: 12, paddingVertical: 8, paddingHorizontal: 6, borderRadius: 12, minWidth: 56 },
-  timelineYearCurrent: { backgroundColor: 'rgba(249, 115, 22, 0.15)', borderWidth: 2, borderColor: '#f97316' },
-  timelineYearPeak: { backgroundColor: 'rgba(34, 197, 94, 0.1)' },
-  timelineYearLow: { backgroundColor: 'rgba(239, 68, 68, 0.1)' },
-  timelineBarContainer: { width: 28, height: 80, backgroundColor: '#334155', borderRadius: 14, justifyContent: 'flex-end', overflow: 'hidden', marginBottom: 4 },
-  timelineBarSegment: { width: '100%' },
-  timelineBar: { width: '100%', borderRadius: 14 },
-  timelineScoreBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8, marginBottom: 4 },
-  timelineScoreText: { fontSize: 10, fontWeight: '700', color: '#fff' },
-  timelineYearLabel: { fontSize: 13, fontWeight: '600', color: '#e2e8f0' },
-  timelineYearLabelCurrent: { color: '#f97316', fontWeight: '700' },
-  timelineAge: { fontSize: 10, color: '#94a3b8', marginTop: 2 },
-  timelineDasha: { fontSize: 8, color: '#a78bfa', marginTop: 1 },
-  timelineEventDots: { flexDirection: 'row', gap: 3, marginTop: 4, minHeight: 10 },
-  timelineEventDot: { width: 8, height: 8, borderRadius: 4 },
+  // Life Timeline styles (v4 - Bar Chart Design)
+  timelineCard: { borderColor: '#f97316', borderWidth: 1 },
+
+  // Journey Header
+  journeyHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  journeyTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  journeyIcon: { fontSize: 22 },
+  journeyTitleInfo: { flex: 1 },
+  journeyTitle: { fontSize: 16, fontWeight: '700', color: '#fff' },
+  journeySubtitle: { fontSize: 11, color: '#94a3b8', marginTop: 2 },
+  journeyExpandBtn: { padding: 8, backgroundColor: 'rgba(249, 115, 22, 0.15)', borderRadius: 10 },
+
+  // Score Scale
+  scoreScaleRow: { flexDirection: 'row', justifyContent: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' },
+  scoreScaleItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  scoreScaleDot: { width: 8, height: 8, borderRadius: 4 },
+  scoreScaleText: { fontSize: 10, color: '#94a3b8' },
+
+  // Bar Chart
+  barChartContainer: { flexDirection: 'row', marginBottom: 16 },
+  yAxisLabels: { width: 28, justifyContent: 'space-between', paddingVertical: 4 },
+  yAxisText: { fontSize: 9, color: '#64748b', textAlign: 'right' },
+  barChartArea: { flex: 1, height: 140, position: 'relative' },
+  gridLine: { position: 'absolute', left: 0, right: 0, height: 1, backgroundColor: 'rgba(100, 116, 139, 0.2)' },
+  gridLineHighlight: { backgroundColor: 'rgba(249, 115, 22, 0.3)', height: 2 },
+  barsScrollContent: { paddingHorizontal: 4, alignItems: 'flex-end', minWidth: '100%' },
+  barColumn: { alignItems: 'center', marginHorizontal: 6, width: 32 },
+  barWrapper: { height: 120, justifyContent: 'flex-end' },
+  bar: { width: 24, borderRadius: 4, alignItems: 'center', justifyContent: 'flex-start', paddingTop: 4, minHeight: 20 },
+  barScoreText: { fontSize: 9, fontWeight: '700', color: '#fff' },
+  barYearText: { fontSize: 11, color: '#94a3b8', marginTop: 4, fontWeight: '500' },
+  barYearTextCurrent: { color: '#f97316', fontWeight: '700' },
+  currentYearMarker: { marginTop: 2 },
+  currentYearMarkerText: { fontSize: 8, color: '#f97316' },
+
+  // Summary Cards
+  summaryCardsRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 8, marginBottom: 12 },
+  summaryCard: { flex: 1, alignItems: 'center', padding: 10, borderRadius: 10, borderWidth: 1 },
+  summaryCardEmoji: { fontSize: 18, marginBottom: 4 },
+  summaryCardLabel: { fontSize: 9, color: '#94a3b8', marginBottom: 2 },
+  summaryCardValue: { fontSize: 14, fontWeight: '700' },
+  summaryCardScore: { fontSize: 10, color: '#64748b', marginTop: 2 },
+
+  // Tap hint
+  tapHintText: { fontSize: 11, color: '#64748b', textAlign: 'center', fontStyle: 'italic' },
   // TimelineYearModal styles
   tlmAreaContainer: { marginBottom: 8 },
   tlmAreaRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
@@ -2793,7 +3379,7 @@ const styles = StyleSheet.create({
   peakLowText: { fontSize: 12, color: '#cbd5e1' },
 
   // Aura Heatmap styles
-  auraCard: { borderColor: '#8b5cf6', marginTop: 16 },
+  auraCard: { borderColor: '#8b5cf6' },
   auraBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
   auraBadgeText: { fontSize: 14, fontWeight: '700' },
   auraOverview: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },

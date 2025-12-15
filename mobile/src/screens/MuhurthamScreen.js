@@ -320,8 +320,19 @@ export default function MuhurthamScreen() {
   };
 
   const getDayData = (day) => {
+    if (!calendarData || calendarData.length === 0) return null;
+
     const dayData = calendarData.find(d => {
-      const date = new Date(d.date);
+      if (!d || !d.date) return false;
+      // Parse date string directly to avoid timezone issues
+      // Format is "YYYY-MM-DD"
+      const dateParts = d.date.split('-');
+      if (dateParts.length === 3) {
+        const dayNum = parseInt(dateParts[2], 10);
+        return dayNum === day;
+      }
+      // Fallback to Date parsing
+      const date = new Date(d.date + 'T12:00:00');
       return date.getDate() === day;
     });
     return dayData || null;
@@ -329,14 +340,56 @@ export default function MuhurthamScreen() {
 
   const getDateStyle = (day) => {
     const dayData = getDayData(day);
-    if (!dayData) return { bg: '#fff', border: '#e5e7eb', text: '#374151' };
+    if (!dayData) {
+      return { bg: '#fff', border: '#e5e7eb', text: '#374151' };
+    }
 
-    const score = dayData.event_scores?.[eventType] ?? dayData.day_score;
+    // Try multiple score sources - prioritize event-specific scores
+    let score = null;
 
-    if (score >= 70) return { bg: '#f0fdf4', border: '#bbf7d0', text: '#15803d' };
-    if (score >= 50) return { bg: '#fefce8', border: '#fef08a', text: '#a16207' };
-    if (score < 40) return { bg: '#fef2f2', border: '#fecaca', text: '#dc2626' };
-    return { bg: '#fff', border: '#e5e7eb', text: '#374151' };
+    // PRIMARY: Check event_scores for the selected event type
+    if (dayData.event_scores && dayData.event_scores[eventType] !== undefined) {
+      score = dayData.event_scores[eventType];
+    }
+    // Fallback to day_score (general score)
+    else if (dayData.day_score !== undefined) {
+      score = dayData.day_score;
+    }
+    // Check overall_score
+    else if (dayData.overall_score !== undefined) {
+      score = dayData.overall_score;
+    }
+    // Check score field directly
+    else if (dayData.score !== undefined) {
+      score = dayData.score;
+    }
+    // Check good_for_events for the selected event type
+    else if (dayData.good_for_events && Array.isArray(dayData.good_for_events)) {
+      const eventMatch = dayData.good_for_events.find(e => e.type === eventType);
+      if (eventMatch && eventMatch.score !== undefined) {
+        score = eventMatch.score;
+      } else if (dayData.good_for_events.length > 0) {
+        // Average score of all good events
+        const avgScore = dayData.good_for_events.reduce((sum, e) => sum + (e.score || 0), 0) / dayData.good_for_events.length;
+        score = avgScore;
+      }
+    }
+    // Check status field
+    else if (dayData.status) {
+      if (dayData.status === 'good' || dayData.status === 'excellent') score = 80;
+      else if (dayData.status === 'normal' || dayData.status === 'neutral') score = 55;
+      else if (dayData.status === 'avoid' || dayData.status === 'bad') score = 30;
+    }
+
+    // If still no score, return neutral
+    if (score === null || score === undefined) {
+      return { bg: '#fff', border: '#e5e7eb', text: '#374151' };
+    }
+
+    // More prominent color coding for calendar - no gaps in thresholds
+    if (score >= 65) return { bg: '#dcfce7', border: '#22c55e', text: '#15803d' }; // Green - Good days
+    if (score >= 45) return { bg: '#fef9c3', border: '#facc15', text: '#a16207' }; // Yellow - Average days
+    return { bg: '#fee2e2', border: '#ef4444', text: '#dc2626' }; // Red - Avoid days
   };
 
   const getGoodEventsForDay = (day) => {
@@ -437,7 +490,7 @@ export default function MuhurthamScreen() {
 
                   return (
                     <AnimatedCalendarCell
-                      key={day}
+                      key={`${day}-${eventType}`}
                       day={day}
                       isSelected={isSelected}
                       dateStyle={dateStyle}
@@ -456,15 +509,15 @@ export default function MuhurthamScreen() {
             {/* Legend */}
             <View style={styles.legendRow}>
               <View style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: '#f0fdf4', borderColor: '#bbf7d0' }]} />
+                <View style={[styles.legendDot, { backgroundColor: '#dcfce7', borderColor: '#22c55e' }]} />
                 <Text style={styles.legendText}>{t('goodDay')}</Text>
               </View>
               <View style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: '#fefce8', borderColor: '#fef08a' }]} />
+                <View style={[styles.legendDot, { backgroundColor: '#fef9c3', borderColor: '#facc15' }]} />
                 <Text style={styles.legendText}>{t('normalDay')}</Text>
               </View>
               <View style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: '#fef2f2', borderColor: '#fecaca' }]} />
+                <View style={[styles.legendDot, { backgroundColor: '#fee2e2', borderColor: '#ef4444' }]} />
                 <Text style={styles.legendText}>{t('avoidDay')}</Text>
               </View>
             </View>

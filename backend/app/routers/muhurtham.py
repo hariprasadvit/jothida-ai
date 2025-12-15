@@ -96,9 +96,28 @@ async def get_calendar_view(
     Each day has a score for coloring (green/yellow/red)
     """
     from app.services.muhurtham_finder import MuhurthamFinder
+    import calendar as cal
 
-    finder = MuhurthamFinder(request.app.state.ephemeris, lang=lang)
-    return finder.get_month_calendar(month, year, lat, lon, lang=lang)
+    try:
+        finder = MuhurthamFinder(request.app.state.ephemeris, lang=lang)
+        return finder.get_month_calendar(month, year, lat, lon, lang=lang)
+    except Exception as e:
+        print(f"Error in get_calendar_view: {e}")
+        # Return basic calendar data with neutral scores as fallback
+        num_days = cal.monthrange(year, month)[1]
+        return [
+            CalendarDay(
+                date=f"{year}-{month:02d}-{day:02d}",
+                day_score=50.0,
+                is_auspicious=False,
+                has_muhurtham=False,
+                event_scores={"general": 50.0, "marriage": 50.0, "griha_pravesam": 50.0, "vehicle": 50.0, "business": 50.0, "travel": 50.0},
+                good_for_events=[],
+                festivals=[],
+                warnings=[]
+            )
+            for day in range(1, num_days + 1)
+        ]
 
 @router.get("/best-time-today")
 async def get_best_time_today(
@@ -134,5 +153,23 @@ async def get_day_details(
     """
     from app.services.muhurtham_finder import MuhurthamFinder
 
-    finder = MuhurthamFinder(request.app.state.ephemeris, lang=lang)
-    return finder.get_day_details(target_date, lat, lon, lang=lang)
+    try:
+        finder = MuhurthamFinder(request.app.state.ephemeris, lang=lang)
+        return finder.get_day_details(target_date, lat, lon, lang=lang)
+    except Exception as e:
+        print(f"Error in get_day_details: {e}")
+        # Return basic fallback data
+        return {
+            "date": target_date.isoformat(),
+            "day_score": 50.0,
+            "event_scores": {"general": 50.0},
+            "good_for_events": [],
+            "panchangam": {
+                "tithi": {"name": "-", "paksha": "", "number": 0},
+                "nakshatra": {"name": "-", "pada": 0, "lord": ""},
+                "yoga": {"name": "-"},
+                "vaaram": "-"
+            },
+            "time_slots": [],
+            "recommendation": "Unable to calculate muhurtham data for this day."
+        }

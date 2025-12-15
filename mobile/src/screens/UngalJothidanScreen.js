@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -418,15 +418,51 @@ const SwipeableCard = ({ card, config, isFirst, onSwipeComplete, cardIndex, tota
       friction: 5,
       useNativeDriver: true,
     }).start();
-  }, [isFirst]);
+  }, [isFirst, scaleAnim]);
 
-  const panResponder = useRef(
+  const swipeRight = useCallback(() => {
+    Animated.timing(position, {
+      toValue: { x: SCREEN_WIDTH + 100, y: 0 },
+      duration: SWIPE_OUT_DURATION,
+      useNativeDriver: true,
+    }).start(() => onSwipeComplete());
+  }, [position, onSwipeComplete]);
+
+  const swipeLeft = useCallback(() => {
+    Animated.timing(position, {
+      toValue: { x: -SCREEN_WIDTH - 100, y: 0 },
+      duration: SWIPE_OUT_DURATION,
+      useNativeDriver: true,
+    }).start(() => onSwipeComplete());
+  }, [position, onSwipeComplete]);
+
+  const resetPosition = useCallback(() => {
+    Animated.spring(position, {
+      toValue: { x: 0, y: 0 },
+      friction: 5,
+      useNativeDriver: true,
+    }).start();
+  }, [position]);
+
+  // Recreate panResponder when isFirst changes
+  const panResponder = useMemo(() =>
     PanResponder.create({
       onStartShouldSetPanResponder: () => isFirst,
+      onMoveShouldSetPanResponder: (_, gesture) => {
+        // Only respond to horizontal gestures when this is the first card
+        return isFirst && Math.abs(gesture.dx) > Math.abs(gesture.dy) && Math.abs(gesture.dx) > 5;
+      },
+      onPanResponderGrant: () => {
+        // Reset position when starting gesture
+        position.setValue({ x: 0, y: 0 });
+      },
       onPanResponderMove: (_, gesture) => {
-        position.setValue({ x: gesture.dx, y: gesture.dy * 0.5 });
+        if (isFirst) {
+          position.setValue({ x: gesture.dx, y: gesture.dy * 0.3 });
+        }
       },
       onPanResponderRelease: (_, gesture) => {
+        if (!isFirst) return;
         if (gesture.dx > SWIPE_THRESHOLD) {
           swipeRight();
         } else if (gesture.dx < -SWIPE_THRESHOLD) {
@@ -435,32 +471,7 @@ const SwipeableCard = ({ card, config, isFirst, onSwipeComplete, cardIndex, tota
           resetPosition();
         }
       },
-    })
-  ).current;
-
-  const swipeRight = () => {
-    Animated.timing(position, {
-      toValue: { x: SCREEN_WIDTH + 100, y: 0 },
-      duration: SWIPE_OUT_DURATION,
-      useNativeDriver: true,
-    }).start(() => onSwipeComplete());
-  };
-
-  const swipeLeft = () => {
-    Animated.timing(position, {
-      toValue: { x: -SCREEN_WIDTH - 100, y: 0 },
-      duration: SWIPE_OUT_DURATION,
-      useNativeDriver: true,
-    }).start(() => onSwipeComplete());
-  };
-
-  const resetPosition = () => {
-    Animated.spring(position, {
-      toValue: { x: 0, y: 0 },
-      friction: 5,
-      useNativeDriver: true,
-    }).start();
-  };
+    }), [isFirst, position, swipeRight, swipeLeft, resetPosition]);
 
   const getScoreLabel = (score) => {
     if (score >= 80) return { text: t('excellent') || 'சிறப்பு', color: '#22c55e' };

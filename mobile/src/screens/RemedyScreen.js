@@ -87,9 +87,9 @@ const AnimatedRemedyCard = ({ remedy, index, language, t }) => {
           <Text style={styles.remedyTitle}>
             {language === 'ta' ? remedy.title_tamil : remedy.title}
           </Text>
-          {remedy.planet_tamil && (
+          {(remedy.planet_tamil || remedy.planet) && (
             <Text style={styles.remedyPlanet}>
-              {remedy.planet_tamil} • {t('priority')}: {remedy.priority}
+              {language === 'en' ? remedy.planet : remedy.planet_tamil} • {t('priority')}: {remedy.priority}
             </Text>
           )}
         </View>
@@ -262,7 +262,7 @@ export default function RemedyScreen({ navigation }) {
         birthPlace: userProfile.birthPlace,
       };
 
-      const data = await remedyAPI.getPersonalized(birthDetails, goal);
+      const data = await remedyAPI.getPersonalized(birthDetails, goal, language);
       setRemedyData(data);
     } catch (err) {
       console.error('Remedy API error:', err);
@@ -275,7 +275,7 @@ export default function RemedyScreen({ navigation }) {
 
   useEffect(() => {
     fetchRemedies(selectedGoal);
-  }, [selectedGoal]);
+  }, [selectedGoal, language]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -391,7 +391,7 @@ export default function RemedyScreen({ navigation }) {
                     {t('mahaDasha')}
                   </Text>
                   <Text style={styles.dashaValue}>
-                    {remedyData.current_dasha?.mahadasha_tamil || remedyData.current_dasha?.mahadasha}
+                    {language === 'en' ? (remedyData.current_dasha?.mahadasha_en || remedyData.current_dasha?.mahadasha) : (remedyData.current_dasha?.mahadasha_tamil || remedyData.current_dasha?.mahadasha)}
                   </Text>
                 </View>
                 <View style={styles.dashaItem}>
@@ -417,7 +417,7 @@ export default function RemedyScreen({ navigation }) {
                 <View style={styles.weakPlanetsContainer}>
                   {remedyData.weak_planets.map((planet, idx) => (
                     <View key={idx} style={styles.weakPlanetBadge}>
-                      <Text style={styles.weakPlanetName}>{planet.planet_tamil}</Text>
+                      <Text style={styles.weakPlanetName}>{language === 'en' ? (planet.planet_en || planet.planet) : (planet.planet_tamil || planet.planet)}</Text>
                       <Text style={styles.weakPlanetStrength}>{planet.strength}%</Text>
                     </View>
                   ))}

@@ -18,6 +18,37 @@ from reportlab.platypus import (
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+import os
+
+# Register Tamil and Kannada fonts for proper text rendering
+FONT_DIR = os.path.join(os.path.dirname(__file__), 'fonts')
+
+# Tamil fonts
+try:
+    pdfmetrics.registerFont(TTFont('NotoSansTamil', os.path.join(FONT_DIR, 'NotoSansTamil-Regular.ttf')))
+    pdfmetrics.registerFont(TTFont('NotoSansTamil-Bold', os.path.join(FONT_DIR, 'NotoSansTamil-Bold.ttf')))
+    TAMIL_FONT = 'NotoSansTamil'
+    TAMIL_FONT_BOLD = 'NotoSansTamil-Bold'
+except Exception as e:
+    print(f"Warning: Could not load Tamil fonts: {e}")
+    TAMIL_FONT = 'Helvetica'
+    TAMIL_FONT_BOLD = 'Helvetica-Bold'
+
+# Kannada fonts
+try:
+    pdfmetrics.registerFont(TTFont('NotoSansKannada', os.path.join(FONT_DIR, 'NotoSansKannada.ttc')))
+    KANNADA_FONT = 'NotoSansKannada'
+    KANNADA_FONT_BOLD = 'NotoSansKannada'  # TTC may not have separate bold
+except Exception as e:
+    print(f"Warning: Could not load Kannada fonts: {e}")
+    KANNADA_FONT = TAMIL_FONT  # Fallback to Tamil font
+    KANNADA_FONT_BOLD = TAMIL_FONT_BOLD
+
+# Import Chakra Analysis Service
+try:
+    from .chakra_analysis_service import ChakraAnalysisService
+except ImportError:
+    ChakraAnalysisService = None
 
 
 # Astrological Constants
@@ -102,28 +133,52 @@ DASHA_PERIODS = {
 class JathagamPDFGenerator:
     """Generate comprehensive Tamil astrology PDF reports"""
 
-    def __init__(self, chart_data: Dict[str, Any], user_data: Dict[str, Any]):
+    def __init__(self, chart_data: Dict[str, Any], user_data: Dict[str, Any], language: str = 'ta'):
         self.chart_data = chart_data
         self.user_data = user_data
+        self.language = language  # 'en', 'ta', or 'kn'
         self.styles = getSampleStyleSheet()
         self._setup_styles()
 
+    def _tamil_text(self, text: str, bold: bool = False) -> Paragraph:
+        """Helper to create local language text paragraph for use in tables"""
+        # Select style based on language
+        if self.language == 'kn':
+            style = self.styles['KannadaBold'] if bold else self.styles['Kannada']
+        else:
+            style = self.styles['TamilBold'] if bold else self.styles['Tamil']
+        return Paragraph(text, style)
+
+    def _local_text(self, text: str, bold: bool = False) -> Paragraph:
+        """Helper to create local language text (Tamil/Kannada) paragraph"""
+        return self._tamil_text(text, bold)  # Same as _tamil_text but clearer name
+
+    def _bilingual(self, english: str, local: str) -> Paragraph:
+        """Create bilingual text (English with local language) as a single paragraph"""
+        # Use font tags to switch fonts within the paragraph
+        return Paragraph(
+            f'{english} / {local}',
+            self.styles['CustomBody']
+        )
+
     def _setup_styles(self):
         """Setup custom paragraph styles"""
-        # Title style
+        # Title style - use Tamil font for bilingual titles
         self.styles.add(ParagraphStyle(
             name='CustomTitle',
             parent=self.styles['Heading1'],
+            fontName=TAMIL_FONT_BOLD,
             fontSize=24,
             spaceAfter=30,
             alignment=TA_CENTER,
             textColor=colors.HexColor('#c2410c')
         ))
 
-        # Section header
+        # Section header - use Tamil font for bilingual headers
         self.styles.add(ParagraphStyle(
             name='SectionHeader',
             parent=self.styles['Heading2'],
+            fontName=TAMIL_FONT_BOLD,
             fontSize=16,
             spaceBefore=20,
             spaceAfter=10,
@@ -137,17 +192,49 @@ class JathagamPDFGenerator:
         self.styles.add(ParagraphStyle(
             name='SubSection',
             parent=self.styles['Heading3'],
+            fontName=TAMIL_FONT,  # Use Tamil font for subsections
             fontSize=13,
             spaceBefore=15,
             spaceAfter=8,
             textColor=colors.HexColor('#9a3412')
         ))
 
-        # Tamil text style
+        # Tamil text style - uses Tamil font
         self.styles.add(ParagraphStyle(
             name='Tamil',
             parent=self.styles['Normal'],
+            fontName=TAMIL_FONT,
             fontSize=11,
+            leading=16,
+            alignment=TA_LEFT
+        ))
+
+        # Tamil bold style
+        self.styles.add(ParagraphStyle(
+            name='TamilBold',
+            parent=self.styles['Normal'],
+            fontName=TAMIL_FONT_BOLD,
+            fontSize=12,
+            leading=16,
+            alignment=TA_LEFT
+        ))
+
+        # Kannada text style
+        self.styles.add(ParagraphStyle(
+            name='Kannada',
+            parent=self.styles['Normal'],
+            fontName=KANNADA_FONT,
+            fontSize=11,
+            leading=16,
+            alignment=TA_LEFT
+        ))
+
+        # Kannada bold style
+        self.styles.add(ParagraphStyle(
+            name='KannadaBold',
+            parent=self.styles['Normal'],
+            fontName=KANNADA_FONT_BOLD,
+            fontSize=12,
             leading=16,
             alignment=TA_LEFT
         ))
@@ -156,10 +243,21 @@ class JathagamPDFGenerator:
         self.styles.add(ParagraphStyle(
             name='CustomBody',
             parent=self.styles['Normal'],
+            fontName=TAMIL_FONT,  # Use Tamil font for body text
             fontSize=10,
             leading=14,
             alignment=TA_JUSTIFY,
             spaceAfter=8
+        ))
+
+        # Bilingual style for mixed English/Tamil content
+        self.styles.add(ParagraphStyle(
+            name='Bilingual',
+            parent=self.styles['Normal'],
+            fontName=TAMIL_FONT,
+            fontSize=11,
+            leading=15,
+            spaceAfter=6
         ))
 
         # Quote/highlight style
@@ -178,10 +276,11 @@ class JathagamPDFGenerator:
         """Add header and footer to each page"""
         canvas.saveState()
 
-        # Header
+        # Header - Use Tamil font for Tamil text
         canvas.setFillColor(colors.HexColor('#ea580c'))
-        canvas.setFont('Helvetica-Bold', 10)
+        canvas.setFont(TAMIL_FONT_BOLD, 10)
         canvas.drawString(50, A4[1] - 30, "ஜோதிட AI - Jathagam Report")
+        canvas.setFont('Helvetica-Bold', 10)
         canvas.drawRightString(A4[0] - 50, A4[1] - 30, self.user_data.get('name', 'User'))
 
         # Header line
@@ -196,8 +295,8 @@ class JathagamPDFGenerator:
         canvas.drawCentredString(A4[0] / 2, 30, f"Page {doc.page}")
         canvas.drawRightString(A4[0] - 50, 30, "www.jothida-ai.com")
 
-        # Footer line
-        canvas.line(50, 40, A4[0] - 50, A4[0] - 50)
+        # Footer line (horizontal line above footer)
+        canvas.line(50, 40, A4[0] - 50, 40)
 
         canvas.restoreState()
 
@@ -216,65 +315,52 @@ class JathagamPDFGenerator:
 
         story = []
 
-        # Build report sections
-        story.extend(self._cover_page())
-        story.append(PageBreak())
+        # Build report sections with error handling
+        sections = [
+            ('Cover Page', self._cover_page),
+            ('Table of Contents', self._table_of_contents),
+            ('Birth Details', self._birth_details_section),
+            ('Rasi Chart', self._rasi_chart_section),
+            ('Navamsa Chart', self._navamsa_chart_section),
+            ('Planetary Positions', self._planetary_positions_section),
+            ('House Analysis', self._house_analysis_section),
+            ('Nakshatra Analysis', self._nakshatra_analysis_section),
+            ('Dasha', self._dasha_section),
+            ('Yogas', self._yogas_section),
+            ('Doshas', self._doshas_section),
+            ('Life Predictions', self._life_predictions_section),
+            ('Career', self._career_section),
+            ('Marriage', self._marriage_section),
+            ('Health', self._health_section),
+            ('Wealth', self._wealth_section),
+            ('Chakra Energy', self._chakra_energy_section),
+            ('Remedies', self._remedies_section),
+            ('Favorable', self._favorable_section),
+            ('Yearly Predictions', self._yearly_predictions_section),
+        ]
 
-        story.extend(self._table_of_contents())
-        story.append(PageBreak())
+        for section_name, section_func in sections:
+            try:
+                story.extend(section_func())
+                story.append(PageBreak())
+            except Exception as e:
+                print(f"Error generating {section_name} section: {e}")
+                import traceback
+                traceback.print_exc()
+                # Add error placeholder page
+                story.append(Paragraph(
+                    f"Error generating {section_name} section",
+                    self.styles['SectionHeader']
+                ))
+                story.append(PageBreak())
 
-        story.extend(self._birth_details_section())
-        story.append(PageBreak())
-
-        story.extend(self._rasi_chart_section())
-        story.append(PageBreak())
-
-        story.extend(self._navamsa_chart_section())
-        story.append(PageBreak())
-
-        story.extend(self._planetary_positions_section())
-        story.append(PageBreak())
-
-        story.extend(self._house_analysis_section())
-        story.append(PageBreak())
-
-        story.extend(self._nakshatra_analysis_section())
-        story.append(PageBreak())
-
-        story.extend(self._dasha_section())
-        story.append(PageBreak())
-
-        story.extend(self._yogas_section())
-        story.append(PageBreak())
-
-        story.extend(self._doshas_section())
-        story.append(PageBreak())
-
-        story.extend(self._life_predictions_section())
-        story.append(PageBreak())
-
-        story.extend(self._career_section())
-        story.append(PageBreak())
-
-        story.extend(self._marriage_section())
-        story.append(PageBreak())
-
-        story.extend(self._health_section())
-        story.append(PageBreak())
-
-        story.extend(self._wealth_section())
-        story.append(PageBreak())
-
-        story.extend(self._remedies_section())
-        story.append(PageBreak())
-
-        story.extend(self._favorable_section())
-        story.append(PageBreak())
-
-        story.extend(self._yearly_predictions_section())
-        story.append(PageBreak())
-
-        story.extend(self._appendix_section())
+        # Appendix section
+        try:
+            story.extend(self._appendix_section())
+        except Exception as e:
+            print(f"Error generating Appendix section: {e}")
+            import traceback
+            traceback.print_exc()
 
         # Build PDF
         doc.build(story, onFirstPage=self._header_footer, onLaterPages=self._header_footer)
@@ -309,35 +395,34 @@ class JathagamPDFGenerator:
 
         elements.append(Spacer(1, 1 * inch))
 
-        # User info box
+        # User info box - use Paragraph for Tamil text rendering
         user_info = [
-            ['Name / பெயர்', self.user_data.get('name', 'N/A')],
-            ['Date of Birth / பிறந்த தேதி', self.user_data.get('birth_date', 'N/A')],
-            ['Time of Birth / பிறந்த நேரம்', self.user_data.get('birth_time', 'N/A')],
-            ['Place of Birth / பிறந்த இடம்', self.user_data.get('birth_place', 'N/A')],
+            [self._tamil_text('Name / பெயர்'), self.user_data.get('name', 'N/A')],
+            [self._tamil_text('Date of Birth / பிறந்த தேதி'), self.user_data.get('birth_date', 'N/A')],
+            [self._tamil_text('Time of Birth / பிறந்த நேரம்'), self.user_data.get('birth_time', 'N/A')],
+            [self._tamil_text('Place of Birth / பிறந்த இடம்'), self.user_data.get('birth_place', 'N/A')],
         ]
 
         # Add rasi/nakshatra if available
         if self.chart_data.get('moon_rasi'):
             rasi = self.chart_data.get('moon_rasi', {})
-            user_info.append(['Moon Sign / ராசி', f"{rasi.get('tamil', 'N/A')} ({rasi.get('name', '')})"])
+            user_info.append([self._tamil_text('Moon Sign / ராசி'), self._tamil_text(f"{rasi.get('tamil', 'N/A')} ({rasi.get('name', '')})")])
 
         if self.chart_data.get('nakshatra'):
             nak = self.chart_data.get('nakshatra', {})
             pada = nak.get('pada', '')
-            user_info.append(['Birth Star / நட்சத்திரம்', f"{nak.get('tamil', 'N/A')} (Pada {pada})"])
+            user_info.append([self._tamil_text('Birth Star / நட்சத்திரம்'), self._tamil_text(f"{nak.get('tamil', 'N/A')} (Pada {pada})")])
 
         table = Table(user_info, colWidths=[2.5 * inch, 3 * inch])
         table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#fff7ed')),
             ('TEXTCOLOR', (0, 0), (0, -1), colors.HexColor('#9a3412')),
-            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 0), (-1, -1), 11),
             ('ALIGN', (0, 0), (0, -1), 'RIGHT'),
             ('ALIGN', (1, 0), (1, -1), 'LEFT'),
             ('PADDING', (0, 0), (-1, -1), 12),
             ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#fed7aa')),
             ('ROWBACKGROUNDS', (0, 0), (-1, -1), [colors.white, colors.HexColor('#fffbeb')]),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ]))
 
         elements.append(table)
@@ -351,7 +436,7 @@ class JathagamPDFGenerator:
         ))
 
         elements.append(Paragraph(
-            "Powered by ஜோதிட AI - Traditional Vedic Astrology with Modern AI",
+            f'Powered by ஜோதிட AI - Traditional Vedic Astrology with Modern AI',
             ParagraphStyle(name='PoweredBy', alignment=TA_CENTER, fontSize=9, textColor=colors.HexColor('#ea580c'))
         ))
 
@@ -361,39 +446,46 @@ class JathagamPDFGenerator:
         """Generate table of contents"""
         elements = []
 
-        elements.append(Paragraph("Table of Contents / உள்ளடக்கம்", self.styles['CustomTitle']))
+        elements.append(Paragraph(
+            f'Table of Contents / உள்ளடக்கம்',
+            self.styles['CustomTitle']
+        ))
         elements.append(Spacer(1, 0.3 * inch))
 
         toc_items = [
-            ("1. Birth Details / பிறப்பு விவரங்கள்", 3),
-            ("2. Rasi Chart / ராசி கட்டம்", 4),
-            ("3. Navamsa Chart / நவாம்சம்", 5),
-            ("4. Planetary Positions / கிரக நிலைகள்", 6),
-            ("5. House Analysis / பாவ பலன்கள்", 8),
-            ("6. Nakshatra Analysis / நட்சத்திர பலன்", 10),
-            ("7. Dasha Periods / தசா புத்தி", 12),
-            ("8. Yogas / யோகங்கள்", 16),
-            ("9. Doshas / தோஷங்கள்", 18),
-            ("10. Life Predictions / வாழ்க்கை பலன்கள்", 20),
-            ("11. Career & Profession / தொழில்", 25),
-            ("12. Marriage & Family / திருமணம்", 30),
-            ("13. Health Analysis / உடல் நலம்", 35),
-            ("14. Wealth & Finance / செல்வம்", 40),
-            ("15. Remedies / பரிகாரங்கள்", 45),
-            ("16. Favorable Periods / சுப காலங்கள்", 50),
-            ("17. Yearly Predictions / வருட பலன்கள்", 55),
-            ("18. Appendix / இணைப்பு", 60),
+            ("1. Birth Details", "பிறப்பு விவரங்கள்", 3),
+            ("2. Rasi Chart", "ராசி கட்டம்", 4),
+            ("3. Navamsa Chart", "நவாம்சம்", 5),
+            ("4. Planetary Positions", "கிரக நிலைகள்", 6),
+            ("5. House Analysis", "பாவ பலன்கள்", 8),
+            ("6. Nakshatra Analysis", "நட்சத்திர பலன்", 10),
+            ("7. Dasha Periods", "தசா புத்தி", 12),
+            ("8. Yogas", "யோகங்கள்", 16),
+            ("9. Doshas", "தோஷங்கள்", 18),
+            ("10. Life Predictions", "வாழ்க்கை பலன்கள்", 20),
+            ("11. Career & Profession", "தொழில்", 25),
+            ("12. Marriage & Family", "திருமணம்", 30),
+            ("13. Health Analysis", "உடல் நலம்", 35),
+            ("14. Wealth & Finance", "செல்வம்", 40),
+            ("15. Chakra Energy Analysis", "சக்கர ஆற்றல்", 43),
+            ("16. Remedies", "பரிகாரங்கள்", 48),
+            ("17. Favorable Periods", "சுப காலங்கள்", 53),
+            ("18. Yearly Predictions", "வருட பலன்கள்", 58),
+            ("19. Appendix", "இணைப்பு", 63),
         ]
 
         toc_data = []
-        for item, page in toc_items:
-            toc_data.append([item, f"Page {page}"])
+        for en, ta, page in toc_items:
+            toc_data.append([
+                Paragraph(f'{en} / {ta}', self.styles['CustomBody']),
+                f"Page {page}"
+            ])
 
         table = Table(toc_data, colWidths=[4.5 * inch, 1 * inch])
         table.setStyle(TableStyle([
-            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
             ('FONTSIZE', (0, 0), (-1, -1), 11),
             ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
             ('TOPPADDING', (0, 0), (-1, -1), 8),
             ('LINEBELOW', (0, 0), (-1, -1), 0.5, colors.HexColor('#fed7aa')),
@@ -407,7 +499,10 @@ class JathagamPDFGenerator:
         """Generate birth details section"""
         elements = []
 
-        elements.append(Paragraph("1. Birth Details / பிறப்பு விவரங்கள்", self.styles['SectionHeader']))
+        elements.append(Paragraph(
+            f'1. Birth Details / பிறப்பு விவரங்கள்',
+            self.styles['SectionHeader']
+        ))
 
         elements.append(Paragraph(
             "This section contains the fundamental birth information used to calculate your horoscope. "
@@ -417,25 +512,26 @@ class JathagamPDFGenerator:
 
         elements.append(Spacer(1, 0.2 * inch))
 
-        # Birth details table
+        # Birth details table - use Paragraph for Tamil text
         birth_data = [
-            ['Parameter', 'Value', 'Tamil'],
-            ['Full Name', self.user_data.get('name', 'N/A'), 'பெயர்'],
-            ['Date of Birth', self.user_data.get('birth_date', 'N/A'), 'பிறந்த தேதி'],
-            ['Time of Birth', self.user_data.get('birth_time', 'N/A'), 'பிறந்த நேரம்'],
-            ['Place of Birth', self.user_data.get('birth_place', 'N/A'), 'பிறந்த இடம்'],
-            ['Latitude', str(self.user_data.get('latitude', 'N/A')), 'அட்சரேகை'],
-            ['Longitude', str(self.user_data.get('longitude', 'N/A')), 'தீர்க்கரேகை'],
-            ['Timezone', 'IST (+5:30)', 'நேர மண்டலம்'],
+            ['Parameter', 'Value', self._tamil_text('Tamil', bold=True)],
+            ['Full Name', self.user_data.get('name', 'N/A'), self._tamil_text('பெயர்')],
+            ['Date of Birth', self.user_data.get('birth_date', 'N/A'), self._tamil_text('பிறந்த தேதி')],
+            ['Time of Birth', self.user_data.get('birth_time', 'N/A'), self._tamil_text('பிறந்த நேரம்')],
+            ['Place of Birth', self.user_data.get('birth_place', 'N/A'), self._tamil_text('பிறந்த இடம்')],
+            ['Latitude', str(self.user_data.get('latitude', 'N/A')), self._tamil_text('அட்சரேகை')],
+            ['Longitude', str(self.user_data.get('longitude', 'N/A')), self._tamil_text('தீர்க்கரேகை')],
+            ['Timezone', 'IST (+5:30)', self._tamil_text('நேர மண்டலம்')],
         ]
 
         table = Table(birth_data, colWidths=[2 * inch, 2.5 * inch, 1.5 * inch])
         table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#ea580c')),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTNAME', (0, 0), (1, 0), 'Helvetica-Bold'),
+            ('FONTNAME', (0, 1), (1, -1), 'Helvetica'),
             ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('PADDING', (0, 0), (-1, -1), 10),
             ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#fed7aa')),
@@ -494,17 +590,21 @@ class JathagamPDFGenerator:
         # Create a simple text representation of the chart
         chart_positions = self.chart_data.get('planets', {})
 
-        # Create 4x4 grid for South Indian chart
+        # Create 4x4 grid for South Indian chart - use Paragraph for Tamil text
+        def chart_cell(tamil, english):
+            return Paragraph(f'{tamil}<br/>{english}', self.styles['Tamil'])
+
         chart_data = [
-            ['மீனம்\nPisces', 'மேஷம்\nAries', 'ரிஷபம்\nTaurus', 'மிதுனம்\nGemini'],
-            ['கும்பம்\nAquarius', '', '', 'கடகம்\nCancer'],
-            ['மகரம்\nCapricorn', '', '', 'சிம்மம்\nLeo'],
-            ['தனுசு்\nSagittarius', 'விருச்சிகம்\nScorpio', 'துலாம்\nLibra', 'கன்னி\nVirgo'],
+            [chart_cell('மீனம்', 'Pisces'), chart_cell('மேஷம்', 'Aries'),
+             chart_cell('ரிஷபம்', 'Taurus'), chart_cell('மிதுனம்', 'Gemini')],
+            [chart_cell('கும்பம்', 'Aquarius'), '', '', chart_cell('கடகம்', 'Cancer')],
+            [chart_cell('மகரம்', 'Capricorn'), '', '', chart_cell('சிம்மம்', 'Leo')],
+            [chart_cell('தனுசு', 'Sagittarius'), chart_cell('விருச்சிகம்', 'Scorpio'),
+             chart_cell('துலாம்', 'Libra'), chart_cell('கன்னி', 'Virgo')],
         ]
 
         chart_table = Table(chart_data, colWidths=[1.4 * inch] * 4, rowHeights=[0.9 * inch] * 4)
         chart_table.setStyle(TableStyle([
-            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
             ('FONTSIZE', (0, 0), (-1, -1), 8),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
@@ -553,17 +653,18 @@ class JathagamPDFGenerator:
 
         elements.append(Paragraph("3.1 Navamsa Chart / நவாம்ச கட்டம்", self.styles['SubSection']))
 
-        # Navamsa chart (similar structure)
+        # Navamsa chart (similar structure) - use Paragraph for Tamil text
         navamsa_data = [
-            ['மீனம்', 'மேஷம்', 'ரிஷபம்', 'மிதுனம்'],
-            ['கும்பம்', '', '', 'கடகம்'],
-            ['மகரம்', '', '', 'சிம்மம்'],
-            ['தனுசு', 'விருச்சிகம்', 'துலாம்', 'கன்னி'],
+            [self._tamil_text('மீனம்'), self._tamil_text('மேஷம்'),
+             self._tamil_text('ரிஷபம்'), self._tamil_text('மிதுனம்')],
+            [self._tamil_text('கும்பம்'), '', '', self._tamil_text('கடகம்')],
+            [self._tamil_text('மகரம்'), '', '', self._tamil_text('சிம்மம்')],
+            [self._tamil_text('தனுசு'), self._tamil_text('விருச்சிகம்'),
+             self._tamil_text('துலாம்'), self._tamil_text('கன்னி')],
         ]
 
         navamsa_table = Table(navamsa_data, colWidths=[1.4 * inch] * 4, rowHeights=[0.8 * inch] * 4)
         navamsa_table.setStyle(TableStyle([
-            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
             ('FONTSIZE', (0, 0), (-1, -1), 9),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
@@ -608,14 +709,19 @@ class JathagamPDFGenerator:
 
         elements.append(Spacer(1, 0.2 * inch))
 
-        # Planetary positions table
+        # Planetary positions table - use Paragraph for Tamil text
         planets_data = [['Planet', 'Sign', 'House', 'Degree', 'Nakshatra', 'Status']]
 
         planets = self.chart_data.get('planets', [])
         if isinstance(planets, list):
             for p in planets:
+                tamil_name = p.get('tamil', '')
+                planet_cell = Paragraph(
+                    f'{p.get("name", "N/A")} ({tamil_name})',
+                    self.styles['Tamil']
+                ) if tamil_name else p.get('name', 'N/A')
                 planets_data.append([
-                    f"{p.get('name', 'N/A')} ({p.get('tamil', '')})",
+                    planet_cell,
                     p.get('sign', 'N/A'),
                     str(p.get('house', 'N/A')),
                     f"{p.get('longitude', 0):.2f}°",
@@ -623,17 +729,17 @@ class JathagamPDFGenerator:
                     p.get('status', 'Normal')
                 ])
         else:
-            # Sample data if not available
+            # Sample data if not available - use Paragraph for Tamil
             sample_planets = [
-                ['Sun (சூரியன்)', 'Leo', '5', '15.23°', 'Magha', 'Own Sign'],
-                ['Moon (சந்திரன்)', 'Cancer', '4', '22.45°', 'Ashlesha', 'Own Sign'],
-                ['Mars (செவ்வாய்)', 'Aries', '1', '8.12°', 'Ashwini', 'Own Sign'],
-                ['Mercury (புதன்)', 'Virgo', '6', '18.67°', 'Hasta', 'Exalted'],
-                ['Jupiter (குரு)', 'Sagittarius', '9', '12.34°', 'Moola', 'Own Sign'],
-                ['Venus (சுக்கிரன்)', 'Libra', '7', '25.89°', 'Vishakha', 'Own Sign'],
-                ['Saturn (சனி)', 'Aquarius', '11', '5.56°', 'Dhanishta', 'Own Sign'],
-                ['Rahu (ராகு)', 'Gemini', '3', '14.78°', 'Ardra', 'Normal'],
-                ['Ketu (கேது)', 'Sagittarius', '9', '14.78°', 'Moola', 'Normal'],
+                [self._tamil_text('Sun (சூரியன்)'), 'Leo', '5', '15.23°', 'Magha', 'Own Sign'],
+                [self._tamil_text('Moon (சந்திரன்)'), 'Cancer', '4', '22.45°', 'Ashlesha', 'Own Sign'],
+                [self._tamil_text('Mars (செவ்வாய்)'), 'Aries', '1', '8.12°', 'Ashwini', 'Own Sign'],
+                [self._tamil_text('Mercury (புதன்)'), 'Virgo', '6', '18.67°', 'Hasta', 'Exalted'],
+                [self._tamil_text('Jupiter (குரு)'), 'Sagittarius', '9', '12.34°', 'Moola', 'Own Sign'],
+                [self._tamil_text('Venus (சுக்கிரன்)'), 'Libra', '7', '25.89°', 'Vishakha', 'Own Sign'],
+                [self._tamil_text('Saturn (சனி)'), 'Aquarius', '11', '5.56°', 'Dhanishta', 'Own Sign'],
+                [self._tamil_text('Rahu (ராகு)'), 'Gemini', '3', '14.78°', 'Ardra', 'Normal'],
+                [self._tamil_text('Ketu (கேது)'), 'Sagittarius', '9', '14.78°', 'Moola', 'Normal'],
             ]
             planets_data.extend(sample_planets)
 
@@ -642,9 +748,10 @@ class JathagamPDFGenerator:
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#ea580c')),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTNAME', (1, 1), (-1, -1), 'Helvetica'),
             ('FONTSIZE', (0, 0), (-1, -1), 9),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ('PADDING', (0, 0), (-1, -1), 6),
             ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#fed7aa')),
             ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#fff7ed')]),
@@ -655,12 +762,15 @@ class JathagamPDFGenerator:
         elements.append(Spacer(1, 0.3 * inch))
 
         # Planet details
-        elements.append(Paragraph("4.1 Detailed Planet Analysis / விரிவான கிரக பகுப்பாய்வு", self.styles['SubSection']))
+        elements.append(Paragraph(
+            f'4.1 Detailed Planet Analysis / விரிவான கிரக பகுப்பாய்வு',
+            self.styles['SubSection']
+        ))
 
         for planet in PLANETS:
             elements.append(Paragraph(
-                f"<b>{planet['symbol']} {planet['en']} ({planet['ta']})</b>",
-                self.styles['Tamil']
+                f'<b>{planet["symbol"]} {planet["en"]} ({planet["ta"]})</b>',
+                self.styles['TamilBold']
             ))
             elements.append(Paragraph(
                 f"The {planet['en']} in your chart represents " + self._get_planet_signification(planet['en']),
@@ -812,20 +922,24 @@ class JathagamPDFGenerator:
         elements.append(Spacer(1, 0.2 * inch))
 
         # All 27 nakshatras reference
-        elements.append(Paragraph("6.3 Complete Nakshatra Reference / முழு நட்சத்திர பட்டியல்", self.styles['SubSection']))
+        elements.append(Paragraph(
+            f'6.3 Complete Nakshatra Reference / முழு நட்சத்திர பட்டியல்',
+            self.styles['SubSection']
+        ))
 
-        nak_ref_data = [['#', 'Nakshatra', 'Tamil', 'Lord']]
+        nak_ref_data = [['#', 'Nakshatra', self._tamil_text('Tamil', bold=True), self._tamil_text('Lord', bold=True)]]
         for i, nak in enumerate(NAKSHATRAS, 1):
-            nak_ref_data.append([str(i), nak['en'], nak['ta'], nak['lord_ta']])
+            nak_ref_data.append([str(i), nak['en'], self._tamil_text(nak['ta']), self._tamil_text(nak['lord_ta'])])
 
         nak_ref_table = Table(nak_ref_data, colWidths=[0.4 * inch, 1.5 * inch, 1.2 * inch, 1 * inch])
         nak_ref_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#ea580c')),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTNAME', (0, 0), (1, 0), 'Helvetica-Bold'),
+            ('FONTNAME', (0, 1), (1, -1), 'Helvetica'),
             ('FONTSIZE', (0, 0), (-1, -1), 8),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ('PADDING', (0, 0), (-1, -1), 4),
             ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#fed7aa')),
             ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#fffbeb')]),
@@ -839,7 +953,10 @@ class JathagamPDFGenerator:
         """Generate Dasha periods section"""
         elements = []
 
-        elements.append(Paragraph("7. Dasha Periods / தசா புத்தி", self.styles['SectionHeader']))
+        elements.append(Paragraph(
+            f'7. Dasha Periods / தசா புத்தி',
+            self.styles['SectionHeader']
+        ))
 
         elements.append(Paragraph(
             "The Vimshottari Dasha system is a 120-year planetary period system used in Vedic astrology. "
@@ -855,22 +972,26 @@ class JathagamPDFGenerator:
         current_maha = dasha.get('mahadasha_tamil', 'சுக்கிரன்') if isinstance(dasha, dict) else 'சுக்கிரன்'
         current_antar = dasha.get('antardasha_tamil', 'சூரியன்') if isinstance(dasha, dict) else 'சூரியன்'
 
-        elements.append(Paragraph("7.1 Current Dasha Period / தற்போதைய தசை", self.styles['SubSection']))
+        elements.append(Paragraph(
+            f'7.1 Current Dasha Period / தற்போதைய தசை',
+            self.styles['SubSection']
+        ))
 
         current_dasha_data = [
             ['Period Type', 'Planet', 'Duration'],
-            ['Mahadasha (Major)', current_maha, '20 years'],
-            ['Antardasha (Sub)', current_antar, '1 year 2 months'],
-            ['Pratyantardasha', 'சந்திரன்', '2 months'],
+            ['Mahadasha (Major)', self._tamil_text(current_maha), '20 years'],
+            ['Antardasha (Sub)', self._tamil_text(current_antar), '1 year 2 months'],
+            ['Pratyantardasha', self._tamil_text('சந்திரன்'), '2 months'],
         ]
 
         current_table = Table(current_dasha_data, colWidths=[2 * inch, 2 * inch, 1.5 * inch])
         current_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#ea580c')),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, -1), 10),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ('PADDING', (0, 0), (-1, -1), 10),
             ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#fed7aa')),
         ]))
@@ -880,7 +1001,10 @@ class JathagamPDFGenerator:
         elements.append(Spacer(1, 0.3 * inch))
 
         # Life Dasha Timeline
-        elements.append(Paragraph("7.2 Complete Dasha Timeline / முழு தசா காலவரிசை", self.styles['SubSection']))
+        elements.append(Paragraph(
+            f'7.2 Complete Dasha Timeline / முழு தசா காலவரிசை',
+            self.styles['SubSection']
+        ))
 
         # Generate approximate dasha timeline
         dasha_timeline = [['Mahadasha', 'Start', 'End', 'Duration']]
@@ -901,7 +1025,7 @@ class JathagamPDFGenerator:
             duration = DASHA_PERIODS[dasha_name]
             end_year = current_year + duration
             dasha_timeline.append([
-                f"{dasha_name} ({dasha_tamil[dasha_name]})",
+                Paragraph(f'{dasha_name} ({dasha_tamil[dasha_name]})', self.styles['Tamil']),
                 str(current_year),
                 str(end_year),
                 f"{duration} years"
@@ -912,7 +1036,8 @@ class JathagamPDFGenerator:
         dasha_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#9a3412')),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ('FONTSIZE', (0, 0), (-1, -1), 9),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('PADDING', (0, 0), (-1, -1), 6),
@@ -1434,11 +1559,535 @@ class JathagamPDFGenerator:
 
         return elements
 
+    def _chakra_energy_section(self) -> list:
+        """Generate Chakra Energy Analysis section based on Vedic astrology"""
+        elements = []
+
+        # Language-specific headers
+        headers = {
+            'en': {
+                'title': '15. Chakra Energy Analysis',
+                'desc': 'The seven chakras (energy centers) are mapped to planetary influences '
+                        'in Vedic astrology. This analysis reveals the energetic state of each '
+                        'chakra based on the strength and dignity of their karaka (significator) '
+                        'planets in your birth chart.',
+            },
+            'ta': {
+                'title': '15. சக்கர ஆற்றல் பகுப்பாய்வு',
+                'desc': 'ஏழு சக்கரங்கள் (ஆற்றல் மையங்கள்) வேத ஜோதிடத்தில் கிரக தாக்கங்களுடன் '
+                        'இணைக்கப்பட்டுள்ளன. இந்த பகுப்பாய்வு உங்கள் ஜாதகத்தில் காரக கிரகங்களின் '
+                        'பலம் மற்றும் கண்ணியத்தின் அடிப்படையில் ஒவ்வொரு சக்கரத்தின் ஆற்றல் நிலையை வெளிப்படுத்துகிறது.',
+            },
+            'kn': {
+                'title': '15. ಚಕ್ರ ಶಕ್ತಿ ವಿಶ್ಲೇಷಣೆ',
+                'desc': 'ಏಳು ಚಕ್ರಗಳು (ಶಕ್ತಿ ಕೇಂದ್ರಗಳು) ವೈದಿಕ ಜ್ಯೋತಿಷ್ಯದಲ್ಲಿ ಗ್ರಹ ಪ್ರಭಾವಗಳೊಂದಿಗೆ '
+                        'ಸಂಬಂಧಿಸಿವೆ. ನಿಮ್ಮ ಜನ್ಮ ಕುಂಡಲಿಯಲ್ಲಿ ಕಾರಕ ಗ್ರಹಗಳ ಶಕ್ತಿ ಮತ್ತು ಗೌರವದ ಆಧಾರದ ಮೇಲೆ '
+                        'ಪ್ರತಿ ಚಕ್ರದ ಶಕ್ತಿ ಸ್ಥಿತಿಯನ್ನು ಈ ವಿಶ್ಲೇಷಣೆ ಬಹಿರಂಗಪಡಿಸುತ್ತದೆ.',
+            }
+        }
+
+        lang = self.language if self.language in headers else 'en'
+        header_data = headers[lang]
+
+        # Bilingual title for Tamil/Kannada
+        if lang == 'ta':
+            title = "15. Chakra Energy Analysis / சக்கர ஆற்றல் பகுப்பாய்வு"
+        elif lang == 'kn':
+            title = "15. Chakra Energy Analysis / ಚಕ್ರ ಶಕ್ತಿ ವಿಶ್ಲೇಷಣೆ"
+        else:
+            title = header_data['title']
+
+        elements.append(Paragraph(title, self.styles['SectionHeader']))
+
+        elements.append(Paragraph(header_data['desc'], self.styles['CustomBody']))
+
+        elements.append(Spacer(1, 0.2 * inch))
+
+        # Get chakra analysis if service is available
+        chakra_data = self._get_chakra_analysis()
+
+        # Overview section - language-specific headers
+        overview_headers = {
+            'en': '15.1 Energy Overview',
+            'ta': '15.1 Energy Overview / ஆற்றல் கண்ணோட்டம்',
+            'kn': '15.1 Energy Overview / ಶಕ್ತಿ ಅವಲೋಕನ'
+        }
+        elements.append(Paragraph(
+            overview_headers.get(lang, overview_headers['en']),
+            self.styles['SubSection']
+        ))
+
+        # Energy alignment summary
+        alignment = chakra_data.get('energy_alignment_index', 65)
+        dominant = chakra_data.get('dominant_chakra', {})
+        weakest = chakra_data.get('weakest_chakra', {})
+
+        # Get local name based on language
+        local_col_header = {'en': 'Local', 'ta': 'Tamil', 'kn': 'Kannada'}.get(lang, 'Local')
+        local_align_label = {
+            'en': 'Energy Alignment Index',
+            'ta': 'ஆற்றல் சீரமைப்பு குறியீடு',
+            'kn': 'ಶಕ್ತಿ ಹೊಂದಾಣಿಕೆ ಸೂಚ್ಯಂಕ'
+        }.get(lang, 'Energy Alignment Index')
+
+        local_name_key = f'name_{lang}' if lang != 'en' else 'name'
+        dominant_local = dominant.get(local_name_key, dominant.get('name_ta', 'மணிபூரகம்'))
+        weakest_local = weakest.get(local_name_key, weakest.get('name_ta', 'ஆக்ஞை'))
+
+        overview_data = [
+            ['Parameter', 'Value', local_col_header],
+            ['Energy Alignment Index', f"{alignment}%", local_align_label],
+            [
+                'Dominant Chakra',
+                dominant.get('name', 'Manipura'),
+                dominant_local
+            ],
+            [
+                'Needs Attention',
+                weakest.get('name', 'Ajna'),
+                weakest_local
+            ],
+        ]
+
+        # Use Paragraph for local language text in overview
+        overview_data_formatted = [overview_data[0]]  # Header row
+        for row in overview_data[1:]:
+            overview_data_formatted.append([
+                row[0],
+                row[1],
+                self._tamil_text(row[2]) if row[2] else ''
+            ])
+
+        overview_table = Table(overview_data_formatted, colWidths=[2 * inch, 2 * inch, 1.5 * inch])
+        overview_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#8B00FF')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('PADDING', (0, 0), (-1, -1), 10),
+            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#DDA0DD')),
+        ]))
+
+        elements.append(overview_table)
+        elements.append(Spacer(1, 0.3 * inch))
+
+        # Individual chakra analysis - language-specific headers
+        seven_chakra_headers = {
+            'en': '15.2 Seven Chakra Analysis',
+            'ta': '15.2 Seven Chakra Analysis / ஏழு சக்கர பகுப்பாய்வு',
+            'kn': '15.2 Seven Chakra Analysis / ಏಳು ಚಕ್ರ ವಿಶ್ಲೇಷಣೆ'
+        }
+        elements.append(Paragraph(
+            seven_chakra_headers.get(lang, seven_chakra_headers['en']),
+            self.styles['SubSection']
+        ))
+
+        chakra_report = chakra_data.get('chakra_report', self._get_default_chakras())
+
+        # Chakra summary table - use Paragraph for local language column
+        local_name_key = f'name_{lang}' if lang != 'en' else 'name_ta'
+        chakra_summary = [[
+            'Chakra',
+            self._tamil_text(local_col_header, bold=True),
+            'Score',
+            'Status',
+            'Karaka Planets'
+        ]]
+        for chakra in chakra_report:
+            karaka_str = ', '.join([
+                k.get('planet', '') for k in chakra.get(
+                    'astrological_factors', {}
+                ).get('karaka_planets', [])
+            ][:2])
+            if not karaka_str:
+                karaka_str = self._get_chakra_karakas(chakra.get('chakra', ''))
+
+            # Get local name based on language
+            local_name = chakra.get(local_name_key, chakra.get('name_ta', ''))
+
+            chakra_summary.append([
+                chakra.get('chakra', ''),
+                self._tamil_text(local_name),
+                f"{chakra.get('score', 5)}/10",
+                chakra.get('status', 'Balanced'),
+                karaka_str
+            ])
+
+        chakra_table = Table(
+            chakra_summary,
+            colWidths=[1.2 * inch, 1.1 * inch, 0.7 * inch, 1.2 * inch, 1.3 * inch]
+        )
+        chakra_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4B0082')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('FONTNAME', (0, 0), (0, 0), 'Helvetica-Bold'),
+            ('FONTNAME', (2, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('PADDING', (0, 0), (-1, -1), 6),
+            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#DDA0DD')),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1),
+             [colors.white, colors.HexColor('#F5F0FF')]),
+        ]))
+
+        elements.append(chakra_table)
+        elements.append(Spacer(1, 0.3 * inch))
+
+        # Detailed analysis for each chakra - language-specific headers
+        detailed_headers = {
+            'en': '15.3 Detailed Chakra Analysis',
+            'ta': '15.3 Detailed Chakra Analysis / விரிவான சக்கர பகுப்பாய்வு',
+            'kn': '15.3 Detailed Chakra Analysis / ವಿವರವಾದ ಚಕ್ರ ವಿಶ್ಲೇಷಣೆ'
+        }
+        elements.append(Paragraph(
+            detailed_headers.get(lang, detailed_headers['en']),
+            self.styles['SubSection']
+        ))
+
+        for chakra in chakra_report:
+            chakra_name = chakra.get('chakra', 'Unknown')
+            chakra_local = chakra.get(local_name_key, chakra.get('name_ta', ''))
+            score = chakra.get('score', 5)
+            status = chakra.get('status', 'Balanced')
+            is_activated = chakra.get('is_dasha_activated', False)
+
+            # Chakra header with activation indicator
+            activation_text = " ⚡ DASHA ACTIVATED" if is_activated else ""
+            elements.append(Paragraph(
+                f'<b>{chakra_name} ({chakra_local})</b> - Score: {score}/10 - '
+                f'{status}{activation_text}',
+                self.styles['TamilBold']
+            ))
+
+            # Astrological Reasoning
+            astro_factors = chakra.get('astrological_factors', {})
+            reasoning = chakra.get('astrological_reasoning', [])
+            if reasoning:
+                elements.append(Paragraph(
+                    f"<b>Astrological Factors:</b> {reasoning[0]}",
+                    self.styles['CustomBody']
+                ))
+
+            # Score breakdown
+            breakdown = astro_factors.get('score_breakdown', {})
+            if breakdown:
+                breakdown_text = (
+                    f"<i>Score Breakdown - Shadbala: {breakdown.get('shadbala_component', 0):.2f}, "
+                    f"Bhava: {breakdown.get('bhava_component', 0):.2f}, "
+                    f"Ashtakavarga: {breakdown.get('ashtakavarga_component', 0):.2f}, "
+                    f"Dasha: {breakdown.get('dasha_component', 0):.2f}</i>"
+                )
+                elements.append(Paragraph(breakdown_text, self.styles['CustomBody']))
+
+            # Personality Manifestation
+            personality = chakra.get('personality_manifestation', '')
+            if personality:
+                elements.append(Paragraph(
+                    f"<b>Personality:</b> {personality}",
+                    self.styles['CustomBody']
+                ))
+
+            # Interpretation
+            interpretation = chakra.get(
+                'interpretation',
+                self._get_chakra_interpretation(chakra_name, score)
+            )
+            elements.append(Paragraph(interpretation, self.styles['CustomBody']))
+
+            # Future Projection
+            future = chakra.get('future_projection', '')
+            if future:
+                elements.append(Paragraph(
+                    f"<b>3-Year Projection:</b> {future}",
+                    self.styles['CustomBody']
+                ))
+
+            # Corrections with lifestyle
+            corrections = chakra.get('corrections', {})
+            if corrections:
+                mantra = corrections.get('mantra', [])
+                mudra = corrections.get('mudra', [])
+                practice = corrections.get('practice', [])
+                gemstone = corrections.get('gemstone', {})
+
+                correction_parts = []
+                if mantra:
+                    m = mantra[0] if isinstance(mantra, list) else mantra
+                    correction_parts.append(f"Mantra: {m}")
+                if mudra:
+                    m = mudra[0] if isinstance(mudra, list) else mudra
+                    correction_parts.append(f"Mudra: {m}")
+                if practice:
+                    p = practice[0] if isinstance(practice, list) else practice
+                    correction_parts.append(f"Practice: {p}")
+
+                # Gemstone recommendation based on chart
+                if isinstance(gemstone, dict) and gemstone.get('recommended'):
+                    correction_parts.append(
+                        f"Gemstone: {gemstone.get('name', '')} (Recommended)"
+                    )
+
+                if correction_parts:
+                    elements.append(Paragraph(
+                        f"<b>Corrections:</b> {' | '.join(correction_parts)}",
+                        self.styles['CustomBody']
+                    ))
+
+                # Lifestyle alignment
+                lifestyle = corrections.get('lifestyle', {})
+                if lifestyle:
+                    timing = lifestyle.get('timing', '')
+                    if timing:
+                        elements.append(Paragraph(
+                            f"<b>Best Timing:</b> {timing}",
+                            self.styles['CustomBody']
+                        ))
+
+            elements.append(Spacer(1, 0.2 * inch))
+
+        # Yogic Corrections Summary Table - language-specific headers
+        yogic_headers = {
+            'en': '15.4 Yogic Corrections Summary',
+            'ta': '15.4 Yogic Corrections Summary / யோக பரிகாரங்கள் சுருக்கம்',
+            'kn': '15.4 Yogic Corrections Summary / ಯೋಗ ಪರಿಹಾರಗಳ ಸಾರಾಂಶ'
+        }
+        elements.append(Paragraph(
+            yogic_headers.get(lang, yogic_headers['en']),
+            self.styles['SubSection']
+        ))
+
+        corrections_intro = (
+            "Based on your chart analysis, the following yogic practices are "
+            "recommended to balance your energy centers:"
+        )
+        elements.append(Paragraph(corrections_intro, self.styles['CustomBody']))
+
+        # Build dynamic corrections table from actual analysis
+        corrections_data = [['Chakra', 'Status', 'Mudra', 'Mantra', 'Asana']]
+        for chakra in chakra_report:
+            corr = chakra.get('corrections', {})
+            mudra = corr.get('mudra', ['—'])
+            mantra = corr.get('mantra', ['—'])
+            asana = corr.get('asanas', corr.get('asana', ['—']))
+            corrections_data.append([
+                chakra.get('chakra', ''),
+                chakra.get('status', ''),
+                mudra[0] if isinstance(mudra, list) and mudra else str(mudra),
+                mantra[0] if isinstance(mantra, list) and mantra else str(mantra),
+                asana[0] if isinstance(asana, list) and asana else str(asana)
+            ])
+
+        corrections_table = Table(
+            corrections_data,
+            colWidths=[1.1 * inch, 1.0 * inch, 1.3 * inch, 0.7 * inch, 1.2 * inch]
+        )
+        corrections_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#9a3412')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 8),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('PADDING', (0, 0), (-1, -1), 5),
+            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#fed7aa')),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1),
+             [colors.white, colors.HexColor('#fff7ed')]),
+        ]))
+
+        elements.append(corrections_table)
+
+        # Lifestyle Alignment Section - language-specific headers
+        lifestyle_headers = {
+            'en': '15.5 Lifestyle Alignment',
+            'ta': '15.5 Lifestyle Alignment / வாழ்க்கை முறை சீரமைப்பு',
+            'kn': '15.5 Lifestyle Alignment / ಜೀವನಶೈಲಿ ಹೊಂದಾಣಿಕೆ'
+        }
+        elements.append(Spacer(1, 0.3 * inch))
+        elements.append(Paragraph(
+            lifestyle_headers.get(lang, lifestyle_headers['en']),
+            self.styles['SubSection']
+        ))
+
+        # Get weakest chakra for lifestyle focus
+        weakest = chakra_data.get('weakest_chakra', {})
+        weakest_name = weakest.get('name', 'Ajna')
+
+        # Find weakest chakra details
+        for chakra in chakra_report:
+            if chakra.get('chakra') == weakest_name:
+                lifestyle = chakra.get('corrections', {}).get('lifestyle', {})
+                if lifestyle:
+                    diet = lifestyle.get('diet', [])
+                    activities = lifestyle.get('activities', [])
+                    environment = lifestyle.get('environment', [])
+
+                    if diet:
+                        diet_text = ", ".join(diet[:3]) if isinstance(diet, list) else diet
+                        elements.append(Paragraph(
+                            f"<b>Diet for {weakest_name}:</b> {diet_text}",
+                            self.styles['CustomBody']
+                        ))
+                    if activities:
+                        act_text = ", ".join(activities[:3]) if isinstance(activities, list) else activities
+                        elements.append(Paragraph(
+                            f"<b>Activities:</b> {act_text}",
+                            self.styles['CustomBody']
+                        ))
+                    if environment:
+                        env_text = ", ".join(environment[:2]) if isinstance(environment, list) else environment
+                        elements.append(Paragraph(
+                            f"<b>Environment:</b> {env_text}",
+                            self.styles['CustomBody']
+                        ))
+                break
+
+        # Overall summary
+        elements.append(Spacer(1, 0.3 * inch))
+        summary = chakra_data.get(
+            'overall_energy_summary',
+            'Your energy centers show a mixed pattern. Focus on strengthening '
+            'the weaker chakras through the recommended practices for better balance.'
+        )
+        elements.append(Paragraph(
+            f"<b>Overall Energy Summary:</b> {summary}",
+            self.styles['Highlight']
+        ))
+
+        return elements
+
+    def _get_chakra_analysis(self) -> dict:
+        """Get chakra analysis from service or generate default"""
+        if ChakraAnalysisService:
+            try:
+                service = ChakraAnalysisService()
+                dasha = self.chart_data.get('current_dasha', {})
+                return service.analyze_chakras(self.chart_data, dasha, self.language)
+            except Exception as e:
+                print(f"Error in chakra analysis: {e}")
+                import traceback
+                traceback.print_exc()
+        return self._get_default_chakra_data()
+
+    def _get_default_chakra_data(self) -> dict:
+        """Generate default chakra data when service unavailable"""
+        return {
+            'energy_alignment_index': 65,
+            'dominant_chakra': {'name': 'Manipura', 'name_ta': 'மணிபூரகம்', 'score': 7.5},
+            'weakest_chakra': {'name': 'Ajna', 'name_ta': 'ஆக்ஞை', 'score': 4.5},
+            'overall_energy_summary': 'கலவையான ஆற்றல் நிலை. முக்கிய சக்கரங்களில் கவனம் செலுத்துங்கள்.',
+            'chakra_report': self._get_default_chakras()
+        }
+
+    def _get_default_chakras(self) -> list:
+        """Get default chakra report data with correct Vedic karaka mappings"""
+        # Karakas based on Vedic astrology:
+        # Muladhara → Mars + Ketu, Swadhisthana → Venus
+        # Manipura → Sun + Jupiter, Anahata → Moon
+        # Vishuddha → Mercury, Ajna → Saturn + Rahu
+        # Sahasrara → Jupiter + Ketu
+        return [
+            {
+                'chakra': 'Muladhara', 'name_ta': 'மூலாதாரம்', 'name_kn': 'ಮೂಲಾಧಾರ',
+                'score': 6.0, 'status': 'சமநிலை', 'color': '#FF0000',
+                'astrological_factors': {'karaka_planets': [
+                    {'planet': 'Mars'}, {'planet': 'Ketu'}
+                ]},
+                'interpretation': 'Root chakra is reasonably balanced.',
+                'corrections': {'mantra': ['LAM'], 'practice': ['Grounding exercises']}
+            },
+            {
+                'chakra': 'Swadhisthana', 'name_ta': 'ஸ்வாதிஷ்டானம்', 'name_kn': 'ಸ್ವಾಧಿಷ್ಠಾನ',
+                'score': 5.5, 'status': 'சமநிலை', 'color': '#FF7F00',
+                'astrological_factors': {'karaka_planets': [
+                    {'planet': 'Venus'}
+                ]},
+                'interpretation': 'Sacral chakra shows balanced creative energy.',
+                'corrections': {'mantra': ['VAM'], 'practice': ['Creative activities']}
+            },
+            {
+                'chakra': 'Manipura', 'name_ta': 'மணிபூரகம்', 'name_kn': 'ಮಣಿಪೂರ',
+                'score': 7.5, 'status': 'வலுவான', 'color': '#FFFF00',
+                'astrological_factors': {'karaka_planets': [
+                    {'planet': 'Sun'}, {'planet': 'Jupiter'}
+                ]},
+                'interpretation': 'Strong solar plexus indicates good willpower.',
+                'corrections': {'mantra': ['RAM'], 'practice': ['Core exercises']}
+            },
+            {
+                'chakra': 'Anahata', 'name_ta': 'அனாகதம்', 'name_kn': 'ಅನಾಹತ',
+                'score': 6.5, 'status': 'சமநிலை', 'color': '#00FF00',
+                'astrological_factors': {'karaka_planets': [
+                    {'planet': 'Moon'}
+                ]},
+                'interpretation': 'Heart chakra is balanced with good emotional health.',
+                'corrections': {'mantra': ['YAM'], 'practice': ['Heart-opening yoga']}
+            },
+            {
+                'chakra': 'Vishuddha', 'name_ta': 'விசுத்தி', 'name_kn': 'ವಿಶುದ್ಧ',
+                'score': 5.0, 'status': 'குறைவான செயல்பாடு', 'color': '#00BFFF',
+                'astrological_factors': {'karaka_planets': [
+                    {'planet': 'Mercury'}
+                ]},
+                'interpretation': 'Throat chakra needs attention for better communication.',
+                'corrections': {'mantra': ['HAM'], 'practice': ['Singing/Chanting']}
+            },
+            {
+                'chakra': 'Ajna', 'name_ta': 'ஆக்ஞை', 'name_kn': 'ಆಜ್ಞಾ',
+                'score': 4.5, 'status': 'குறைவான செயல்பாடு', 'color': '#4B0082',
+                'astrological_factors': {'karaka_planets': [
+                    {'planet': 'Saturn'}, {'planet': 'Rahu'}
+                ]},
+                'interpretation': 'Third eye needs awakening through meditation.',
+                'corrections': {'mantra': ['OM'], 'practice': ['Trataka meditation']}
+            },
+            {
+                'chakra': 'Sahasrara', 'name_ta': 'சஹஸ்ராரம்', 'name_kn': 'ಸಹಸ್ರಾರ',
+                'score': 5.5, 'status': 'சமநிலை', 'color': '#8B00FF',
+                'astrological_factors': {'karaka_planets': [
+                    {'planet': 'Jupiter'}, {'planet': 'Ketu'}
+                ]},
+                'interpretation': 'Crown chakra shows spiritual potential.',
+                'corrections': {'mantra': ['AUM'], 'practice': ['Silent meditation']}
+            },
+        ]
+
+    def _get_chakra_karakas(self, chakra_name: str) -> str:
+        """Get karaka planets for a chakra (based on Vedic astrology)"""
+        karakas = {
+            'Muladhara': 'Mars, Ketu',
+            'Swadhisthana': 'Venus',
+            'Manipura': 'Sun, Jupiter',
+            'Anahata': 'Moon',
+            'Vishuddha': 'Mercury',
+            'Ajna': 'Saturn, Rahu',
+            'Sahasrara': 'Jupiter, Ketu'
+        }
+        return karakas.get(chakra_name, 'Jupiter')
+
+    def _get_chakra_interpretation(self, chakra_name: str, score: float) -> str:
+        """Get default interpretation for a chakra based on score"""
+        if score >= 7:
+            status = "strong and well-activated"
+        elif score >= 5:
+            status = "balanced and functioning normally"
+        elif score >= 3:
+            status = "underactive and needs attention"
+        else:
+            status = "blocked and requires remedial practices"
+
+        return f"Your {chakra_name} chakra is {status}. " \
+               f"Focus on the recommended practices to optimize this energy center."
+
     def _remedies_section(self) -> list:
         """Generate remedies section"""
         elements = []
 
-        elements.append(Paragraph("15. Remedies / பரிகாரங்கள்", self.styles['SectionHeader']))
+        elements.append(Paragraph(
+            '16. Remedies / பரிகாரங்கள்',
+            self.styles['SectionHeader']
+        ))
 
         elements.append(Paragraph(
             "Astrological remedies help in mitigating negative planetary influences and enhancing positive ones. "
@@ -1451,7 +2100,7 @@ class JathagamPDFGenerator:
         # Planet-wise remedies
         for planet in PLANETS[:7]:  # Main 7 planets
             elements.append(Paragraph(
-                f"15.{PLANETS.index(planet)+1} {planet['en']} ({planet['ta']}) Remedies",
+                f'16.{PLANETS.index(planet)+1} {planet["en"]} ({planet["ta"]}) Remedies',
                 self.styles['SubSection']
             ))
 
@@ -1460,7 +2109,10 @@ class JathagamPDFGenerator:
             elements.append(Spacer(1, 0.15 * inch))
 
         # General remedies
-        elements.append(Paragraph("15.8 General Remedies / பொது பரிகாரங்கள்", self.styles['SubSection']))
+        elements.append(Paragraph(
+            '16.8 General Remedies / பொது பரிகாரங்கள்',
+            self.styles['SubSection']
+        ))
 
         general_remedies = """
         • Recite Navagraha Stotram daily for overall planetary blessings
@@ -1495,7 +2147,10 @@ class JathagamPDFGenerator:
         """Generate favorable periods section"""
         elements = []
 
-        elements.append(Paragraph("16. Favorable Periods / சுப காலங்கள்", self.styles['SectionHeader']))
+        elements.append(Paragraph(
+            f'17. Favorable Periods / சுப காலங்கள்',
+            self.styles['SectionHeader']
+        ))
 
         elements.append(Paragraph(
             "This section identifies favorable periods for various activities based on your planetary periods "
@@ -1536,7 +2191,7 @@ class JathagamPDFGenerator:
 
         elements.append(Spacer(1, 0.3 * inch))
 
-        elements.append(Paragraph("16.1 Lucky Elements / அதிர்ஷ்ட அம்சங்கள்", self.styles['SubSection']))
+        elements.append(Paragraph("17.1 Lucky Elements / அதிர்ஷ்ட அம்சங்கள்", self.styles['SubSection']))
 
         lucky_data = [
             ['Element', 'Value'],
@@ -1567,7 +2222,7 @@ class JathagamPDFGenerator:
         """Generate yearly predictions section"""
         elements = []
 
-        elements.append(Paragraph("17. Yearly Predictions / வருட பலன்கள்", self.styles['SectionHeader']))
+        elements.append(Paragraph("18. Yearly Predictions / வருட பலன்கள்", self.styles['SectionHeader']))
 
         current_year = datetime.now().year
 
@@ -1611,9 +2266,9 @@ class JathagamPDFGenerator:
         """Generate appendix section"""
         elements = []
 
-        elements.append(Paragraph("18. Appendix / இணைப்பு", self.styles['SectionHeader']))
+        elements.append(Paragraph("19. Appendix / இணைப்பு", self.styles['SectionHeader']))
 
-        elements.append(Paragraph("18.1 Glossary of Terms / சொல்லகராதி", self.styles['SubSection']))
+        elements.append(Paragraph("19.1 Glossary of Terms / சொல்லகராதி", self.styles['SubSection']))
 
         glossary = [
             ['Term', 'Meaning'],
@@ -1645,7 +2300,7 @@ class JathagamPDFGenerator:
 
         elements.append(Spacer(1, 0.3 * inch))
 
-        elements.append(Paragraph("18.2 Important Note / முக்கிய குறிப்பு", self.styles['SubSection']))
+        elements.append(Paragraph("19.2 Important Note / முக்கிய குறிப்பு", self.styles['SubSection']))
 
         note = """
         This horoscope report has been generated based on Vedic astrology principles using the
@@ -1675,16 +2330,21 @@ class JathagamPDFGenerator:
         return elements
 
 
-def generate_jathagam_report(chart_data: Dict[str, Any], user_data: Dict[str, Any]) -> bytes:
+def generate_jathagam_report(
+    chart_data: Dict[str, Any],
+    user_data: Dict[str, Any],
+    language: str = 'ta'
+) -> bytes:
     """
     Main function to generate Jathagam PDF report
 
     Args:
         chart_data: Dictionary containing chart calculations (planets, houses, dashas, etc.)
         user_data: Dictionary containing user birth details (name, date, time, place)
+        language: Language code ('en', 'ta', 'kn') for output
 
     Returns:
         PDF file as bytes
     """
-    generator = JathagamPDFGenerator(chart_data, user_data)
+    generator = JathagamPDFGenerator(chart_data, user_data, language)
     return generator.generate()
