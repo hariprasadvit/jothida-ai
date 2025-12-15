@@ -737,33 +737,40 @@ export default function ProfileScreen({ navigation }) {
     setPdfLoading(true);
     try {
       // Use backend API for comprehensive 60+ page report with Chakra analysis
-      const pdfBlob = await reportAPI.generateReport({
+      const pdfResult = await reportAPI.generateReport({
         name: userProfile.name,
         birthDate: userProfile.birthDate,
         birthTime: userProfile.birthTime,
         birthPlace: userProfile.birthPlace,
       });
 
+      const fileName = `Jathagam_Report_${userProfile.name.replace(/\s+/g, '_')}.pdf`;
+
       // For web platform, create download link
       if (Platform.OS === 'web') {
-        const url = URL.createObjectURL(pdfBlob);
+        const url = URL.createObjectURL(pdfResult);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `Jathagam_Report_${userProfile.name.replace(/\s+/g, '_')}.pdf`;
+        link.download = fileName;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
         Alert.alert(t('pdfSuccess'), t('pdfCreated'));
       } else {
-        // For mobile, save to file and share
-        const fileUri = FileSystem.documentDirectory + `Jathagam_Report_${userProfile.name.replace(/\s+/g, '_')}.pdf`;
+        // For mobile (React Native), handle arraybuffer response
+        const fileUri = FileSystem.documentDirectory + fileName;
 
-        // Convert blob to base64
-        const reader = new FileReader();
-        reader.readAsDataURL(pdfBlob);
-        reader.onloadend = async () => {
-          const base64data = reader.result.split(',')[1];
+        // Check if response is arraybuffer (mobile) or blob (web)
+        if (pdfResult.isArrayBuffer && pdfResult.data) {
+          // Convert ArrayBuffer to base64
+          const uint8Array = new Uint8Array(pdfResult.data);
+          let binary = '';
+          for (let i = 0; i < uint8Array.byteLength; i++) {
+            binary += String.fromCharCode(uint8Array[i]);
+          }
+          const base64data = btoa(binary);
+
           await FileSystem.writeAsStringAsync(fileUri, base64data, {
             encoding: FileSystem.EncodingType.Base64,
           });
@@ -777,7 +784,27 @@ export default function ProfileScreen({ navigation }) {
           } else {
             Alert.alert(t('pdfSuccess'), t('pdfCreated') + ': ' + fileUri);
           }
-        };
+        } else {
+          // Fallback: try blob approach
+          const reader = new FileReader();
+          reader.readAsDataURL(pdfResult);
+          reader.onloadend = async () => {
+            const base64data = reader.result.split(',')[1];
+            await FileSystem.writeAsStringAsync(fileUri, base64data, {
+              encoding: FileSystem.EncodingType.Base64,
+            });
+
+            if (await Sharing.isAvailableAsync()) {
+              await Sharing.shareAsync(fileUri, {
+                mimeType: 'application/pdf',
+                dialogTitle: t('downloadPDF'),
+                UTI: 'com.adobe.pdf'
+              });
+            } else {
+              Alert.alert(t('pdfSuccess'), t('pdfCreated') + ': ' + fileUri);
+            }
+          };
+        }
       }
     } catch (err) {
       console.error('PDF generation error:', err);

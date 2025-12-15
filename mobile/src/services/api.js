@@ -654,6 +654,8 @@ export const muhurthamAPI = {
 export const reportAPI = {
   generateReport: async (birthDetails) => {
     const coords = getCityCoordinates(birthDetails.birthPlace);
+    const isWeb = Platform.OS === 'web';
+
     const response = await api.post('/api/report/generate', {
       name: birthDetails.name,
       birth_date: birthDetails.birthDate,
@@ -662,9 +664,20 @@ export const reportAPI = {
       latitude: coords.lat,
       longitude: coords.lon,
     }, {
-      responseType: 'blob',
+      responseType: isWeb ? 'blob' : 'arraybuffer',
     });
-    return response.data;
+
+    // For web, return blob directly
+    if (isWeb) {
+      return response.data;
+    }
+
+    // For mobile (React Native), convert arraybuffer to base64
+    // This will be handled by the ProfileScreen
+    return {
+      data: response.data,
+      isArrayBuffer: true
+    };
   },
 };
 
