@@ -4,8 +4,8 @@ import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // API URL - switch between local and production
-const API_BASE_URL = 'http://localhost:8000';
-// const API_BASE_URL = 'https://jothida-api.booleanbeyond.com';
+// const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'https://jothida-api.booleanbeyond.com';
 
 // Storage helper for web compatibility
 const getStorageItem = async (key) => {
