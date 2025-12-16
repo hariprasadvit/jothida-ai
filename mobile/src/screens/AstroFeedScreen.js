@@ -64,14 +64,14 @@ const rasiData = {
   'மீனம்': { english: 'Pisces', kannada: 'ಮೀನ', symbol: '♓', element: 'water' },
 };
 
-// Gradient backgrounds for stories
+// Gradient backgrounds for stories (warm theme to match Home)
 const storyGradients = {
-  [STORY_TYPES.PLANET_INFLUENCE]: ['#1a1a2e', '#16213e', '#0f3460'],
-  [STORY_TYPES.MOON_TRANSIT]: ['#0f0f23', '#1a1a3a', '#2d2d5a'],
-  [STORY_TYPES.DAILY_INSIGHT]: ['#1a0a2e', '#2d1b4e', '#4a2c7a'],
-  [STORY_TYPES.NAKSHATRA_EFFECT]: ['#0a1628', '#162d50', '#234b7a'],
-  [STORY_TYPES.REMEDY]: ['#1a2e1a', '#2e4a2e', '#3d6b3d'],
-  [STORY_TYPES.LUCKY_TIME]: ['#2e1a1a', '#4a2e2e', '#6b3d3d'],
+  [STORY_TYPES.PLANET_INFLUENCE]: ['#fff7ed', '#ffedd5', '#fff8f0'],
+  [STORY_TYPES.MOON_TRANSIT]: ['#f5f3ff', '#ede9fe', '#fff8f0'],
+  [STORY_TYPES.DAILY_INSIGHT]: ['#fefce8', '#fef9c3', '#fff8f0'],
+  [STORY_TYPES.NAKSHATRA_EFFECT]: ['#ecfeff', '#cffafe', '#fff8f0'],
+  [STORY_TYPES.REMEDY]: ['#f0fdf4', '#dcfce7', '#fff8f0'],
+  [STORY_TYPES.LUCKY_TIME]: ['#fffbeb', '#fef3c7', '#fff8f0'],
 };
 
 // Progress bar component for story timer
@@ -302,7 +302,7 @@ const StoryCard = ({ story, isActive, onShare, language, userRasi }) => {
         },
       ]}
     >
-      {renderStoryContent()}
+      <View style={styles.storyCardInner}>{renderStoryContent()}</View>
     </Animated.View>
   );
 };
@@ -520,14 +520,6 @@ export default function AstroFeedScreen({ navigation }) {
     }
   };
 
-  const handlePress = (event) => {
-    const { locationX } = event.nativeEvent;
-    if (locationX < width / 3) {
-      goToPrevious();
-    } else if (locationX > (width * 2) / 3) {
-      goToNext();
-    }
-  };
 
   const handleShare = async () => {
     const story = stories[currentIndex];
@@ -548,7 +540,7 @@ export default function AstroFeedScreen({ navigation }) {
 
   const renderStory = ({ item, index }) => {
     // Calculate content height accounting for tab bar on web
-    const contentHeight = Platform.OS === 'web' ? 'calc(100vh - 60px)' : height;
+    const contentHeight = height;
 
     return (
       <View style={[styles.storyContainer, { width, height: contentHeight }]}>
@@ -568,105 +560,116 @@ export default function AstroFeedScreen({ navigation }) {
     );
   };
 
+  const handleScrollBeginDrag = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+  };
+
+  const handleMomentumScrollEnd = (event) => {
+    const nextIndex = Math.round(event.nativeEvent.contentOffset.x / width);
+    if (!Number.isNaN(nextIndex) && nextIndex !== currentIndex) {
+      setCurrentIndex(nextIndex);
+    }
+  };
+
   if (loading) {
     return (
-      <View style={[styles.loadingContainer, { paddingTop: insets.top }]}>
-        <LinearGradient colors={['#1a1a2e', '#16213e', '#0f3460']} style={styles.fullScreen}>
-          <Text style={styles.loadingText}>{t('loading')}</Text>
+      <View style={styles.container}>
+        <LinearGradient colors={['#faf7f2', '#f5ede5', '#fff8f0']} style={styles.fullScreen}>
+          <View style={[styles.loadingContainer, { paddingTop: insets.top }]}>
+            <ActivityIndicator size="large" color="#f97316" />
+            <Text style={styles.loadingText}>{t('loading')}</Text>
+          </View>
         </LinearGradient>
       </View>
     );
   }
 
-  // Calculate content height accounting for tab bar on web
-  const webContentHeight = Platform.OS === 'web' ? 'calc(100vh - 60px)' : undefined;
-
   return (
-    <View style={[styles.container, Platform.OS === 'web' && { height: webContentHeight }]}>
-      <StatusBar barStyle="light-content" />
-      <TouchableOpacity
-        activeOpacity={1}
-        style={styles.touchContainer}
-        onPress={handlePress}
-      >
-        <FlatList
-          ref={flatListRef}
-          data={stories}
-          renderItem={renderStory}
-          keyExtractor={(item) => item.id}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          scrollEnabled={false}
-          getItemLayout={(data, index) => ({
-            length: width,
-            offset: width * index,
-            index,
-          })}
-        />
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" />
 
-        {/* Progress Bars */}
-        <View style={[styles.progressContainer, { top: insets.top + 10 }]}>
-          {stories.map((_, index) => (
-            <ProgressBar
-              key={index}
-              index={index}
-              activeIndex={currentIndex}
-              duration={STORY_DURATION}
-            />
-          ))}
-        </View>
+      <FlatList
+        ref={flatListRef}
+        data={stories}
+        renderItem={renderStory}
+        keyExtractor={(item) => item.id}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        scrollEnabled
+        onScrollBeginDrag={handleScrollBeginDrag}
+        onMomentumScrollEnd={handleMomentumScrollEnd}
+        getItemLayout={(data, index) => ({
+          length: width,
+          offset: width * index,
+          index,
+        })}
+      />
 
-        {/* Header */}
-        <View style={[styles.header, { top: insets.top + 24 }]}>
-          <View style={styles.headerLeft}>
-            <View style={styles.logoContainer}>
-              <Svg width={28} height={28} viewBox="0 0 100 100">
-                <Path
-                  d="M50 5 L55 40 L90 30 L60 50 L90 70 L55 60 L50 95 L45 60 L10 70 L40 50 L10 30 L45 40 Z"
-                  fill="#fff"
-                />
-                <Circle cx="50" cy="50" r="10" fill="rgba(255,255,255,0.3)" />
-              </Svg>
-            </View>
-            <View>
-              <Text style={styles.appName}>{t('appName')}</Text>
-              <Text style={styles.storyTime}>
-                {language === 'en' ? 'Daily Stories' : language === 'kn' ? 'ದೈನಿಕ ಕಥೆಗಳು' : 'தினசரி கதைகள்'}
-              </Text>
-            </View>
-          </View>
-          <TouchableOpacity style={styles.closeButton} onPress={() => navigation.goBack()}>
-            <Ionicons name="close" size={28} color="#fff" />
-          </TouchableOpacity>
-        </View>
+      {/* Progress Bars */}
+      <View style={[styles.progressContainer, { top: insets.top + 10 }]}>
+        {stories.map((_, index) => (
+          <ProgressBar key={index} index={index} activeIndex={currentIndex} duration={STORY_DURATION} />
+        ))}
+      </View>
 
-        {/* Bottom Actions */}
-        <View style={[styles.bottomActions, { bottom: insets.bottom + 20 }]}>
-          <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
-            <Ionicons name="share-outline" size={28} color="#fff" />
-            <Text style={styles.actionLabel}>
-              {language === 'en' ? 'Share' : language === 'kn' ? 'ಹಂಚಿಕೊಳ್ಳಿ' : 'பகிர்'}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => navigation.navigate('Chat')}
-          >
-            <Ionicons name="chatbubble-outline" size={28} color="#fff" />
-            <Text style={styles.actionLabel}>
-              {language === 'en' ? 'Ask AI' : language === 'kn' ? 'AI ಕೇಳಿ' : 'AI கேள்'}
-            </Text>
-          </TouchableOpacity>
-        </View>
+      {/* Top Bar */}
+      <View style={[styles.topBar, { top: insets.top + 20 }]}>
+        <TouchableOpacity style={styles.topIconButton} onPress={() => navigation.goBack()} activeOpacity={0.8}>
+          <Ionicons name="close" size={24} color="#6b5644" />
+        </TouchableOpacity>
 
-        {/* Story Counter */}
-        <View style={[styles.counterContainer, { bottom: insets.bottom + 90 }]}>
-          <Text style={styles.counterText}>
-            {currentIndex + 1} / {stories.length}
+        <View style={styles.topTitleWrap}>
+          <Text style={styles.topTitle}>{t('appName')}</Text>
+          <Text style={styles.topSubtitle}>
+            {language === 'en' ? 'Daily Stories' : language === 'kn' ? 'ದೈನಿಕ ಕಥೆಗಳು' : 'தினசரி கதைகள்'}
           </Text>
         </View>
-      </TouchableOpacity>
+
+        <TouchableOpacity style={styles.topIconButton} onPress={handleShare} activeOpacity={0.8}>
+          <Ionicons name="share-outline" size={20} color="#6b5644" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Side Navigation */}
+      <View style={styles.sideNav} pointerEvents="box-none">
+        <TouchableOpacity
+          style={[styles.navButton, currentIndex === 0 && styles.navButtonDisabled]}
+          onPress={goToPrevious}
+          disabled={currentIndex === 0}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="chevron-back" size={22} color={currentIndex === 0 ? '#cbd5e1' : '#6b5644'} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.navButton, currentIndex === stories.length - 1 && styles.navButtonDisabled]}
+          onPress={goToNext}
+          disabled={currentIndex === stories.length - 1}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="chevron-forward" size={22} color={currentIndex === stories.length - 1 ? '#cbd5e1' : '#6b5644'} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Bottom Actions */}
+      <View style={[styles.bottomBar, { bottom: insets.bottom + 18 }]}>
+        <Text style={styles.swipeHint}>
+          {language === 'en' ? 'Swipe left/right' : language === 'kn' ? 'ಎಡ/ಬಲಕ್ಕೆ ಸ್ವೈಪ್ ಮಾಡಿ' : 'இடது/வலது ஸ்வைப் செய்யுங்கள்'}
+        </Text>
+        <TouchableOpacity style={styles.primaryAction} onPress={() => navigation.navigate('Chat')} activeOpacity={0.9}>
+          <Ionicons name="chatbubble-ellipses" size={18} color="#fff" />
+          <Text style={styles.primaryActionText}>{language === 'en' ? 'Ask AI' : language === 'kn' ? 'AI ಕೇಳಿ' : 'AI கேள்'}</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Story Counter */}
+      <View style={[styles.counterContainer, { bottom: insets.bottom + 96 }]}>
+        <Text style={styles.counterText}>
+          {currentIndex + 1} / {stories.length}
+        </Text>
+      </View>
     </View>
   );
 }
