@@ -3608,7 +3608,7 @@ const styles = StyleSheet.create({
 
   // Upcoming Section
   upcomingSection: { padding: 16, paddingTop: 0 },
-  upcomingSectionTitle: { fontSize: 14, fontWeight: '600', color: '#e2e8f0', marginBottom: 12 },
+  upcomingSectionTitle: { fontSize: 14, fontWeight: '800', color: '#6b5644', marginBottom: 12 },
   upcomingCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: 12, marginBottom: 10 },
   upcomingIconBox: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
   upcomingIcon: { fontSize: 20 },
