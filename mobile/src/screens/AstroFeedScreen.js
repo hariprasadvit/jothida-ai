@@ -326,7 +326,7 @@ export default function AstroFeedScreen({ navigation }) {
     return storyMap[initialStory] ?? 0;
   };
 
-  const [currentIndex, setCurrentIndex] = useState(getInitialStoryIndex());
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [dailyScore, setDailyScore] = useState(null);
   const [scoreLoaded, setScoreLoaded] = useState(false);
@@ -470,15 +470,18 @@ export default function AstroFeedScreen({ navigation }) {
       setStories(loadedStories);
       setLoading(false);
 
-      // Scroll to initial story if specified
+      // Set initial story if specified
       const initialIndex = getInitialStoryIndex();
-      if (initialIndex > 0 && flatListRef.current) {
+      setCurrentIndex(initialIndex);
+
+      // Scroll to initial story after a short delay
+      if (initialIndex > 0) {
         setTimeout(() => {
           flatListRef.current?.scrollToIndex({
             index: initialIndex,
             animated: false,
           });
-        }, 100);
+        }, 200);
       }
     }
   }, [generateStories, dailyScore, scoreLoaded]);
