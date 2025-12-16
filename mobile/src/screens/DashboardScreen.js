@@ -3167,8 +3167,8 @@ const styles = StyleSheet.create({
   lifeAreaMax: { fontSize: 13, color: '#9babc7', marginLeft: 4, fontWeight: '700' },
   lifeAreaProgressBar: { height: 8, backgroundColor: '#dfe7f5', borderRadius: 4, marginTop: 14, overflow: 'hidden', shadowColor: '#a3b9d9', shadowOffset: { width: 2, height: 2 }, shadowOpacity: 0.15, shadowRadius: 4 },
   lifeAreaProgressFill: { height: 8, borderRadius: 4 },
-  progressBar: { height: 7, backgroundColor: '#f3f4f6', borderRadius: 4, marginTop: 10, overflow: 'hidden' },
-  progressFill: { height: 7, borderRadius: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 },
+  progressBar: { height: 8, backgroundColor: '#dfe7f5', borderRadius: 4, marginTop: 12, overflow: 'hidden', shadowColor: '#a3b9d9', shadowOffset: { width: 2, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4 },
+  progressFill: { height: 8, borderRadius: 4 },
 
   // Projection styles
   projectionToggle: { flexDirection: 'row', backgroundColor: '#f3f4f6', borderRadius: 10, padding: 4, marginBottom: 12 },
@@ -3499,19 +3499,19 @@ const styles = StyleSheet.create({
 
   // Transits Map - Zen Styles
   transitsContainer: { marginTop: 20, marginHorizontal: 16, borderRadius: 28, overflow: 'hidden', backgroundColor: '#d4dce8', shadowColor: '#a3b9d9', shadowOffset: { width: 8, height: 8 }, shadowOpacity: 0.35, shadowRadius: 16 },
-  transitsHeader: { padding: 20, paddingBottom: 16 },
+  transitsHeader: { padding: 24, paddingBottom: 20, backgroundColor: '#d4dce8' },
   transitsHeaderContent: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  transitsHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  transitsHeaderIcon: { fontSize: 28 },
-  transitsHeaderTitle: { fontSize: 20, fontWeight: '800', color: '#fff', letterSpacing: 0.5 },
-  transitsHeaderSubtitle: { fontSize: 12, color: '#c7d2fe', marginTop: 4, fontWeight: '500' },
-  livePulseContainer: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#fff', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
-  livePulseOuter: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#22c55e', justifyContent: 'center', alignItems: 'center' },
-  livePulseInner: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#fff' },
-  livePulseText: { fontSize: 11, fontWeight: '900', color: '#1e293b', letterSpacing: 0.5 },
+  transitsHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  transitsHeaderIcon: { fontSize: 30 },
+  transitsHeaderTitle: { fontSize: 21, fontWeight: '900', color: '#5a6c8f', letterSpacing: 1 },
+  transitsHeaderSubtitle: { fontSize: 12, color: '#7a8ba8', marginTop: 5, fontWeight: '700' },
+  livePulseContainer: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#e8ecf3', paddingHorizontal: 14, paddingVertical: 7, borderRadius: 18, shadowColor: '#a3b9d9', shadowOffset: { width: 3, height: 3 }, shadowOpacity: 0.3, shadowRadius: 6 },
+  livePulseOuter: { width: 11, height: 11, borderRadius: 6, backgroundColor: '#8ec3b0', justifyContent: 'center', alignItems: 'center' },
+  livePulseInner: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#b8dfd0' },
+  livePulseText: { fontSize: 11, fontWeight: '900', color: '#5a6c8f', letterSpacing: 0.8 },
 
   // Moon Hero Section
-  moonHeroSection: { padding: 24, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: 'rgba(139, 92, 246, 0.1)' },
+  moonHeroSection: { padding: 26, backgroundColor: '#e8ecf3' },
   moonHeroHeader: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   moonHeroIconContainer: { position: 'relative', backgroundColor: '#fef3c7', width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center' },
   moonHeroIcon: { fontSize: 36 },
@@ -3542,8 +3542,8 @@ const styles = StyleSheet.create({
   alertMessageText: { flex: 1, fontSize: 14, color: '#92400e', lineHeight: 22, fontWeight: '600', letterSpacing: 0.2 },
 
   // Orbital View
-  orbitalSection: { padding: 28, paddingTop: 28, backgroundColor: '#0f172a', borderTopWidth: 1, borderTopColor: 'rgba(139, 92, 246, 0.2)' },
-  orbitalTitle: { fontSize: 15, fontWeight: '700', color: '#e0e7ff', marginBottom: 24, textAlign: 'center', textTransform: 'uppercase', letterSpacing: 1.5 },
+  orbitalSection: { padding: 30, paddingTop: 30, backgroundColor: '#d4dce8' },
+  orbitalTitle: { fontSize: 15, fontWeight: '900', color: '#5a6c8f', marginBottom: 26, textAlign: 'center', textTransform: 'uppercase', letterSpacing: 1.5 },
   orbitalContainer: { width: 170, height: 170, alignSelf: 'center', position: 'relative' },
   orbitalRingOuter: { position: 'absolute', width: 170, height: 170, borderRadius: 85, borderWidth: 1, borderColor: 'rgba(139, 92, 246, 0.2)' },
   orbitalRingMiddle: { position: 'absolute', width: 120, height: 120, borderRadius: 60, borderWidth: 1, borderColor: 'rgba(139, 92, 246, 0.15)', left: 25, top: 25 },
@@ -3554,8 +3554,8 @@ const styles = StyleSheet.create({
   earthEmoji: { fontSize: 16 },
 
   // Planet Cards
-  planetCardsSection: { paddingBottom: 24, paddingTop: 24, backgroundColor: '#1e1b4b', borderTopWidth: 1, borderTopColor: 'rgba(139, 92, 246, 0.2)' },
-  planetCardsTitle: { fontSize: 15, fontWeight: '700', color: '#e0e7ff', marginBottom: 16, paddingHorizontal: 20, textTransform: 'uppercase', letterSpacing: 1.5 },
+  planetCardsSection: { paddingBottom: 26, paddingTop: 26, backgroundColor: '#d4dce8' },
+  planetCardsTitle: { fontSize: 15, fontWeight: '900', color: '#5a6c8f', marginBottom: 18, paddingHorizontal: 22, textTransform: 'uppercase', letterSpacing: 1.5 },
   planetCardsScroll: { paddingHorizontal: 16 },
   planetCard: { alignItems: 'center', paddingHorizontal: 16, paddingVertical: 16, borderRadius: 20, marginRight: 14, borderWidth: 2, minWidth: 95, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5 },
   planetCardIconBg: { width: 48, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
