@@ -15,6 +15,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRoute } from '@react-navigation/native';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -307,11 +308,25 @@ const StoryCard = ({ story, isActive, onShare, language, userRasi }) => {
 };
 
 export default function AstroFeedScreen({ navigation }) {
+  const route = useRoute();
   const { userProfile } = useAuth();
   const { t, language } = useLanguage();
   const insets = useSafeAreaInsets();
   const [stories, setStories] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Map initialStory param to story index
+  const getInitialStoryIndex = () => {
+    const storyMap = {
+      'planet': 0,    // PLANET_INFLUENCE
+      'moon': 1,      // MOON_TRANSIT
+      'insight': 2,   // DAILY_INSIGHT
+      'star': 3,      // NAKSHATRA_EFFECT
+    };
+    const initialStory = route.params?.initialStory;
+    return storyMap[initialStory] ?? 0;
+  };
+
+  const [currentIndex, setCurrentIndex] = useState(getInitialStoryIndex());
   const [loading, setLoading] = useState(true);
   const [dailyScore, setDailyScore] = useState(null);
   const [scoreLoaded, setScoreLoaded] = useState(false);
