@@ -2495,6 +2495,7 @@ export default function DashboardScreen({ navigation }) {
           </AnimatedCard>
 
           {/* Today's Parigaram - Gamified Remedies */}
+          <DivineDivider color="#e8d5c4" />
           {planetAura?.challenged_planets?.length > 0 && (
             <AnimatedCard delay={450}>
               <TouchableOpacity
