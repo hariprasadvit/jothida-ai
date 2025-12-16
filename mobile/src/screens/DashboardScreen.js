@@ -2557,9 +2557,10 @@ export default function DashboardScreen({ navigation }) {
           {jathagam?.dasha?.mahadasha && (
             <AnimatedCard delay={500}>
               <View style={[styles.card, styles.dashaCard, { backgroundColor: '#fef6ed' }]}>
-                <LotusCorner style={{ position: 'absolute', top: 0, right: 0 }} color="#d4a574" size={50} />
+                <LotusCorner style={{ position: 'absolute', top: 0, right: 0 }} color="#d4a574" size={65} />
+                <LotusCorner style={{ position: 'absolute', bottom: 0, left: 0, transform: [{ rotate: '180deg' }] }} color="#f97316" size={65} />
                 <View style={styles.cardHeader}>
-                  <Ionicons name="sparkles" size={16} color="#d4a574" />
+                  <DiyaIcon size={20} color="#d97706" />
                   <Text style={[styles.cardTitle, { color: '#6b5644', fontWeight: '800' }]}>{t('currentDasha')}</Text>
                 </View>
                 <View style={styles.dashaGrid}>
