@@ -1596,7 +1596,7 @@ const TimelineYearModal = ({ visible, onClose, data, language, t }) => {
   );
 };
 
-import { LotusCorner, ScallopPattern, OmWatermark } from '../components/DivinePatterns';
+import { LotusCorner, OmWatermark } from '../components/DivinePatterns';
 
 export default function DashboardScreen({ navigation }) {
   const { userProfile } = useAuth();
@@ -2054,8 +2054,6 @@ export default function DashboardScreen({ navigation }) {
     <View style={styles.container}>
       {/* Warm auspicious gradient background */}
       <LinearGradient colors={['#faf7f2', '#f5ede5', '#fff8f0']} style={styles.gradient}>
-        {/* Subtle temple-arch illustration behind content (like reference), cards remain solid for readability */}
-        <ScallopPattern color="#e8d5c4" opacity={0.12} circleSize={72} borderWidth={2} />
         <ScrollView
           contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#f97316']} tintColor="#f97316" />}
@@ -2068,6 +2066,7 @@ export default function DashboardScreen({ navigation }) {
               { opacity: headerFadeAnim, transform: [{ translateY: headerSlideAnim }] },
             ]}
           >
+            <OmWatermark color="#d4a574" opacity={0.04} size={200} style={{ position: 'absolute', right: -80, top: -60 }} />
             <View>
               <View style={styles.logoRow}>
                 <View style={styles.logoIcon}>
