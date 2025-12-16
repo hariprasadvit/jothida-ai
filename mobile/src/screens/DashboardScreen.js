@@ -2513,10 +2513,18 @@ export default function DashboardScreen({ navigation }) {
                 activeOpacity={0.9}
                 onPress={() => navigation.getParent()?.navigate('Remedy')}
               >
-                <View style={[styles.card, styles.parigaramCard, { backgroundColor: '#fef6ed' }]}>
-                    <View style={{ position: 'absolute', top: 8, right: 8 }}>
+                <View style={[styles.card, styles.parigaramCard, { backgroundColor: '#fef6ed', overflow: 'hidden' }]}>
+                  {/* Traditional Hindu Border Pattern */}
+                  <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, backgroundColor: '#f97316' }} />
+                  <View style={{ position: 'absolute', top: 4, left: 0, right: 0, height: 2, backgroundColor: '#fbbf24' }} />
+
+                  <View style={{ position: 'absolute', top: 8, right: 8 }}>
                     <Text style={{ fontSize: 20, opacity: 0.3 }}>🪷</Text>
                   </View>
+                  <View style={{ position: 'absolute', top: 8, left: 8 }}>
+                    <Text style={{ fontSize: 20, opacity: 0.3 }}>🪷</Text>
+                  </View>
+
                   <View style={styles.parigaramHeader}>
                     <View style={styles.parigaramIconBadge}>
                       <Text style={{ fontSize: 24 }}>🪔</Text>
