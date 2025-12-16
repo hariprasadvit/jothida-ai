@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -19,30 +19,7 @@ import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { mobileAuthAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-
-// Popular Tamil Nadu cities with coordinates
-const POPULAR_PLACES = [
-  { name: 'சென்னை', nameEn: 'Chennai', lat: 13.0827, lng: 80.2707 },
-  { name: 'மதுரை', nameEn: 'Madurai', lat: 9.9252, lng: 78.1198 },
-  { name: 'கோயம்புத்தூர்', nameEn: 'Coimbatore', lat: 11.0168, lng: 76.9558 },
-  { name: 'திருச்சி', nameEn: 'Tiruchirappalli', lat: 10.7905, lng: 78.7047 },
-  { name: 'சேலம்', nameEn: 'Salem', lat: 11.6643, lng: 78.1460 },
-  { name: 'திருநெல்வேலி', nameEn: 'Tirunelveli', lat: 8.7139, lng: 77.7567 },
-  { name: 'ஈரோடு', nameEn: 'Erode', lat: 11.3410, lng: 77.7172 },
-  { name: 'வேலூர்', nameEn: 'Vellore', lat: 12.9165, lng: 79.1325 },
-  { name: 'தஞ்சாவூர்', nameEn: 'Thanjavur', lat: 10.7870, lng: 79.1378 },
-  { name: 'திண்டுக்கல்', nameEn: 'Dindigul', lat: 10.3624, lng: 77.9695 },
-  { name: 'நாகர்கோவில்', nameEn: 'Nagercoil', lat: 8.1833, lng: 77.4119 },
-  { name: 'காஞ்சிபுரம்', nameEn: 'Kanchipuram', lat: 12.8342, lng: 79.7036 },
-  { name: 'குடந்தை', nameEn: 'Kumbakonam', lat: 10.9617, lng: 79.3881 },
-  { name: 'கரூர்', nameEn: 'Karur', lat: 10.9601, lng: 78.0766 },
-  { name: 'தூத்துக்குடி', nameEn: 'Thoothukudi', lat: 8.7642, lng: 78.1348 },
-  { name: 'நெல்லை', nameEn: 'Nellai', lat: 8.7139, lng: 77.7567 },
-  { name: 'விருதுநகர்', nameEn: 'Virudhunagar', lat: 9.5680, lng: 77.9624 },
-  { name: 'ராமநாதபுரம்', nameEn: 'Ramanathapuram', lat: 9.3639, lng: 78.8395 },
-  { name: 'புதுக்கோட்டை', nameEn: 'Pudukkottai', lat: 10.3833, lng: 78.8001 },
-  { name: 'சிவகங்கை', nameEn: 'Sivaganga', lat: 9.8433, lng: 78.4809 },
-];
+import { searchCities, POPULAR_CITIES, getLocationLabel } from '../data/cities';
 
 // Format date for display
 const formatDate = (date) => {
@@ -85,48 +62,160 @@ const formatTimeForAPI = (date) => {
   return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
 };
 
-// Location Picker Modal
+// Location Picker Modal with comprehensive city database
 const LocationPickerModal = ({ visible, onClose, onSelect, selectedPlace }) => {
   const [searchText, setSearchText] = useState('');
-  const [filteredPlaces, setFilteredPlaces] = useState(POPULAR_PLACES);
+  const [filteredPlaces, setFilteredPlaces] = useState(POPULAR_CITIES);
+  const [showManualEntry, setShowManualEntry] = useState(false);
+  const [manualPlace, setManualPlace] = useState({ name: '', lat: '', lng: '' });
+  const [isSearching, setIsSearching] = useState(false);
 
+  // Debounced search
   useEffect(() => {
     if (searchText.trim() === '') {
-      setFilteredPlaces(POPULAR_PLACES);
-    } else {
-      const filtered = POPULAR_PLACES.filter(
-        place =>
-          place.name.includes(searchText) ||
-          place.nameEn.toLowerCase().includes(searchText.toLowerCase())
-      );
-      setFilteredPlaces(filtered);
+      setFilteredPlaces(POPULAR_CITIES);
+      setIsSearching(false);
+      return;
     }
+
+    setIsSearching(true);
+    const timer = setTimeout(() => {
+      const results = searchCities(searchText, 50);
+      setFilteredPlaces(results);
+      setIsSearching(false);
+    }, 300);
+
+    return () => clearTimeout(timer);
   }, [searchText]);
 
-  const renderPlace = ({ item }) => (
-    <TouchableOpacity
-      style={[styles.placeItem, selectedPlace?.nameEn === item.nameEn && styles.placeItemSelected]}
-      onPress={() => {
-        onSelect(item);
-        onClose();
-      }}
-    >
-      <Ionicons
-        name="location"
-        size={20}
-        color={selectedPlace?.nameEn === item.nameEn ? '#f97316' : '#6b7280'}
-      />
-      <View style={styles.placeTextContainer}>
-        <Text style={[styles.placeName, selectedPlace?.nameEn === item.nameEn && styles.placeNameSelected]}>
-          {item.name}
-        </Text>
-        <Text style={styles.placeNameEn}>{item.nameEn}</Text>
-      </View>
-      {selectedPlace?.nameEn === item.nameEn && (
-        <Ionicons name="checkmark-circle" size={20} color="#f97316" />
-      )}
-    </TouchableOpacity>
-  );
+  const handleManualSubmit = () => {
+    if (!manualPlace.name || !manualPlace.lat || !manualPlace.lng) {
+      return;
+    }
+    const lat = parseFloat(manualPlace.lat);
+    const lng = parseFloat(manualPlace.lng);
+    if (isNaN(lat) || isNaN(lng)) {
+      return;
+    }
+    onSelect({
+      name: manualPlace.name,
+      nameEn: manualPlace.name,
+      lat: lat,
+      lng: lng,
+      isManual: true,
+    });
+    setShowManualEntry(false);
+    setManualPlace({ name: '', lat: '', lng: '' });
+    onClose();
+  };
+
+  const renderPlace = ({ item }) => {
+    const locationLabel = getLocationLabel(item);
+    const isSelected = selectedPlace?.nameEn === item.nameEn && selectedPlace?.lat === item.lat;
+
+    return (
+      <TouchableOpacity
+        style={[styles.placeItem, isSelected && styles.placeItemSelected]}
+        onPress={() => {
+          onSelect(item);
+          onClose();
+        }}
+      >
+        <Ionicons
+          name={item.country ? 'globe-outline' : 'location'}
+          size={20}
+          color={isSelected ? '#f97316' : '#6b7280'}
+        />
+        <View style={styles.placeTextContainer}>
+          <Text style={[styles.placeName, isSelected && styles.placeNameSelected]}>
+            {item.name}
+          </Text>
+          <Text style={styles.placeNameEn}>{locationLabel}</Text>
+        </View>
+        {isSelected && (
+          <Ionicons name="checkmark-circle" size={20} color="#f97316" />
+        )}
+      </TouchableOpacity>
+    );
+  };
+
+  if (showManualEntry) {
+    return (
+      <Modal visible={visible} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <TouchableOpacity onPress={() => setShowManualEntry(false)} style={styles.backBtn}>
+                <Ionicons name="arrow-back" size={24} color="#6b7280" />
+              </TouchableOpacity>
+              <Text style={styles.modalTitle}>இடத்தை உள்ளிடுக</Text>
+              <TouchableOpacity onPress={onClose} style={styles.modalCloseBtn}>
+                <Ionicons name="close" size={24} color="#6b7280" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.manualFormContainer}>
+              <Text style={styles.manualHint}>
+                உங்கள் கிராமம்/நகரம் பட்டியலில் இல்லையா? கீழே நேரடியாக உள்ளிடுங்கள்
+              </Text>
+
+              <View style={styles.manualInputGroup}>
+                <Text style={styles.manualLabel}>இடத்தின் பெயர் *</Text>
+                <TextInput
+                  style={styles.manualInput}
+                  value={manualPlace.name}
+                  onChangeText={(text) => setManualPlace({ ...manualPlace, name: text })}
+                  placeholder="உதா: என் கிராமம்"
+                  placeholderTextColor="#9ca3af"
+                />
+              </View>
+
+              <View style={styles.coordsRow}>
+                <View style={[styles.manualInputGroup, { flex: 1, marginRight: 8 }]}>
+                  <Text style={styles.manualLabel}>அட்சரேகை (Latitude) *</Text>
+                  <TextInput
+                    style={styles.manualInput}
+                    value={manualPlace.lat}
+                    onChangeText={(text) => setManualPlace({ ...manualPlace, lat: text })}
+                    placeholder="உதா: 10.7905"
+                    placeholderTextColor="#9ca3af"
+                    keyboardType="decimal-pad"
+                  />
+                </View>
+                <View style={[styles.manualInputGroup, { flex: 1, marginLeft: 8 }]}>
+                  <Text style={styles.manualLabel}>தீர்க்கரேகை (Longitude) *</Text>
+                  <TextInput
+                    style={styles.manualInput}
+                    value={manualPlace.lng}
+                    onChangeText={(text) => setManualPlace({ ...manualPlace, lng: text })}
+                    placeholder="உதா: 78.7047"
+                    placeholderTextColor="#9ca3af"
+                    keyboardType="decimal-pad"
+                  />
+                </View>
+              </View>
+
+              <Text style={styles.coordsHint}>
+                Google Maps-ல் உங்கள் இடத்தை தேடி, coordinates-ஐ பெறலாம்
+              </Text>
+
+              <TouchableOpacity
+                style={[
+                  styles.manualSubmitBtn,
+                  (!manualPlace.name || !manualPlace.lat || !manualPlace.lng) && styles.manualSubmitBtnDisabled
+                ]}
+                onPress={handleManualSubmit}
+                disabled={!manualPlace.name || !manualPlace.lat || !manualPlace.lng}
+              >
+                <Text style={styles.manualSubmitText}>இடத்தை தேர்வு செய்</Text>
+                <Ionicons name="checkmark-circle" size={20} color="#fff" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    );
+  }
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
@@ -146,43 +235,55 @@ const LocationPickerModal = ({ visible, onClose, onSelect, selectedPlace }) => {
               style={styles.searchInput}
               value={searchText}
               onChangeText={setSearchText}
-              placeholder="இடத்தை தேடுங்கள்..."
+              placeholder="நகரம், மாநிலம், நாடு தேடுங்கள்..."
               placeholderTextColor="#9ca3af"
+              autoCapitalize="none"
             />
-            {searchText.length > 0 && (
+            {isSearching && <ActivityIndicator size="small" color="#f97316" />}
+            {searchText.length > 0 && !isSearching && (
               <TouchableOpacity onPress={() => setSearchText('')}>
                 <Ionicons name="close-circle" size={20} color="#9ca3af" />
               </TouchableOpacity>
             )}
           </View>
 
-          {/* Popular Label */}
+          {/* Results Count */}
           <View style={styles.sectionHeader}>
-            <Ionicons name="star" size={14} color="#f97316" />
+            <Ionicons name={searchText ? 'search' : 'star'} size={14} color="#f97316" />
             <Text style={styles.sectionTitle}>
-              {searchText ? 'தேடல் முடிவுகள்' : 'பிரபலமான இடங்கள்'}
+              {searchText
+                ? `${filteredPlaces.length} இடங்கள் கிடைத்தன`
+                : 'பிரபலமான இடங்கள்'}
             </Text>
           </View>
 
           {/* Places List */}
           <FlatList
             data={filteredPlaces}
-            keyExtractor={(item) => item.nameEn}
+            keyExtractor={(item, index) => `${item.nameEn}-${item.lat}-${index}`}
             renderItem={renderPlace}
             style={styles.placesList}
             showsVerticalScrollIndicator={false}
+            initialNumToRender={15}
+            maxToRenderPerBatch={20}
+            windowSize={10}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Ionicons name="location-outline" size={48} color="#d1d5db" />
                 <Text style={styles.emptyText}>இடம் கிடைக்கவில்லை</Text>
+                <Text style={styles.emptySubText}>கீழே உள்ள "வேறு இடம்" பொத்தானை அழுத்தவும்</Text>
               </View>
             }
           />
 
           {/* Manual Entry Option */}
-          <TouchableOpacity style={styles.manualEntryBtn}>
-            <Ionicons name="create-outline" size={18} color="#6b7280" />
-            <Text style={styles.manualEntryText}>வேறு இடம் தட்டச்சு செய்ய</Text>
+          <TouchableOpacity
+            style={styles.manualEntryBtn}
+            onPress={() => setShowManualEntry(true)}
+          >
+            <Ionicons name="create-outline" size={18} color="#f97316" />
+            <Text style={styles.manualEntryText}>வேறு இடம் / கிராமம் உள்ளிட</Text>
+            <Ionicons name="chevron-forward" size={18} color="#f97316" />
           </TouchableOpacity>
         </View>
       </View>
@@ -251,6 +352,8 @@ export default function RegisterScreen({ route, navigation }) {
         birthDate: formatDateForAPI(formData.birthDate),
         birthTime: formData.birthTime ? formatTimeForAPI(formData.birthTime) : '',
         birthPlace: formData.birthPlace.nameEn,
+        latitude: formData.birthPlace.lat,
+        longitude: formData.birthPlace.lng,
       });
 
       const profile = {
@@ -770,6 +873,12 @@ const styles = StyleSheet.create({
     color: '#9ca3af',
     marginTop: 12,
   },
+  emptySubText: {
+    fontSize: 12,
+    color: '#d1d5db',
+    marginTop: 4,
+    textAlign: 'center',
+  },
   manualEntryBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -778,9 +887,70 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderTopWidth: 1,
     borderTopColor: '#f3f4f6',
+    backgroundColor: '#fff7ed',
   },
   manualEntryText: {
+    fontSize: 14,
+    color: '#f97316',
+    fontWeight: '500',
+  },
+  // Manual Entry Form styles
+  backBtn: {
+    padding: 4,
+  },
+  manualFormContainer: {
+    padding: 20,
+  },
+  manualHint: {
     fontSize: 13,
     color: '#6b7280',
+    marginBottom: 20,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  manualInputGroup: {
+    marginBottom: 16,
+  },
+  manualLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 6,
+  },
+  manualInput: {
+    borderWidth: 2,
+    borderColor: '#fed7aa',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: '#1f2937',
+    backgroundColor: '#fff',
+  },
+  coordsRow: {
+    flexDirection: 'row',
+  },
+  coordsHint: {
+    fontSize: 11,
+    color: '#9ca3af',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  manualSubmitBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f97316',
+    paddingVertical: 14,
+    borderRadius: 12,
+    gap: 8,
+  },
+  manualSubmitBtnDisabled: {
+    opacity: 0.5,
+  },
+  manualSubmitText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
   },
 });

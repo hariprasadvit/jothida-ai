@@ -224,7 +224,16 @@ export const mobileAuthAPI = {
   },
 
   register: async (data) => {
-    const coords = getCityCoordinates(data.birthPlace);
+    // Use coordinates from form if provided, otherwise lookup from database
+    let lat, lon;
+    if (data.latitude !== undefined && data.longitude !== undefined) {
+      lat = data.latitude;
+      lon = data.longitude;
+    } else {
+      const coords = getCityCoordinates(data.birthPlace);
+      lat = coords.lat;
+      lon = coords.lon;
+    }
     const response = await api.post('/api/mobile/register', {
       phone_number: data.phoneNumber,
       otp_code: data.otpCode,
@@ -233,8 +242,8 @@ export const mobileAuthAPI = {
       birth_date: data.birthDate,
       birth_time: data.birthTime || null,
       birth_place: data.birthPlace,
-      latitude: coords.lat,
-      longitude: coords.lon,
+      latitude: lat,
+      longitude: lon,
     });
     return response.data;
   },
