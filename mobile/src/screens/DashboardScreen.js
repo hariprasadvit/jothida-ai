@@ -521,6 +521,7 @@ const rashiTickerStyles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     color: '#1f2937',
+    lineHeight: 18,
   },
   rashiNameHighlight: {
     color: '#f97316',
@@ -529,7 +530,9 @@ const rashiTickerStyles = StyleSheet.create({
   scoreText: {
     fontSize: 14,
     fontWeight: '800',
-    minWidth: 40,
+    minWidth: 45,
+    textAlign: 'right',
+    lineHeight: 18,
   },
   youIndicator: {
     marginLeft: -2,
