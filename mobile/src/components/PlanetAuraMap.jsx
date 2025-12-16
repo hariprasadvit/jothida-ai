@@ -407,9 +407,12 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   planetSymbol: {
-    fontSize: 18,
+    fontSize: 20,
     color: '#ffffff',
-    fontWeight: '600',
+    fontWeight: '700',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   scoreChip: {
     position: 'absolute',
@@ -424,8 +427,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   scoreChipText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '900',
+    color: '#1f2937',
+    textShadowColor: 'rgba(0, 0, 0, 0.1)',
+    textShadowOffset: { width: 0, height: 0.5 },
+    textShadowRadius: 1,
   },
   legendScroll: {
     paddingVertical: 12,
@@ -457,15 +464,16 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   legendName: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#1f2937',
-    letterSpacing: 0.2,
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0f172a',
+    letterSpacing: 0.3,
   },
   legendScore: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '900',
-    letterSpacing: 0.3,
+    letterSpacing: 0.4,
+    color: '#1f2937',
   },
   summarySection: {
     gap: 12,
@@ -489,10 +497,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
   summaryList: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#16a34a',
-    lineHeight: 22,
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#15803d',
+    lineHeight: 24,
     paddingLeft: 24,
   },
   insightBox: {
@@ -508,9 +516,9 @@ const styles = StyleSheet.create({
   },
   insightText: {
     flex: 1,
-    fontSize: 13,
-    color: '#78350f',
-    lineHeight: 20,
-    fontWeight: '600',
+    fontSize: 14,
+    color: '#5a3a1a',
+    lineHeight: 22,
+    fontWeight: '700',
   },
 });
