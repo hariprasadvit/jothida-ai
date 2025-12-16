@@ -433,7 +433,7 @@ const rashiTickerStyles = StyleSheet.create({
   container: {
     backgroundColor: '#0c0c0c',
     marginTop: 0,
-    marginHorizontal: 0,
+    marginHorizontal: -16,
   },
   header: {
     flexDirection: 'row',
