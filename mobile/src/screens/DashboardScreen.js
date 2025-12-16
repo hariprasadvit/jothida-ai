@@ -2051,8 +2051,8 @@ export default function DashboardScreen({ navigation }) {
     <View style={styles.container}>
       {/* Warm auspicious gradient background */}
       <LinearGradient colors={['#faf7f2', '#f5ede5', '#fff8f0']} style={styles.gradient}>
-        {/* Divine Background Pattern */}
-        <KolamPattern color="#d4a574" opacity={0.15} style={{ zIndex: 0 }} />
+        {/* Divine Background Pattern - Hindu Kolam/Rangoli */}
+        <KolamPattern color="#d4a574" opacity={0.45} style={{ zIndex: 0 }} />
         <ScrollView
           contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#f97316']} tintColor="#f97316" />}
