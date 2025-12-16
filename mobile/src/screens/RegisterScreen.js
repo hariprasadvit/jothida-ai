@@ -612,9 +612,6 @@ export default function RegisterScreen({ route, navigation }) {
                     <Text style={[styles.genderText, formData.gender === 'male' && styles.genderTextActive]}>
                       ஆண்
                     </Text>
-                    {formData.gender === 'male' && (
-                      <Ionicons name="checkmark-circle" size={16} color="#fff" style={styles.genderCheck} />
-                    )}
                   </View>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -630,7 +627,7 @@ export default function RegisterScreen({ route, navigation }) {
                 >
                   {formData.gender === 'female' && (
                     <LinearGradient
-                      colors={['#ec4899', '#db2777']}
+                      colors={['#f97316', '#ea580c']}
                       style={styles.genderGradient}
                     />
                   )}
@@ -644,8 +641,6 @@ export default function RegisterScreen({ route, navigation }) {
                     <Text style={[styles.genderText, formData.gender === 'female' && styles.genderTextActive]}>
                       பெண்
                     </Text>
-                    {formData.gender === 'female' && (
-                      <Ionicons name="checkmark-circle" size={16} color="#fff" style={styles.genderCheck} />
                     )}
                   </View>
                 </TouchableOpacity>
