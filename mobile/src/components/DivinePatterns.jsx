@@ -73,9 +73,9 @@ export const LotusCorner = ({ color = "#d4a574", size = 60, style }) => (
   </View>
 );
 
-// 3. Om Symbol Watermark (Sacred Hindu Symbol)
-export const OmWatermark = ({ color = "#f97316", size = 120, style }) => (
-  <View style={[style, { width: size, height: size, opacity: 0.25, zIndex: 0 }]} pointerEvents="none">
+// 4. Om Symbol Watermark (Sacred Hindu Symbol)
+export const OmWatermark = ({ color = "#f97316", size = 120, opacity = 0.12, style }) => (
+  <View style={[style, { width: size, height: size, opacity, zIndex: 0 }]} pointerEvents="none">
     <Svg width="100%" height="100%" viewBox="0 0 500 500">
       <Path
         d="M250 100 C200 100 150 150 150 200 C150 250 200 250 200 250 C150 250 100 300 100 350 C100 450 250 450 250 350 M250 250 C300 250 350 300 350 350 M350 200 Q400 100 450 150 M350 100 Q400 50 450 100"
