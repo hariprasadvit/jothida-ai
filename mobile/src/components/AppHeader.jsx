@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, Platform, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Path } from 'react-native-svg';
 
@@ -9,6 +10,8 @@ export default function AppHeader({
   title,
   subtitle,
   showTime = true,
+  showBackButton = false,
+  onBackPress,
 }) {
   const insets = useSafeAreaInsets();
   const [now, setNow] = useState(() => new Date());
@@ -104,6 +107,17 @@ export default function AppHeader({
     >
       <View>
         <View style={styles.logoRow}>
+          {showBackButton && (
+            <TouchableOpacity
+              onPress={onBackPress}
+              style={styles.backButton}
+              accessibilityRole="button"
+              accessibilityLabel={t?.('back') || 'Back'}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Ionicons name="arrow-back" size={22} color="#6b5644" />
+            </TouchableOpacity>
+          )}
           <View style={styles.logoIcon}>
             <Svg width={28} height={28} viewBox="0 0 100 100">
               <Path
@@ -161,6 +175,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+  },
+  backButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#fef6ed',
+    borderWidth: 1,
+    borderColor: '#e8d5c4',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 2,
   },
   logoIcon: {
     width: 36,
