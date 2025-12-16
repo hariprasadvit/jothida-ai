@@ -2207,7 +2207,9 @@ export default function DashboardScreen({ navigation }) {
           {/* Tamil Calendar */}
           <AnimatedCard delay={100} style={styles.card}>
             <View style={styles.cardHeader}>
-              <DiyaIcon size={32} color="#d97706" />
+              <View style={styles.sectionIconBadge}>
+                <DiyaIcon size={20} color="#d97706" />
+              </View>
               <Text style={styles.cardTitle}>{t('todayPanchangam')}</Text>
             </View>
             <View style={styles.panchangamGrid}>
@@ -2373,7 +2375,9 @@ export default function DashboardScreen({ navigation }) {
           {/* Month & Year Projections */}
           <AnimatedCard delay={350} style={styles.card}>
             <View style={styles.cardHeader}>
-              <Ionicons name="analytics" size={16} color="#ea580c" />
+              <View style={styles.sectionIconBadge}>
+                <Ionicons name="analytics" size={18} color="#ea580c" />
+              </View>
               <Text style={styles.cardTitle}>{t('futureProjection')}</Text>
               {dynamicProjections?.projections ? (
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 'auto', backgroundColor: '#dcfce7', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 }}>
@@ -2423,7 +2427,9 @@ export default function DashboardScreen({ navigation }) {
           {lifeTimeline?.past_years?.length > 0 && (
             <AnimatedCard delay={375} style={styles.card}>
               <View style={styles.cardHeader}>
-                <Ionicons name="time-outline" size={16} color="#6b7280" />
+                <View style={styles.sectionIconBadge}>
+                  <Ionicons name="time-outline" size={18} color="#8b6f47" />
+                </View>
                 <Text style={styles.cardTitle}>
                   {t('pastYears')}
                 </Text>
@@ -2576,7 +2582,7 @@ export default function DashboardScreen({ navigation }) {
               <View style={[styles.card, styles.chakraCard]}>
                 <View style={styles.chakraCardHeader}>
                   <View style={styles.chakraIconContainer}>
-                    <Text style={styles.chakraIconLarge}>🧘</Text>
+                    <Ionicons name="body" size={28} color="#8b6f47" />
                   </View>
                   <View style={styles.chakraCardInfo}>
                     <Text style={styles.chakraCardTitle}>
@@ -2644,7 +2650,9 @@ export default function DashboardScreen({ navigation }) {
             <AnimatedCard delay={600}>
               <View style={[styles.card, styles.auraCard]}>
                 <View style={styles.cardHeader}>
-                  <Ionicons name="planet" size={16} color="#c69c6d" />
+                  <View style={styles.sectionIconBadge}>
+                    <Ionicons name="planet" size={18} color="#c69c6d" />
+                  </View>
                   <Text style={styles.cardTitle}>
                     {t('planetAuraMap')}
                   </Text>
@@ -3189,12 +3197,14 @@ const styles = StyleSheet.create({
   progressBar: { height: 8, backgroundColor: '#f4e4d7', borderRadius: 4, marginTop: 12, overflow: 'hidden' },
   progressFill: { height: 8, borderRadius: 4 },
 
+  sectionIconBadge: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#fff8f0', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#e8d5c4' },
+
   // Projection styles
-  projectionToggle: { flexDirection: 'row', backgroundColor: '#f3f4f6', borderRadius: 10, padding: 4, marginBottom: 12 },
-  toggleBtn: { flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: 'center' },
-  toggleBtnActive: { backgroundColor: '#fff', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 },
-  toggleText: { fontSize: 12, color: '#6b7280' },
-  toggleTextActive: { color: '#f97316', fontWeight: '600' },
+  projectionToggle: { flexDirection: 'row', backgroundColor: '#fef6ed', borderRadius: 14, padding: 4, marginBottom: 12, borderWidth: 1, borderColor: '#e8d5c4' },
+  toggleBtn: { flex: 1, paddingVertical: 10, borderRadius: 12, alignItems: 'center' },
+  toggleBtnActive: { backgroundColor: '#fff8f0', borderWidth: 1, borderColor: '#e8d5c4' },
+  toggleText: { fontSize: 12, color: '#8b6f47', fontWeight: '700' },
+  toggleTextActive: { color: '#6b5644', fontWeight: '800' },
 
   monthsScroll: { marginHorizontal: -4 },
   monthCard: { width: 90, backgroundColor: '#fef6ed', borderRadius: 16, padding: 14, marginHorizontal: 6, alignItems: 'center', borderWidth: 1, borderColor: '#f4e4d7', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6 },
@@ -3208,13 +3218,13 @@ const styles = StyleSheet.create({
 
   // Past Years styles
   pastYearsGrid: { flexDirection: 'row', gap: 12 },
-  pastYearCard: { flex: 1, backgroundColor: '#f9fafb', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: '#e5e7eb' },
-  pastYearHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  pastYearLabel: { fontSize: 16, fontWeight: 'bold', color: '#374151' },
-  pastYearBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 },
-  pastYearScore: { fontSize: 13, fontWeight: '600' },
-  pastYearDasha: { fontSize: 11, color: '#6b7280', marginBottom: 8 },
-  pastYearBar: { height: 4, backgroundColor: '#e5e7eb', borderRadius: 2, overflow: 'hidden' },
+  pastYearCard: { flex: 1, backgroundColor: '#fef6ed', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#e8d5c4' },
+  pastYearHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  pastYearLabel: { fontSize: 16, fontWeight: '800', color: '#6b5644' },
+  pastYearBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
+  pastYearScore: { fontSize: 13, fontWeight: '800' },
+  pastYearDasha: { fontSize: 11, color: '#8b6f47', marginBottom: 10, fontWeight: '700' },
+  pastYearBar: { height: 4, backgroundColor: '#f4e4d7', borderRadius: 2, overflow: 'hidden' },
   pastYearBarFill: { height: 4, borderRadius: 2 },
 
   yearCard: { borderRadius: 20, overflow: 'hidden', backgroundColor: '#fef6ed', borderWidth: 1, borderColor: '#e8d5c4', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.08, shadowRadius: 10 },
