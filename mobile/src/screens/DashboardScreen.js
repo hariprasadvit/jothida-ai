@@ -2580,10 +2580,18 @@ export default function DashboardScreen({ navigation }) {
           </View>
           {jathagam?.dasha?.mahadasha && (
             <AnimatedCard delay={500}>
-              <View style={[styles.card, styles.dashaCard, { backgroundColor: '#fef6ed' }]}>
+              <View style={[styles.card, styles.dashaCard, { backgroundColor: '#fef6ed', overflow: 'hidden' }]}>
+                {/* Traditional Hindu Border */}
+                <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, backgroundColor: '#f97316' }} />
+                <View style={{ position: 'absolute', top: 4, left: 0, right: 0, height: 2, backgroundColor: '#fbbf24' }} />
+
                 <View style={{ position: 'absolute', top: 8, right: 8 }}>
                   <Text style={{ fontSize: 18, opacity: 0.3 }}>🪷</Text>
                 </View>
+                <View style={{ position: 'absolute', top: 8, left: 8 }}>
+                  <Text style={{ fontSize: 18, opacity: 0.3 }}>🪷</Text>
+                </View>
+
                 <View style={styles.cardHeader}>
                   <Text style={{ fontSize: 16, marginRight: 4 }}>🪔</Text>
                   <Text style={[styles.cardTitle, { color: '#6b5644', fontWeight: '800' }]}>{t('currentDasha')}</Text>
