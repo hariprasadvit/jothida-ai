@@ -2067,6 +2067,12 @@ export default function DashboardScreen({ navigation }) {
               { opacity: headerFadeAnim, transform: [{ translateY: headerSlideAnim }] },
             ]}
           >
+            <ScallopPattern color="#e8d5c4" opacity={0.18} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+            <View style={styles.headerOrnament} pointerEvents="none">
+              <View style={styles.headerOrnamentLine} />
+              <DiyaIcon size={16} color="#d97706" />
+              <View style={styles.headerOrnamentLine} />
+            </View>
             <View>
               <View style={styles.logoRow}>
                 <View style={styles.logoIcon}>
