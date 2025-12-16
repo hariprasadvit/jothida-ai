@@ -2583,12 +2583,7 @@ export default function DashboardScreen({ navigation }) {
               activeOpacity={0.85}
               onPress={() => navigation.navigate('Chakra')}
             >
-              <LinearGradient
-                colors={['#1e1b4b', '#4c1d95', '#5b21b6']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={[styles.card, styles.chakraCard]}
-              >
+              <View style={[styles.card, styles.chakraCard]}>
                 <View style={styles.chakraCardHeader}>
                   <View style={styles.chakraIconContainer}>
                     <Text style={styles.chakraIconLarge}>🧘</Text>
@@ -2602,20 +2597,20 @@ export default function DashboardScreen({ navigation }) {
                     </Text>
                   </View>
                   <View style={styles.chakraArrowContainer}>
-                    <Ionicons name="chevron-forward" size={24} color="#c4b5fd" />
+                    <Ionicons name="chevron-forward" size={24} color="#8b6f47" />
                   </View>
                 </View>
 
                 {/* Chakra Mini Preview with Scores */}
                 <View style={styles.chakraMiniPreview}>
                   {[
-                    { color: '#9333ea', score: 72, name: 'Crown', nameTa: 'கிரீடம்' },
-                    { color: '#4f46e5', score: 68, name: 'Third Eye', nameTa: '3வது கண்' },
-                    { color: '#0ea5e9', score: 61, name: 'Throat', nameTa: 'தொண்டை' },
-                    { color: '#22c55e', score: 78, name: 'Heart', nameTa: 'இதயம்' },
-                    { color: '#eab308', score: 65, name: 'Solar', nameTa: 'சூரியன்' },
-                    { color: '#f97316', score: 58, name: 'Sacral', nameTa: 'சேக்ரல்' },
-                    { color: '#ef4444', score: 70, name: 'Root', nameTa: 'வேர்' },
+                    { color: '#9b7e5a', score: 72, name: 'Crown', nameTa: 'கிரீடம்' },
+                    { color: '#8b6f47', score: 68, name: 'Third Eye', nameTa: '3வது கண்' },
+                    { color: '#a18768', score: 61, name: 'Throat', nameTa: 'தொண்டை' },
+                    { color: '#7d9b7a', score: 78, name: 'Heart', nameTa: 'இதயம்' },
+                    { color: '#d4a574', score: 65, name: 'Solar', nameTa: 'சூரியன்' },
+                    { color: '#c69c6d', score: 58, name: 'Sacral', nameTa: 'சேக்ரல்' },
+                    { color: '#b8997a', score: 70, name: 'Root', nameTa: 'வேர்' },
                   ].map((chakra, idx) => (
                     <View key={idx} style={styles.chakraMiniItem}>
                       <View style={[styles.chakraMiniCircle, { backgroundColor: chakra.color }]}>
@@ -2631,13 +2626,13 @@ export default function DashboardScreen({ navigation }) {
                 {/* Overall Energy */}
                 <View style={styles.chakraEnergyRow}>
                   <View style={styles.chakraEnergyInfo}>
-                    <Ionicons name="flash" size={14} color="#a855f7" />
+                    <Ionicons name="flash" size={14} color="#c69c6d" />
                     <Text style={styles.chakraEnergyLabel}>
                       {language === 'ta' ? 'ஒட்டுமொத்த ஆற்றல்' : 'Overall Energy'}
                     </Text>
                   </View>
                   <View style={styles.chakraEnergyBar}>
-                    <View style={[styles.chakraEnergyFill, { width: '67%' }]} />
+                    <View style={[styles.chakraEnergyFill, { width: '67%', backgroundColor: '#c69c6d' }]} />
                   </View>
                   <Text style={styles.chakraEnergyPercent}>67%</Text>
                 </View>
@@ -2650,7 +2645,7 @@ export default function DashboardScreen({ navigation }) {
                     <Text style={styles.chakraNewText}>NEW</Text>
                   </View>
                 </View>
-              </LinearGradient>
+              </View>
             </TouchableOpacity>
           </AnimatedCard>
 
