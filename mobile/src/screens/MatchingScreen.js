@@ -248,7 +248,7 @@ const FloatingHearts = () => {
 };
 
 // Porutham Item with Animation
-const AnimatedPoruthamItem = ({ porutham, index, isExpanded, onPress, statusStyle }) => {
+const AnimatedPoruthamItem = ({ porutham, index, isExpanded, onPress, statusStyle, language, t }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
   const expandAnim = useRef(new Animated.Value(0)).current;
@@ -293,8 +293,8 @@ const AnimatedPoruthamItem = ({ porutham, index, isExpanded, onPress, statusStyl
               size={18}
               color={porutham.matched ? '#16a34a' : '#dc2626'}
             />
-            <Text style={styles.poruthamName}>{porutham.name}</Text>
-            <Text style={styles.poruthamEnglish}>({porutham.english})</Text>
+            <Text style={styles.poruthamName}>{language === 'ta' ? porutham.name : (porutham.english || porutham.name)}</Text>
+            {language !== 'ta' && porutham.name && <Text style={styles.poruthamEnglish}>({porutham.name})</Text>}
           </View>
           <View style={styles.poruthamRight}>
             <Text style={[styles.poruthamScore, { color: statusStyle.text }]}>{porutham.score}%</Text>
@@ -306,11 +306,11 @@ const AnimatedPoruthamItem = ({ porutham, index, isExpanded, onPress, statusStyl
 
         {isExpanded && (
           <View style={styles.poruthamExpanded}>
-            <Text style={styles.poruthamDesc}>{porutham.description}</Text>
+            <Text style={styles.poruthamDesc}>{language === 'ta' ? porutham.description : (porutham.description_en || porutham.description)}</Text>
             {porutham.remedy && (
               <View style={styles.remedyBox}>
                 <Ionicons name="sparkles" size={12} color="#ea580c" />
-                <Text style={styles.remedyText}>பரிகாரம்: {porutham.remedy}</Text>
+                <Text style={styles.remedyText}>{t('remedy')}: {language === 'ta' ? porutham.remedy : (porutham.remedy_en || porutham.remedy)}</Text>
               </View>
             )}
           </View>
@@ -629,7 +629,7 @@ export default function MatchingScreen() {
                   >
                     <Picker.Item label={t('autoCalculate')} value="" />
                     {rasis.map((r) => (
-                      <Picker.Item key={r.english} label={r.tamil} value={r.english} />
+                      <Picker.Item key={r.english} label={language === 'ta' ? r.tamil : r.english} value={r.english} />
                     ))}
                   </Picker>
                 </View>
@@ -757,7 +757,7 @@ export default function MatchingScreen() {
                   >
                     <Picker.Item label={t('autoCalculate')} value="" />
                     {rasis.map((r) => (
-                      <Picker.Item key={r.english} label={r.tamil} value={r.english} />
+                      <Picker.Item key={r.english} label={language === 'ta' ? r.tamil : r.english} value={r.english} />
                     ))}
                   </Picker>
                 </View>
@@ -1001,7 +1001,7 @@ export default function MatchingScreen() {
                 <Text style={[styles.verdictTitle, { color: overallScore >= 70 ? '#15803d' : '#a16207' }]}>
                   {t('aiVerdict')}: {overallScore >= 70 ? t('goodMatch') : t('needsAttention')}
                 </Text>
-                <Text style={styles.verdictText}>{matchResult.ai_verdict?.explanation || 'விரிவான பகுப்பாய்வு கீழே உள்ளது.'}</Text>
+                <Text style={styles.verdictText}>{matchResult.ai_verdict?.explanation || t('detailedAnalysisBelow')}</Text>
               </View>
             </View>
           </AnimatedCard>
@@ -1024,6 +1024,8 @@ export default function MatchingScreen() {
                   isExpanded={isExpanded}
                   onPress={() => setExpandedPorutham(isExpanded ? null : i)}
                   statusStyle={statusStyle}
+                  language={language}
+                  t={t}
                 />
               );
             })}

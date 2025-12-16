@@ -181,14 +181,14 @@ const DailyRoutineCard = ({ routine, language, t }) => {
         </View>
       ))}
 
-      {routine.weekly_special && (
+      {routine.weekly_special && (routine.weekly_special.day || routine.weekly_special.day_en) && (
         <>
           <Text style={styles.routineSubTitle}>
             <Ionicons name="star-outline" size={16} color="#f97316" />
             {'  '}
             {language === 'ta'
-              ? `${routine.weekly_special.day} ${t('special')}`
-              : `${routine.weekly_special.day_en} ${t('special')}`}
+              ? `${routine.weekly_special.day || routine.weekly_special.day_en || ''} ${t('special')}`
+              : `${routine.weekly_special.day_en || routine.weekly_special.day || ''} ${t('special')}`}
           </Text>
           {routine.weekly_special.activities?.map((activity, idx) => (
             <View key={idx} style={styles.routineItem}>

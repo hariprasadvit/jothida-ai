@@ -18,13 +18,11 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage, languageOptions } from '../context/LanguageContext';
 import { mobileAPI, reportAPI } from '../services/api';
-import { generateComprehensivePDFHTML } from '../services/reportGenerator';
 import { searchCities, POPULAR_CITIES } from '../data/cities';
 import * as FileSystem from 'expo-file-system';
 
@@ -2240,25 +2238,13 @@ export default function ProfileScreen({ navigation }) {
       }
     } catch (err) {
       console.error('PDF generation error:', err);
-      // Fallback to local HTML generation if backend fails
-      try {
-        const html = generateComprehensivePDFHTML(userProfile, chartData, language);
-        const { uri } = await Print.printToFileAsync({
-          html,
-          base64: false,
-        });
+      console.error('Error details:', err.message, err.response?.status, err.response?.data);
 
-        if (await Sharing.isAvailableAsync()) {
-          await Sharing.shareAsync(uri, {
-            mimeType: 'application/pdf',
-            dialogTitle: t('downloadPDF'),
-            UTI: 'com.adobe.pdf'
-          });
-        }
-      } catch (fallbackErr) {
-        console.error('Fallback PDF error:', fallbackErr);
-        Alert.alert(t('error'), t('pdfError'));
-      }
+      // Show error to user - don't silently fallback to old version
+      Alert.alert(
+        t('error'),
+        `PDF generation failed: ${err.message || 'Network error'}. Please check your internet connection and try again.`
+      );
     } finally {
       setPdfLoading(false);
     }

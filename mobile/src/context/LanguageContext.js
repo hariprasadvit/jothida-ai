@@ -118,6 +118,7 @@ export const translations = {
     aiVerdict: 'AI தீர்ப்பு',
     goodMatch: 'நல்ல பொருத்தம்',
     needsAttention: 'கவனிக்க வேண்டும்',
+    detailedAnalysisBelow: 'விரிவான பகுப்பாய்வு கீழே உள்ளது.',
     tenPoruthams: '꯶ 10 பொருத்தங்கள் ꯶',
     newMatching: 'புதிய பொருத்தம்',
     matchingError: 'பொருத்தம் கணக்கிடுவதில் பிழை. மீண்டும் முயற்சிக்கவும்.',
@@ -265,6 +266,7 @@ export const translations = {
     strongAura: 'வலிமையான ஒளி',
     moderateAura: 'மிதமான ஒளி',
     weakAura: 'பலவீனமான ஒளி',
+    balancedAura: 'சமநிலை ஒளி',
 
     // Dashboard - Additional
     planet: 'கிரகம்',
@@ -788,6 +790,7 @@ export const translations = {
     aiVerdict: 'AI ತೀರ್ಪು',
     goodMatch: 'ಒಳ್ಳೆಯ ಹೊಂದಾಣಿಕೆ',
     needsAttention: 'ಗಮನ ಬೇಕು',
+    detailedAnalysisBelow: 'ವಿವರವಾದ ವಿಶ್ಲೇಷಣೆ ಕೆಳಗೆ ಇದೆ.',
     tenPoruthams: '꯶ 10 ಪೊರುತಂಗಳು ꯶',
     newMatching: 'ಹೊಸ ಹೊಂದಾಣಿಕೆ',
     matchingError: 'ಹೊಂದಾಣಿಕೆ ಲೆಕ್ಕಾಚಾರದಲ್ಲಿ ದೋಷ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
@@ -935,6 +938,7 @@ export const translations = {
     strongAura: 'ಬಲವಾದ ಆಭಾ',
     moderateAura: 'ಮಧ್ಯಮ ಆಭಾ',
     weakAura: 'ದುರ್ಬಲ ಆಭಾ',
+    balancedAura: 'ಸಮತೋಲಿತ ಆಭಾ',
 
     // Dashboard - Additional
     planet: 'ಗ್ರಹ',
@@ -1461,6 +1465,7 @@ export const translations = {
     tenPoruthams: '꯶ 10 Poruthams ꯶',
     newMatching: 'New Matching',
     matchingError: 'Error calculating compatibility. Please try again.',
+    detailedAnalysisBelow: 'Detailed analysis is below.',
 
     // Profile
     editProfile: 'Edit Profile',
@@ -1605,6 +1610,7 @@ export const translations = {
     strongAura: 'Strong Aura',
     moderateAura: 'Moderate Aura',
     weakAura: 'Weak Aura',
+    balancedAura: 'Balanced Aura',
 
     // Dashboard - Additional
     planet: 'Planet',
