@@ -104,33 +104,6 @@ const LocationPickerModal = ({ visible, onClose, onSelect, selectedPlace }) => {
     return () => clearTimeout(timer);
   }, [searchText]);
 
-  const renderPlace = ({ item }) => (
-    <TouchableOpacity
-      style={[styles.placeItem, selectedPlace?.nameEn === item.nameEn && styles.placeItemSelected]}
-      onPress={() => {
-        onSelect(item);
-        onClose();
-      }}
-      activeOpacity={0.7}
-    >
-      <View style={[styles.placeIcon, selectedPlace?.nameEn === item.nameEn && styles.placeIconSelected]}>
-        <Ionicons
-          name="location"
-          size={20}
-          color={selectedPlace?.nameEn === item.nameEn ? '#fff' : '#f97316'}
-        />
-      </View>
-      <View style={styles.placeTextContainer}>
-        <Text style={[styles.placeName, selectedPlace?.nameEn === item.nameEn && styles.placeNameSelected]}>
-          {item.name}
-        </Text>
-        <Text style={styles.placeNameEn}>{item.nameEn}</Text>
-      </View>
-      {selectedPlace?.nameEn === item.nameEn && (
-        <Ionicons name="checkmark-circle" size={24} color="#f97316" />
-      )}
-    </TouchableOpacity>
-  );
   const handleManualSubmit = () => {
     if (!manualPlace.name || !manualPlace.lat || !manualPlace.lng) {
       return;
@@ -282,13 +255,14 @@ const LocationPickerModal = ({ visible, onClose, onSelect, selectedPlace }) => {
               placeholderTextColor="#9ca3af"
               autoCapitalize="none"
             />
-            {searchText.length > 0 && (
-              <TouchableOpacity onPress={() => setSearchText('')} activeOpacity={0.7}>
-            {isSearching && <ActivityIndicator size="small" color="#f97316" />}
-            {searchText.length > 0 && !isSearching && (
-              <TouchableOpacity onPress={() => setSearchText('')}>
-                <Ionicons name="close-circle" size={20} color="#9ca3af" />
-              </TouchableOpacity>
+            {isSearching ? (
+              <ActivityIndicator size="small" color="#f97316" />
+            ) : (
+              searchText.length > 0 && (
+                <TouchableOpacity onPress={() => setSearchText('')} activeOpacity={0.7}>
+                  <Ionicons name="close-circle" size={20} color="#9ca3af" />
+                </TouchableOpacity>
+              )
             )}
           </View>
 
