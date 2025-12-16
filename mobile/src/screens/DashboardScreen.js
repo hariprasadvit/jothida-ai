@@ -2875,7 +2875,9 @@ export default function DashboardScreen({ navigation }) {
                     {/* Alert Message */}
                     {transitsMap.moon_transit.transit_message && (
                       <View style={styles.alertMessageBox}>
-                        <Ionicons name="notifications" size={16} color="#fbbf24" />
+                        <View style={styles.alertMessageIconWrapper}>
+                          <Ionicons name="notifications" size={18} color="#f59e0b" />
+                        </View>
                         <Text style={styles.alertMessageText}>{language === 'ta' ? transitsMap.moon_transit.transit_message : (transitsMap.moon_transit.transit_message_en || transitsMap.moon_transit.transit_message)}</Text>
                       </View>
                     )}
@@ -3519,8 +3521,9 @@ const styles = StyleSheet.create({
   nextSignText: { fontSize: 15, fontWeight: '700', color: '#fff', flex: 1 },
 
   // Alert Message
-  alertMessageBox: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#fffbeb', borderRadius: 16, padding: 16, marginTop: 20, marginHorizontal: -24, marginBottom: -24, borderLeftWidth: 4, borderLeftColor: '#fbbf24' },
-  alertMessageText: { flex: 1, fontSize: 13, color: '#92400e', lineHeight: 20, fontWeight: '500' },
+  alertMessageBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 14, backgroundColor: '#fffbeb', borderRadius: 16, padding: 18, paddingVertical: 20, marginTop: 24, marginHorizontal: -24, marginBottom: -24, borderLeftWidth: 4, borderLeftColor: '#f59e0b' },
+  alertMessageIconWrapper: { marginTop: 2, width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
+  alertMessageText: { flex: 1, fontSize: 14, color: '#92400e', lineHeight: 22, fontWeight: '600', letterSpacing: 0.2 },
 
   // Orbital View
   orbitalSection: { padding: 28, paddingTop: 28, backgroundColor: '#0f172a', borderTopWidth: 1, borderTopColor: 'rgba(139, 92, 246, 0.2)' },
