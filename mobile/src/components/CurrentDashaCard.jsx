@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#0f172a',
+    color: '#6b5644',
     letterSpacing: 0.3,
   },
   dashaGrid: {
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
   dashaValue: {
     fontSize: 16,
     fontWeight: '900',
-    color: '#0f172a',
+    color: '#6b5644',
     letterSpacing: 0.3,
   },
   durationBadge: {
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: 12,
-    color: '#1f2937',
+    color: '#6b5644',
     fontWeight: '700',
     lineHeight: 18,
   },
