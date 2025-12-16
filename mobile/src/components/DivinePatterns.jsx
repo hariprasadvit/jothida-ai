@@ -7,7 +7,7 @@ export const KolamPattern = ({ color = "#d4a574", opacity = 0.35, style }) => {
   const patternId = useRef(`kolam-${Math.random().toString(36).slice(2)}`).current;
 
   return (
-    <View style={[styles.absoluteFill, style, { opacity, zIndex: 0 }]} pointerEvents="none">
+    <View style={[styles.absoluteFill, style, { opacity }]} pointerEvents="none">
       <Svg height="100%" width="100%">
         <Defs>
           <Pattern id={patternId} x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
@@ -72,7 +72,7 @@ export const ScallopPattern = ({
     <View
       pointerEvents="none"
       onLayout={(e) => setMeasuredHeight(e.nativeEvent.layout.height)}
-      style={[styles.absoluteFill, style, { opacity, zIndex: 0 }]}
+      style={[styles.absoluteFill, style, { opacity }]}
     >
       {circles.map((c) => (
         <View
@@ -168,6 +168,5 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: -1,
   },
 });

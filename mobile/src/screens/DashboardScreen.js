@@ -420,7 +420,6 @@ const RashiPalanTicker = ({ transits, language, t, userRashi, onRashiPress }) =>
 
   return (
     <View style={rashiTickerStyles.container}>
-      <ScallopPattern color="#e8d5c4" opacity={0.14} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
       {/* Header Bar */}
       <View style={rashiTickerStyles.header}>
         <View style={rashiTickerStyles.liveIndicator}>
@@ -2055,6 +2054,8 @@ export default function DashboardScreen({ navigation }) {
     <View style={styles.container}>
       {/* Warm auspicious gradient background */}
       <LinearGradient colors={['#faf7f2', '#f5ede5', '#fff8f0']} style={styles.gradient}>
+        {/* Subtle temple-arch illustration behind content (like reference), cards remain solid for readability */}
+        <ScallopPattern color="#e8d5c4" opacity={0.12} circleSize={72} borderWidth={2} />
         <ScrollView
           contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#f97316']} tintColor="#f97316" />}
@@ -2067,8 +2068,6 @@ export default function DashboardScreen({ navigation }) {
               { opacity: headerFadeAnim, transform: [{ translateY: headerSlideAnim }] },
             ]}
           >
-            <ScallopPattern color="#e8d5c4" opacity={0.12} circleSize={52} borderWidth={2} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
-            <OmWatermark color="#d4a574" opacity={0.05} size={220} style={{ position: 'absolute', right: -70, bottom: -90 }} />
             <View>
               <View style={styles.logoRow}>
                 <View style={styles.logoIcon}>
