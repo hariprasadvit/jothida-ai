@@ -2552,6 +2552,7 @@ export default function DashboardScreen({ navigation }) {
           )}
 
           {/* Current Dasha */}
+          <DivineDivider color="#e8d5c4" />
           {jathagam?.dasha?.mahadasha && (
             <AnimatedCard delay={500}>
               <View style={[styles.card, styles.dashaCard, { backgroundColor: '#fef6ed' }]}>
