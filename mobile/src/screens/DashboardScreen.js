@@ -2502,6 +2502,7 @@ export default function DashboardScreen({ navigation }) {
                 onPress={() => navigation.getParent()?.navigate('Remedy')}
               >
                 <View style={[styles.card, styles.parigaramCard, { backgroundColor: '#fef6ed' }]}>
+                  <LotusCorner style={{ position: 'absolute', top: 0, right: 0 }} color="#f97316" size={50} />
                   <View style={styles.parigaramHeader}>
                     <View style={styles.parigaramIconBadge}>
                       <Ionicons name="leaf" size={24} color="#92400e" />
