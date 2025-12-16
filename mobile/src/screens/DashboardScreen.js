@@ -1593,6 +1593,8 @@ const TimelineYearModal = ({ visible, onClose, data, language, t }) => {
   );
 };
 
+import { KolamPattern, DivineDivider, OmWatermark } from '../components/DivinePatterns';
+
 export default function DashboardScreen({ navigation }) {
   const { userProfile } = useAuth();
   const { t, formatDate, language } = useLanguage();
