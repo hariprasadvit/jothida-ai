@@ -3587,7 +3587,7 @@ const styles = StyleSheet.create({
   planetCardSignName: { fontSize: 11, color: '#0f172a', fontWeight: '700' },
   planetCardDegree: { fontSize: 10, color: '#0f172a', marginTop: 6, fontWeight: '700' },
   retroIndicator: { backgroundColor: 'rgba(239, 68, 68, 0.2)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, marginTop: 6 },
-  retroIndicatorText: { fontSize: 9, color: '#fca5a5', fontWeight: '600' },
+  retroIndicatorText: { fontSize: 9, color: '#0f172a', fontWeight: '700' },
 
   // Retrograde Alert
   retroAlertSection: { padding: 16, paddingTop: 0 },
@@ -3617,9 +3617,9 @@ const styles = StyleSheet.create({
   upcomingArrowRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
   upcomingFrom: { fontSize: 11, color: '#0f172a', fontWeight: '700' },
   upcomingTo: { fontSize: 11, color: '#0f172a', fontWeight: '800' },
-  upcomingTimeBox: { alignItems: 'center', backgroundColor: 'rgba(99, 102, 241, 0.2)', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12 },
+  upcomingTimeBox: { alignItems: 'center', backgroundColor: '#f3f4f6', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12 },
   upcomingTimeValue: { fontSize: 18, fontWeight: '900', color: '#0f172a' },
-  upcomingTimeUnit: { fontSize: 9, color: '#94a3b8', marginTop: 2 },
+  upcomingTimeUnit: { fontSize: 9, color: '#0f172a', fontWeight: '700', marginTop: 2 },
 
   // Auspicious Footer
   auspiciousFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 14, borderTopWidth: 1, borderTopColor: 'rgba(139, 92, 246, 0.1)' },
