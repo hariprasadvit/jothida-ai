@@ -2496,12 +2496,7 @@ export default function DashboardScreen({ navigation }) {
                 activeOpacity={0.9}
                 onPress={() => navigation.getParent()?.navigate('Remedy')}
               >
-                <LinearGradient
-                  colors={['#fef3c7', '#fde68a', '#fcd34d']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={[styles.card, styles.parigaramCard]}
-                >
+                <View style={[styles.card, styles.parigaramCard, { backgroundColor: '#fef6ed' }]}>
                   <View style={styles.parigaramHeader}>
                     <View style={styles.parigaramIconBadge}>
                       <Ionicons name="leaf" size={24} color="#92400e" />
@@ -2544,7 +2539,7 @@ export default function DashboardScreen({ navigation }) {
                       <Text style={styles.parigaramTipText}>{t('mantra')}</Text>
                     </View>
                   </View>
-                </LinearGradient>
+                </View>
               </TouchableOpacity>
             </AnimatedCard>
           )}
@@ -2552,10 +2547,10 @@ export default function DashboardScreen({ navigation }) {
           {/* Current Dasha */}
           {jathagam?.dasha?.mahadasha && (
             <AnimatedCard delay={500}>
-              <LinearGradient colors={['#faf5ff', '#eef2ff']} style={[styles.card, styles.dashaCard]}>
+              <View style={[styles.card, styles.dashaCard, { backgroundColor: '#fef6ed' }]}>
                 <View style={styles.cardHeader}>
-                  <Ionicons name="sparkles" size={16} color="#7c3aed" />
-                  <Text style={[styles.cardTitle, { color: '#6b21a8' }]}>{t('currentDasha')}</Text>
+                  <Ionicons name="sparkles" size={16} color="#d4a574" />
+                  <Text style={[styles.cardTitle, { color: '#0f172a', fontWeight: '800' }]}>{t('currentDasha')}</Text>
                 </View>
                 <View style={styles.dashaGrid}>
                   <View style={styles.dashaItem}>
@@ -2573,7 +2568,7 @@ export default function DashboardScreen({ navigation }) {
                     </View>
                   )}
                 </View>
-              </LinearGradient>
+              </View>
             </AnimatedCard>
           )}
 
