@@ -2927,6 +2927,7 @@ export default function DashboardScreen({ navigation }) {
                     <View style={styles.orbitalRingInner} />
 
                     {/* Planet Positions */}
+                    <DivineDivider color="#e8d5c4" />
                     {transitsMap.sky_positions?.map((planet) => {
                       const angleRad = ((planet.angle - 90) * Math.PI) / 180;
                       const radius = planet.radius_factor * 75;
