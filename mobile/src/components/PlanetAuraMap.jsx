@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
   statText: {
     fontSize: 16,
     fontWeight: '900',
-    color: '#0f172a',
+    color: '#6b5644',
   },
   statLabel: {
     fontSize: 12,
@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
   },
   planetSymbol: {
     fontSize: 24,
-    color: '#000000',
+    color: '#6b5644',
     fontWeight: '900',
     textShadowColor: 'rgba(255, 255, 255, 0.8)',
     textShadowOffset: { width: 0, height: 1 },
@@ -429,7 +429,7 @@ const styles = StyleSheet.create({
   scoreChipText: {
     fontSize: 13,
     fontWeight: '900',
-    color: '#000000',
+    color: '#6b5644',
     textShadowColor: 'rgba(255, 255, 255, 0.3)',
     textShadowOffset: { width: 0, height: 0.5 },
     textShadowRadius: 1,
