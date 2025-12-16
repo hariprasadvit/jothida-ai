@@ -74,9 +74,18 @@ export default function MainNavigator() {
         name="Dashboard"
         component={DashboardScreen}
         options={{ tabBarLabel: t('home') }}
-        listeners={({ navigation }) => ({
+        listeners={({ navigation, route }) => ({
           tabPress: (e) => {
-            navigation.navigate('Dashboard');
+            const state = navigation.getState();
+            // If already on this tab, reset it
+            if (state.routes[state.index].name === route.name) {
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{ name: route.name }],
+                })
+              );
+            }
           },
         })}
       />
@@ -84,9 +93,17 @@ export default function MainNavigator() {
         name="AstroFeed"
         component={AstroFeedScreen}
         options={{ tabBarLabel: t('astroFeed') }}
-        listeners={({ navigation }) => ({
+        listeners={({ navigation, route }) => ({
           tabPress: (e) => {
-            navigation.navigate('AstroFeed');
+            const state = navigation.getState();
+            if (state.routes[state.index].name === route.name) {
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{ name: route.name }],
+                })
+              );
+            }
           },
         })}
       />
@@ -94,9 +111,17 @@ export default function MainNavigator() {
         name="Matching"
         component={MatchingScreen}
         options={{ tabBarLabel: t('matching') }}
-        listeners={({ navigation }) => ({
+        listeners={({ navigation, route }) => ({
           tabPress: (e) => {
-            navigation.navigate('Matching');
+            const state = navigation.getState();
+            if (state.routes[state.index].name === route.name) {
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{ name: route.name }],
+                })
+              );
+            }
           },
         })}
       />
@@ -104,9 +129,17 @@ export default function MainNavigator() {
         name="UngalJothidan"
         component={UngalJothidanScreen}
         options={{ tabBarLabel: t('ungalJothidan') }}
-        listeners={({ navigation }) => ({
+        listeners={({ navigation, route }) => ({
           tabPress: (e) => {
-            navigation.navigate('UngalJothidan');
+            const state = navigation.getState();
+            if (state.routes[state.index].name === route.name) {
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{ name: route.name }],
+                })
+              );
+            }
           },
         })}
       />
@@ -114,9 +147,17 @@ export default function MainNavigator() {
         name="Muhurtham"
         component={MuhurthamScreen}
         options={{ tabBarLabel: t('muhurtham') }}
-        listeners={({ navigation }) => ({
+        listeners={({ navigation, route }) => ({
           tabPress: (e) => {
-            navigation.navigate('Muhurtham');
+            const state = navigation.getState();
+            if (state.routes[state.index].name === route.name) {
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{ name: route.name }],
+                })
+              );
+            }
           },
         })}
       />
@@ -124,9 +165,17 @@ export default function MainNavigator() {
         name="Profile"
         component={ProfileScreen}
         options={{ tabBarLabel: t('profile') }}
-        listeners={({ navigation }) => ({
+        listeners={({ navigation, route }) => ({
           tabPress: (e) => {
-            navigation.navigate('Profile');
+            const state = navigation.getState();
+            if (state.routes[state.index].name === route.name) {
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{ name: route.name }],
+                })
+              );
+            }
           },
         })}
       />
