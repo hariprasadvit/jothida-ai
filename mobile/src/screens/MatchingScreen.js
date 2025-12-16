@@ -522,12 +522,13 @@ export default function MatchingScreen() {
                       type="date"
                       style={{
                         padding: 12,
-                        borderRadius: 8,
-                        border: '1px solid #d1d5db',
+                        borderRadius: 12,
+                        border: '1px solid #e8d5c4',
                         fontSize: 14,
                         width: '100%',
-                        backgroundColor: '#fff',
-                        color: '#1f2937',
+                        backgroundColor: '#fef6ed',
+                        color: '#6b5644',
+                        outline: 'none',
                       }}
                       value={groomData.birthDate}
                       max={new Date().toISOString().split('T')[0]}
@@ -553,12 +554,13 @@ export default function MatchingScreen() {
                       type="time"
                       style={{
                         padding: 12,
-                        borderRadius: 8,
-                        border: '1px solid #d1d5db',
+                        borderRadius: 12,
+                        border: '1px solid #e8d5c4',
                         fontSize: 14,
                         width: '100%',
-                        backgroundColor: '#fff',
-                        color: '#1f2937',
+                        backgroundColor: '#fef6ed',
+                        color: '#6b5644',
+                        outline: 'none',
                       }}
                       value={groomData.birthTime}
                       onChange={(e) => setGroomData({ ...groomData, birthTime: e.target.value })}
@@ -650,12 +652,13 @@ export default function MatchingScreen() {
                       type="date"
                       style={{
                         padding: 12,
-                        borderRadius: 8,
-                        border: '1px solid #f9a8d4',
+                        borderRadius: 12,
+                        border: '1px solid #e8d5c4',
                         fontSize: 14,
                         width: '100%',
-                        backgroundColor: '#fff',
-                        color: '#1f2937',
+                        backgroundColor: '#fef6ed',
+                        color: '#6b5644',
+                        outline: 'none',
                       }}
                       value={brideData.birthDate}
                       max={new Date().toISOString().split('T')[0]}
@@ -681,12 +684,13 @@ export default function MatchingScreen() {
                       type="time"
                       style={{
                         padding: 12,
-                        borderRadius: 8,
-                        border: '1px solid #f9a8d4',
+                        borderRadius: 12,
+                        border: '1px solid #e8d5c4',
                         fontSize: 14,
                         width: '100%',
-                        backgroundColor: '#fff',
-                        color: '#1f2937',
+                        backgroundColor: '#fef6ed',
+                        color: '#6b5644',
+                        outline: 'none',
                       }}
                       value={brideData.birthTime}
                       onChange={(e) => setBrideData({ ...brideData, birthTime: e.target.value })}
