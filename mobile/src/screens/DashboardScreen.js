@@ -3039,7 +3039,7 @@ export default function DashboardScreen({ navigation }) {
                 {transitsMap.upcoming_transits?.length > 0 && (
                   <View style={styles.upcomingSection}>
                     <Text style={styles.upcomingSectionTitle}>
-                      <Ionicons name="calendar" size={16} color="#6366f1" /> {t('comingUp')}
+                      <Ionicons name="calendar" size={16} color="#d4a574" /> {t('comingUp')}
                     </Text>
                     {transitsMap.upcoming_transits.slice(0, 3).map((transit, index) => (
                       <View key={index} style={styles.upcomingCard}>
