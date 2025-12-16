@@ -1,5 +1,5 @@
 import React from 'react';
-import { Platform, View } from 'react-native';
+import { Platform, Text, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { CommonActions } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,6 +19,25 @@ export default function MainNavigator() {
   const insets = useSafeAreaInsets();
   const { t } = useLanguage();
   const bottomPadding = Platform.OS === 'android' ? Math.max(insets.bottom, 10) : insets.bottom;
+
+  const getTabLabel = (routeName) => {
+    switch (routeName) {
+      case 'Dashboard':
+        return t('home');
+      case 'AstroFeed':
+        return t('astroFeed');
+      case 'Matching':
+        return t('matching');
+      case 'UngalJothidan':
+        return t('ungalJothidan');
+      case 'Muhurtham':
+        return t('muhurtham');
+      case 'Profile':
+        return t('profile');
+      default:
+        return routeName;
+    }
+  };
 
   return (
     <Tab.Navigator
@@ -51,12 +70,7 @@ export default function MainNavigator() {
         tabBarItemStyle: {
           paddingVertical: 6,
         },
-        tabBarLabelStyle: {
-          fontSize: 10,
-          fontWeight: '800',
-          letterSpacing: 0.2,
-          marginBottom: 2,
-        },
+        tabBarShowLabel: false,
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
 
@@ -74,12 +88,14 @@ export default function MainNavigator() {
             iconName = focused ? 'person' : 'person-outline';
           }
 
+          const label = getTabLabel(route.name);
+
           return (
             <View
               style={{
-                width: 42,
-                height: 34,
-                borderRadius: 16,
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 18,
                 justifyContent: 'center',
                 alignItems: 'center',
                 backgroundColor: focused ? '#fff7ed' : 'transparent',
@@ -88,6 +104,18 @@ export default function MainNavigator() {
               }}
             >
               <Ionicons name={iconName} size={Math.min(size, 22)} color={color} />
+              <Text
+                numberOfLines={1}
+                style={{
+                  marginTop: 2,
+                  fontSize: 10,
+                  fontWeight: '800',
+                  letterSpacing: 0.2,
+                  color,
+                }}
+              >
+                {label}
+              </Text>
             </View>
           );
         },
