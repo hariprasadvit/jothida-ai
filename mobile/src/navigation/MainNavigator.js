@@ -21,7 +21,7 @@ export default function MainNavigator() {
 
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
+      screenOptions={({ route, navigation }) => ({
         headerShown: false,
         tabBarActiveTintColor: '#f97316',
         tabBarInactiveTintColor: '#9ca3af',
