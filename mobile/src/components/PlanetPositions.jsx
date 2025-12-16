@@ -321,6 +321,7 @@ const styles = StyleSheet.create({
   symbol: {
     fontSize: 28,
     fontWeight: '600',
+    color: '#1f2937',
   },
   planetName: {
     fontSize: 14,
@@ -344,11 +345,13 @@ const styles = StyleSheet.create({
   signSymbol: {
     fontSize: 16,
     fontWeight: '600',
+    color: '#1f2937',
   },
   signName: {
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.3,
+    color: '#0f172a',
   },
   degreeRow: {
     flexDirection: 'row',
@@ -357,9 +360,10 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   degreeText: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '800',
     letterSpacing: 0.3,
+    color: '#0f172a',
   },
   nakshatraRow: {
     flexDirection: 'row',
@@ -367,8 +371,9 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   nakshatraText: {
-    fontSize: 11,
-    fontWeight: '600',
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#4b5563',
   },
   retroBadge: {
     position: 'absolute',
@@ -379,7 +384,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   retroText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '900',
     color: '#ffffff',
     letterSpacing: 0.5,
@@ -524,6 +529,7 @@ const styles = StyleSheet.create({
   transitSymbol: {
     fontSize: 22,
     fontWeight: '600',
+    color: '#1f2937',
   },
   transitInfo: {
     flex: 1,
@@ -539,6 +545,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    color: '#0f172a',
   },
   transitSign: {
     fontSize: 13,
