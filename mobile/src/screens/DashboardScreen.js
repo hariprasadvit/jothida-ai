@@ -3609,9 +3609,9 @@ const styles = StyleSheet.create({
   // Upcoming Section
   upcomingSection: { padding: 16, paddingTop: 0 },
   upcomingSectionTitle: { fontSize: 14, fontWeight: '800', color: '#6b5644', marginBottom: 12 },
-  upcomingCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: 12, marginBottom: 10 },
-  upcomingIconBox: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
-  upcomingIcon: { fontSize: 20 },
+  upcomingCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#fef6ed', borderRadius: 14, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: '#e8d5c4' },
+  upcomingIconBox: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff8f0', borderWidth: 1, borderColor: '#e8d5c4' },
+  upcomingIcon: { fontSize: 20, color: '#d4a574', fontWeight: '600' },
   upcomingDetails: { flex: 1 },
   upcomingPlanet: { fontSize: 14, fontWeight: '800', color: '#6b5644' },
   upcomingArrowRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
