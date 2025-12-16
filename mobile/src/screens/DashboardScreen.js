@@ -2495,7 +2495,7 @@ export default function DashboardScreen({ navigation }) {
           </AnimatedCard>
 
           {/* Today's Parigaram - Gamified Remedies */}
-          <DivineDivider color="#e8d5c4" />
+          <DivineDivider />
           {planetAura?.challenged_planets?.length > 0 && (
             <AnimatedCard delay={450}>
               <TouchableOpacity
@@ -2553,7 +2553,7 @@ export default function DashboardScreen({ navigation }) {
           )}
 
           {/* Current Dasha */}
-          <DivineDivider color="#e8d5c4" />
+          <DivineDivider />
           {jathagam?.dasha?.mahadasha && (
             <AnimatedCard delay={500}>
               <View style={[styles.card, styles.dashaCard, { backgroundColor: '#fef6ed' }]}>
@@ -2655,7 +2655,7 @@ export default function DashboardScreen({ navigation }) {
           </AnimatedCard>
 
           {/* Aura Heatmap - Planet Strength Visualization */}
-          <DivineDivider color="#d97706" />
+          <DivineDivider />
           {planetAura && (
             <AnimatedCard delay={600}>
               <View style={[styles.card, styles.auraCard]}>
