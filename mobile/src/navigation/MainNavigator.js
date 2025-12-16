@@ -1,5 +1,5 @@
 import React from 'react';
-import { Platform } from 'react-native';
+import { Platform, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { CommonActions } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,29 +25,37 @@ export default function MainNavigator() {
       screenOptions={({ route, navigation }) => ({
         headerShown: false,
         tabBarActiveTintColor: '#f97316',
-        tabBarInactiveTintColor: '#9ca3af',
+        tabBarInactiveTintColor: '#8b6f47',
+        tabBarHideOnKeyboard: true,
         tabBarStyle: {
-          backgroundColor: '#ffffff',
-          borderTopColor: '#fed7aa',
+          backgroundColor: '#fff8f0',
+          borderTopColor: '#e8d5c4',
           borderTopWidth: 1,
-          paddingTop: 5,
-          paddingBottom: Platform.OS === 'web' ? 5 : bottomPadding + 5,
-          height: Platform.OS === 'web' ? 60 : 60 + bottomPadding,
+          paddingTop: 10,
+          paddingBottom: Platform.OS === 'web' ? 10 : bottomPadding + 8,
+          height: Platform.OS === 'web' ? 74 : 74 + bottomPadding,
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
           ...(Platform.OS !== 'web' && {
             position: 'absolute',
             bottom: 0,
             left: 0,
             right: 0,
           }),
-          elevation: 8,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 4,
+          shadowColor: '#d4a574',
+          shadowOffset: { width: 0, height: -8 },
+          shadowOpacity: 0.14,
+          shadowRadius: 14,
+          elevation: 12,
+        },
+        tabBarItemStyle: {
+          paddingVertical: 6,
         },
         tabBarLabelStyle: {
           fontSize: 10,
-          fontWeight: '600',
+          fontWeight: '800',
+          letterSpacing: 0.2,
+          marginBottom: 2,
         },
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
@@ -66,7 +74,22 @@ export default function MainNavigator() {
             iconName = focused ? 'person' : 'person-outline';
           }
 
-          return <Ionicons name={iconName} size={size} color={color} />;
+          return (
+            <View
+              style={{
+                width: 42,
+                height: 34,
+                borderRadius: 16,
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: focused ? '#fff7ed' : 'transparent',
+                borderWidth: focused ? 1 : 0,
+                borderColor: focused ? '#fed7aa' : 'transparent',
+              }}
+            >
+              <Ionicons name={iconName} size={Math.min(size, 22)} color={color} />
+            </View>
+          );
         },
       })}
     >
