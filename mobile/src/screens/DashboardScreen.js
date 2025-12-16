@@ -3119,8 +3119,8 @@ const styles = StyleSheet.create({
   periodText: { fontSize: 11, fontWeight: '800', letterSpacing: 0.8 },
 
   // Date card
-  dateCard: { backgroundColor: '#fff', marginHorizontal: 16, marginTop: 16, padding: 14, borderRadius: 16, alignItems: 'center', borderWidth: 1, borderColor: '#fcd34d', shadowColor: '#f97316', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.12, shadowRadius: 8, elevation: 4 },
-  dateText: { fontSize: 15, color: '#9a3412', fontWeight: '700', letterSpacing: 0.3 },
+  dateCard: { backgroundColor: '#e8ecf3', marginHorizontal: 16, marginTop: 20, padding: 16, borderRadius: 24, alignItems: 'center', shadowColor: '#ffffff', shadowOffset: { width: -6, height: -6 }, shadowOpacity: 1, shadowRadius: 12, elevation: 0 },
+  dateText: { fontSize: 16, color: '#5a6c8f', fontWeight: '800', letterSpacing: 0.8 },
 
   // Story Preview Row (Instagram-style)
   storyPreviewRow: { paddingHorizontal: 16, paddingVertical: 16 },
@@ -3132,14 +3132,14 @@ const styles = StyleSheet.create({
   storyMoreCircle: { width: 60, height: 60, borderRadius: 30, backgroundColor: '#fff', borderWidth: 2.5, borderColor: '#fcd34d', borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center', shadowColor: '#f97316', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.15, shadowRadius: 5, elevation: 4 },
   storyLabel: { fontSize: 11, color: '#4b5563', marginTop: 6, textAlign: 'center', fontWeight: '600' },
 
-  card: { backgroundColor: '#fff', borderRadius: 20, padding: 20, marginTop: 16, marginHorizontal: 16, borderWidth: 1, borderColor: 'rgba(252, 211, 77, 0.4)', shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 6 },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
-  cardTitle: { fontSize: 17, fontWeight: '800', color: '#92400e', flex: 1, letterSpacing: 0.2 },
+  card: { backgroundColor: '#e8ecf3', borderRadius: 28, padding: 24, marginTop: 20, marginHorizontal: 16, shadowColor: '#ffffff', shadowOffset: { width: -8, height: -8 }, shadowOpacity: 1, shadowRadius: 16, elevation: 0 },
+  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 18 },
+  cardTitle: { fontSize: 18, fontWeight: '800', color: '#5a6c8f', flex: 1, letterSpacing: 0.5 },
   tapHintSmall: { fontSize: 10, color: '#9ca3af' },
-  panchangamGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  panchangamItem: { flex: 1, minWidth: '45%', backgroundColor: '#fffbeb', borderRadius: 14, padding: 16, borderWidth: 1, borderColor: 'rgba(252, 211, 77, 0.5)', shadowColor: '#f97316', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.08, shadowRadius: 6, elevation: 3 },
-  panchangamLabel: { fontSize: 11, color: '#92400e', marginBottom: 6, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
-  panchangamValue: { fontSize: 14, fontWeight: '800', color: '#78350f', letterSpacing: 0.2 },
+  panchangamGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 14 },
+  panchangamItem: { flex: 1, minWidth: '45%', backgroundColor: '#e8ecf3', borderRadius: 20, padding: 18, shadowColor: '#a3b9d9', shadowOffset: { width: 4, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 },
+  panchangamLabel: { fontSize: 11, color: '#7a8ba8', marginBottom: 8, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1 },
+  panchangamValue: { fontSize: 15, fontWeight: '800', color: '#5a6c8f', letterSpacing: 0.3 },
 
   scoreRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   scoreLabel: { fontSize: 13, color: '#6b7280', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
