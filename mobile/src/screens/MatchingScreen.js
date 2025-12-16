@@ -540,7 +540,7 @@ export default function MatchingScreen() {
                       onPress={() => setShowGroomDatePicker(true)}
                     >
                       <Text style={groomData.birthDate ? styles.datePickerText : styles.datePickerPlaceholder}>
-                        {groomData.birthDate || t('selectDate')}
+                        {groomData.birthDate || t('selectDatePlaceholder')}
                       </Text>
                       <Ionicons name="calendar" size={18} color="#6b7280" />
                     </TouchableOpacity>
@@ -569,7 +569,7 @@ export default function MatchingScreen() {
                       onPress={() => setShowGroomTimePicker(true)}
                     >
                       <Text style={groomData.birthTime ? styles.datePickerText : styles.datePickerPlaceholder}>
-                        {groomData.birthTime || t('selectTime')}
+                        {groomData.birthTime || t('selectTimePlaceholder')}
                       </Text>
                       <Ionicons name="time" size={18} color="#6b7280" />
                     </TouchableOpacity>
@@ -668,7 +668,7 @@ export default function MatchingScreen() {
                       onPress={() => setShowBrideDatePicker(true)}
                     >
                       <Text style={brideData.birthDate ? styles.datePickerText : styles.datePickerPlaceholder}>
-                        {brideData.birthDate || t('selectDate')}
+                        {brideData.birthDate || t('selectDatePlaceholder')}
                       </Text>
                       <Ionicons name="calendar" size={18} color="#db2777" />
                     </TouchableOpacity>
@@ -697,7 +697,7 @@ export default function MatchingScreen() {
                       onPress={() => setShowBrideTimePicker(true)}
                     >
                       <Text style={brideData.birthTime ? styles.datePickerText : styles.datePickerPlaceholder}>
-                        {brideData.birthTime || t('selectTime')}
+                        {brideData.birthTime || t('selectTimePlaceholder')}
                       </Text>
                       <Ionicons name="time" size={18} color="#db2777" />
                     </TouchableOpacity>
