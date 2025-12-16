@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
   nakshatraText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#4b5563',
+    color: '#1f2937',
   },
   retroBadge: {
     position: 'absolute',
@@ -551,7 +551,7 @@ const styles = StyleSheet.create({
   transitSign: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#4b5563',
+    color: '#0f172a',
   },
   transitTimeBox: {
     alignItems: 'center',
@@ -570,7 +570,7 @@ const styles = StyleSheet.create({
   },
   transitTimeLabel: {
     fontSize: 10,
-    color: '#4b5563',
+    color: '#0f172a',
     fontWeight: '800',
   },
 });
