@@ -420,6 +420,7 @@ const RashiPalanTicker = ({ transits, language, t, userRashi, onRashiPress }) =>
 
   return (
     <View style={rashiTickerStyles.container}>
+      <ScallopPattern color="#e8d5c4" opacity={0.14} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
       {/* Header Bar */}
       <View style={rashiTickerStyles.header}>
         <View style={rashiTickerStyles.liveIndicator}>
@@ -1596,7 +1597,7 @@ const TimelineYearModal = ({ visible, onClose, data, language, t }) => {
   );
 };
 
-import { LotusCorner } from '../components/DivinePatterns';
+import { LotusCorner, ScallopPattern } from '../components/DivinePatterns';
 
 export default function DashboardScreen({ navigation }) {
   const { userProfile } = useAuth();
@@ -3126,7 +3127,9 @@ const styles = StyleSheet.create({
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#faf7f2' },
   loadingText: { marginTop: 16, color: '#8b6f47', fontSize: 16, fontWeight: '600' },
   headerBar: { height: 0 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: 24, paddingBottom: 20, backgroundColor: '#fff8f0', marginHorizontal: 16, marginTop: 16, borderRadius: 20, borderWidth: 1, borderColor: '#e8d5c4', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 3 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: 24, paddingBottom: 20, backgroundColor: '#fff8f0', marginHorizontal: 16, marginTop: 16, borderRadius: 20, borderWidth: 1, borderColor: '#e8d5c4', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 3, overflow: 'hidden' },
+  headerOrnament: { position: 'absolute', top: 10, left: 14, right: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  headerOrnamentLine: { flex: 1, height: 1, backgroundColor: '#e8d5c4', opacity: 0.9 },
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   logoIcon: { width: 36, height: 36 },
   appTitle: { fontSize: 24, fontWeight: '600', color: '#6b5644', letterSpacing: 0.5, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
