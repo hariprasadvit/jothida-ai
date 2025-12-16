@@ -2503,10 +2503,11 @@ export default function DashboardScreen({ navigation }) {
                 onPress={() => navigation.getParent()?.navigate('Remedy')}
               >
                 <View style={[styles.card, styles.parigaramCard, { backgroundColor: '#fef6ed' }]}>
-                  <LotusCorner style={{ position: 'absolute', top: 0, right: 0 }} color="#f97316" size={50} />
+                  <LotusCorner style={{ position: 'absolute', top: 0, right: 0 }} color="#f97316" size={60} />
+                  <LotusCorner style={{ position: 'absolute', bottom: 0, left: 0, transform: [{ rotate: '180deg' }] }} color="#d4a574" size={60} />
                   <View style={styles.parigaramHeader}>
                     <View style={styles.parigaramIconBadge}>
-                      <Ionicons name="leaf" size={24} color="#92400e" />
+                      <DiyaIcon size={28} color="#d97706" />
                     </View>
                     <View style={styles.parigaramTitleSection}>
                       <Text style={styles.parigaramTitle}>{t('todayParigaram')}</Text>
