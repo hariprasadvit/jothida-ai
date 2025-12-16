@@ -2750,9 +2750,9 @@ export default function DashboardScreen({ navigation }) {
               <View style={styles.transitsContainer}>
                 {/* Header with Glassmorphism */}
                 <LinearGradient
-                  colors={['#1e1b4b', '#312e81', '#3730a3']}
+                  colors={['#6366f1', '#8b5cf6']}
                   start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
+                  end={{ x: 1, y: 0 }}
                   style={styles.transitsHeader}
                 >
                   <View style={styles.transitsHeaderContent}>
@@ -2778,10 +2778,7 @@ export default function DashboardScreen({ navigation }) {
 
                 {/* Moon Transit - Hero Section */}
                 {transitsMap.moon_transit && (
-                  <LinearGradient
-                    colors={['#0f172a', '#1e293b']}
-                    style={styles.moonHeroSection}
-                  >
+                  <View style={styles.moonHeroSection}>
                     <View style={styles.moonHeroHeader}>
                       <View style={styles.moonHeroIconContainer}>
                         <Text style={styles.moonHeroIcon}>{transitsMap.moon_transit.phase_icon}</Text>
@@ -2844,7 +2841,7 @@ export default function DashboardScreen({ navigation }) {
                         <Text style={styles.alertMessageText}>{language === 'ta' ? transitsMap.moon_transit.transit_message : (transitsMap.moon_transit.transit_message_en || transitsMap.moon_transit.transit_message)}</Text>
                       </View>
                     )}
-                  </LinearGradient>
+                  </View>
                 )}
 
                 {/* Sky Map - Orbital View */}
@@ -3445,51 +3442,51 @@ const styles = StyleSheet.create({
   auraDominantPlanet: { fontSize: 12, color: '#22c55e', fontWeight: '500' },
 
   // Transits Map - Premium Styles
-  transitsContainer: { marginTop: 16, borderRadius: 20, overflow: 'hidden', backgroundColor: '#0f0a1e' },
+  transitsContainer: { marginTop: 16, borderRadius: 20, overflow: 'hidden', backgroundColor: '#fff', borderWidth: 1, borderColor: '#e5e7eb', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3 },
   transitsHeader: { padding: 16, borderBottomWidth: 1, borderBottomColor: 'rgba(139, 92, 246, 0.2)' },
   transitsHeaderContent: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   transitsHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   transitsHeaderIcon: { fontSize: 28 },
   transitsHeaderTitle: { fontSize: 18, fontWeight: '700', color: '#fff' },
-  transitsHeaderSubtitle: { fontSize: 11, color: '#a78bfa', marginTop: 2 },
-  livePulseContainer: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(239, 68, 68, 0.2)', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12 },
-  livePulseOuter: { width: 12, height: 12, borderRadius: 6, backgroundColor: 'rgba(239, 68, 68, 0.3)', justifyContent: 'center', alignItems: 'center' },
-  livePulseInner: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#ef4444' },
-  livePulseText: { fontSize: 10, fontWeight: '800', color: '#ef4444', letterSpacing: 1 },
+  transitsHeaderSubtitle: { fontSize: 11, color: '#e0e7ff', marginTop: 2 },
+  livePulseContainer: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(255, 255, 255, 0.25)', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12 },
+  livePulseOuter: { width: 12, height: 12, borderRadius: 6, backgroundColor: 'rgba(255, 255, 255, 0.4)', justifyContent: 'center', alignItems: 'center' },
+  livePulseInner: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#fff' },
+  livePulseText: { fontSize: 10, fontWeight: '800', color: '#fff', letterSpacing: 1 },
 
   // Moon Hero Section
-  moonHeroSection: { padding: 20 },
+  moonHeroSection: { padding: 20, backgroundColor: '#f8fafc' },
   moonHeroHeader: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   moonHeroIconContainer: { position: 'relative' },
   moonHeroIcon: { fontSize: 44 },
   moonHeroGlow: { position: 'absolute', width: 50, height: 50, borderRadius: 25, backgroundColor: 'rgba(251, 191, 36, 0.15)', top: -3, left: -3 },
   moonHeroInfo: { flex: 1 },
-  moonHeroLabel: { fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1 },
-  moonHeroSign: { fontSize: 20, fontWeight: '700', color: '#fff', marginTop: 4 },
-  moonHeroPhase: { fontSize: 12, color: '#a78bfa', marginTop: 2 },
+  moonHeroLabel: { fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1 },
+  moonHeroSign: { fontSize: 20, fontWeight: '700', color: '#1e293b', marginTop: 4 },
+  moonHeroPhase: { fontSize: 12, color: '#6366f1', marginTop: 2 },
   moonEnergyCard: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, alignItems: 'center' },
   moonEnergyEmoji: { fontSize: 18 },
   moonEnergyMood: { fontSize: 10, fontWeight: '600', marginTop: 2 },
 
   // Countdown Timer
-  countdownContainer: { alignItems: 'center', marginTop: 24, paddingTop: 20, borderTopWidth: 1, borderTopColor: 'rgba(139, 92, 246, 0.15)' },
-  countdownLabel: { fontSize: 12, color: '#94a3b8', marginBottom: 12 },
+  countdownContainer: { alignItems: 'center', marginTop: 24, paddingTop: 20, borderTopWidth: 1, borderTopColor: '#e2e8f0' },
+  countdownLabel: { fontSize: 12, color: '#64748b', marginBottom: 12 },
   countdownTimerRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   countdownBox: { alignItems: 'center' },
   countdownBoxGradient: { width: 70, height: 70, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
   countdownValue: { fontSize: 32, fontWeight: '800', color: '#fff' },
-  countdownUnit: { fontSize: 10, color: '#94a3b8', marginTop: 6, textTransform: 'uppercase', letterSpacing: 1 },
+  countdownUnit: { fontSize: 10, color: '#64748b', marginTop: 6, textTransform: 'uppercase', letterSpacing: 1 },
   countdownSeparator: { fontSize: 32, fontWeight: '800', color: '#6366f1', marginBottom: 20 },
-  nextSignRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 16, backgroundColor: 'rgba(139, 92, 246, 0.15)', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 },
-  nextSignText: { fontSize: 14, fontWeight: '600', color: '#a78bfa' },
+  nextSignRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 16, backgroundColor: '#ede9fe', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 },
+  nextSignText: { fontSize: 14, fontWeight: '600', color: '#6366f1' },
 
   // Alert Message
   alertMessageBox: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: 'rgba(251, 191, 36, 0.12)', borderRadius: 12, padding: 12, marginTop: 16, borderWidth: 1, borderColor: 'rgba(251, 191, 36, 0.2)' },
   alertMessageText: { flex: 1, fontSize: 12, color: '#fbbf24', lineHeight: 18 },
 
   // Orbital View
-  orbitalSection: { padding: 20, paddingTop: 0 },
-  orbitalTitle: { fontSize: 14, fontWeight: '600', color: '#e2e8f0', marginBottom: 16, textAlign: 'center' },
+  orbitalSection: { padding: 20, paddingTop: 0, backgroundColor: '#fafafa' },
+  orbitalTitle: { fontSize: 14, fontWeight: '600', color: '#475569', marginBottom: 16, textAlign: 'center' },
   orbitalContainer: { width: 170, height: 170, alignSelf: 'center', position: 'relative' },
   orbitalRingOuter: { position: 'absolute', width: 170, height: 170, borderRadius: 85, borderWidth: 1, borderColor: 'rgba(139, 92, 246, 0.2)' },
   orbitalRingMiddle: { position: 'absolute', width: 120, height: 120, borderRadius: 60, borderWidth: 1, borderColor: 'rgba(139, 92, 246, 0.15)', left: 25, top: 25 },
@@ -3500,17 +3497,17 @@ const styles = StyleSheet.create({
   earthEmoji: { fontSize: 16 },
 
   // Planet Cards
-  planetCardsSection: { paddingBottom: 16 },
-  planetCardsTitle: { fontSize: 14, fontWeight: '600', color: '#e2e8f0', marginBottom: 12, paddingHorizontal: 20 },
+  planetCardsSection: { paddingBottom: 16, backgroundColor: '#fff' },
+  planetCardsTitle: { fontSize: 14, fontWeight: '600', color: '#475569', marginBottom: 12, paddingHorizontal: 20 },
   planetCardsScroll: { paddingHorizontal: 16 },
   planetCard: { alignItems: 'center', paddingHorizontal: 14, paddingVertical: 14, borderRadius: 16, marginRight: 12, borderWidth: 1, minWidth: 85 },
   planetCardIconBg: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
   planetCardSymbol: { fontSize: 20 },
-  planetCardName: { fontSize: 11, color: '#e2e8f0', fontWeight: '500', marginBottom: 6 },
+  planetCardName: { fontSize: 11, color: '#334155', fontWeight: '500', marginBottom: 6 },
   planetCardSignRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   planetCardSign: { fontSize: 14, fontWeight: '700' },
-  planetCardSignName: { fontSize: 10, color: '#94a3b8' },
-  planetCardDegree: { fontSize: 9, color: '#64748b', marginTop: 4 },
+  planetCardSignName: { fontSize: 10, color: '#64748b' },
+  planetCardDegree: { fontSize: 9, color: '#94a3b8', marginTop: 4 },
   retroIndicator: { backgroundColor: 'rgba(239, 68, 68, 0.2)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, marginTop: 6 },
   retroIndicatorText: { fontSize: 9, color: '#fca5a5', fontWeight: '600' },
 
