@@ -3046,8 +3046,8 @@ const styles = StyleSheet.create({
 
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fef3c7' },
   loadingText: { marginTop: 16, color: '#92400e', fontSize: 16, fontWeight: '500' },
-  headerBar: { height: 4 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#fcd34d' },
+  headerBar: { height: 4, marginHorizontal: -16 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#fcd34d', marginHorizontal: -16, paddingHorizontal: 16 },
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   logoIcon: { width: 28, height: 28 },
   appTitle: { fontSize: 20, fontWeight: 'bold', color: '#9a3412' },
