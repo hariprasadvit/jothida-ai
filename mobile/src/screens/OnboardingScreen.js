@@ -542,6 +542,8 @@ export default function OnboardingScreen({ navigation }) {
   const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
 
   const handleNext = () => {
+    console.log('Next button pressed, currentIndex:', currentIndex);
+
     Animated.sequence([
       Animated.timing(buttonScale, {
         toValue: 0.9,
@@ -556,11 +558,25 @@ export default function OnboardingScreen({ navigation }) {
     ]).start();
 
     if (currentIndex < onboardingData.length - 1) {
-      flatListRef.current?.scrollToIndex({ 
-        index: currentIndex + 1,
-        animated: true 
-      });
+      try {
+        // Safer scrolling with error handling
+        const nextIndex = currentIndex + 1;
+        console.log('Scrolling to index:', nextIndex);
+
+        if (flatListRef.current) {
+          flatListRef.current.scrollToIndex({
+            index: nextIndex,
+            animated: true,
+            viewPosition: 0.5
+          });
+        }
+      } catch (error) {
+        console.error('Error scrolling to next slide:', error);
+        // Fallback: manually update index
+        setCurrentIndex(currentIndex + 1);
+      }
     } else {
+      console.log('Last slide, completing onboarding');
       completeOnboarding();
     }
   };
