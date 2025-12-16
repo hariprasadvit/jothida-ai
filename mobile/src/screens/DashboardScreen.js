@@ -2066,6 +2066,15 @@ export default function DashboardScreen({ navigation }) {
             style={styles.headerBar}
           />
 
+          {/* Traditional Hindu Decorative Border */}
+          <View style={{ marginTop: 8, marginBottom: 4, alignItems: 'center' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <DiyaIcon size={24} color="#d97706" />
+              <DivineDivider />
+              <DiyaIcon size={24} color="#d97706" />
+            </View>
+          </View>
+
           {/* Header */}
           <Animated.View
             style={[
