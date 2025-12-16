@@ -395,9 +395,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   retroSectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#991b1b',
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#7c2d12',
     letterSpacing: 0.5,
   },
   retroAlert: {
@@ -432,10 +432,10 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   retroName: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#7c2d12',
-    letterSpacing: 0.3,
+    fontSize: 17,
+    fontWeight: '900',
+    color: '#5a2d0c',
+    letterSpacing: 0.4,
   },
   retroStatusPill: {
     flexDirection: 'row',
@@ -450,9 +450,9 @@ const styles = StyleSheet.create({
     borderColor: '#fca5a5',
   },
   retroStatus: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#991b1b',
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#7c2d12',
   },
   retroDaysBox: {
     alignItems: 'center',
@@ -470,15 +470,15 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   retroDaysLabel: {
-    fontSize: 10,
-    color: '#991b1b',
-    fontWeight: '600',
+    fontSize: 11,
+    color: '#7c2d12',
+    fontWeight: '700',
   },
   retroMessage: {
-    fontSize: 13,
-    color: '#7c2d12',
-    lineHeight: 20,
-    fontWeight: '600',
+    fontSize: 14,
+    color: '#5a2d0c',
+    lineHeight: 22,
+    fontWeight: '700',
   },
   transitSection: {
     paddingHorizontal: 16,
@@ -491,9 +491,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   transitSectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#6b5644',
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#5a4838',
     letterSpacing: 0.5,
   },
   transitCard: {
@@ -530,10 +530,10 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   transitPlanet: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#1f2937',
-    letterSpacing: 0.3,
+    fontSize: 15,
+    fontWeight: '900',
+    color: '#0f172a',
+    letterSpacing: 0.4,
   },
   transitArrowRow: {
     flexDirection: 'row',
@@ -541,9 +541,9 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   transitSign: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#6b7280',
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#4b5563',
   },
   transitTimeBox: {
     alignItems: 'center',
