@@ -12,7 +12,6 @@ import {
   Easing,
   Modal,
   Dimensions,
-  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -265,23 +264,64 @@ const translateEventLabel = (event, language, t) => {
 
 // ============== RASHI PALAN DATA & COMPONENT ==============
 
-// Zodiac sprite image URL
-const ZODIAC_SPRITE_URL = 'https://cdn.builder.io/api/v1/image/assets%2Feb321189c4b84461803d094998b7a875%2F39cb8d9bc03a4c5e838dd65500c02316?format=webp&width=800';
+// Zodiac Icon Component using SVG
+const ZodiacIcon = ({ sign, size = 30 }) => {
+  const zodiacData = {
+    aries: { symbol: '♈', color1: '#f59e0b', color2: '#fb923c' },
+    taurus: { symbol: '♉', color1: '#f59e0b', color2: '#fbbf24' },
+    gemini: { symbol: '♊', color1: '#f97316', color2: '#fb923c' },
+    cancer: { symbol: '♋', color1: '#f59e0b', color2: '#fbbf24' },
+    leo: { symbol: '♌', color1: '#f97316', color2: '#fb923c' },
+    virgo: { symbol: '♍', color1: '#f97316', color2: '#fbbf24' },
+    libra: { symbol: '♎', color1: '#f59e0b', color2: '#fb923c' },
+    scorpio: { symbol: '♏', color1: '#f59e0b', color2: '#fbbf24' },
+    sagittarius: { symbol: '♐', color1: '#f59e0b', color2: '#fb923c' },
+    capricorn: { symbol: '♑', color1: '#f59e0b', color2: '#fbbf24' },
+    aquarius: { symbol: '♒', color1: '#f97316', color2: '#fb923c' },
+    pisces: { symbol: '♓', color1: '#f59e0b', color2: '#fbbf24' },
+  };
 
-// 12 Zodiac signs with sprite positions (4 columns x 3 rows)
+  const data = zodiacData[sign];
+
+  return (
+    <Svg width={size} height={size} viewBox="0 0 100 100">
+      <Defs>
+        <RadialGradient id={`grad-${sign}`} cx="50%" cy="50%" r="50%">
+          <Stop offset="0%" stopColor={data.color1} stopOpacity="1" />
+          <Stop offset="100%" stopColor={data.color2} stopOpacity="1" />
+        </RadialGradient>
+      </Defs>
+      <Circle cx="50" cy="50" r="48" fill={`url(#grad-${sign})`} stroke="#fff" strokeWidth="2" />
+      <SvgText
+        x="50"
+        y="50"
+        fontSize="48"
+        fontWeight="bold"
+        fill="#fff"
+        textAnchor="middle"
+        alignmentBaseline="central"
+        dy="3"
+      >
+        {data.symbol}
+      </SvgText>
+    </Svg>
+  );
+};
+
+// 12 Zodiac signs data
 const RASHI_DATA = [
-  { key: 'aries', spriteCol: 0, spriteRow: 0, color: '#f59e0b', ruler: 'Mars', element: 'fire', ta: 'மேஷம்' },
-  { key: 'taurus', spriteCol: 1, spriteRow: 0, color: '#f59e0b', ruler: 'Venus', element: 'earth', ta: 'ரிஷபம்' },
-  { key: 'gemini', spriteCol: 2, spriteRow: 0, color: '#f97316', ruler: 'Mercury', element: 'air', ta: 'மிதுனம்' },
-  { key: 'cancer', spriteCol: 3, spriteRow: 0, color: '#f59e0b', ruler: 'Moon', element: 'water', ta: 'கடகம்' },
-  { key: 'leo', spriteCol: 0, spriteRow: 1, color: '#f97316', ruler: 'Sun', element: 'fire', ta: 'சிம்மம்' },
-  { key: 'virgo', spriteCol: 1, spriteRow: 1, color: '#f97316', ruler: 'Mercury', element: 'earth', ta: 'கன்னி' },
-  { key: 'libra', spriteCol: 2, spriteRow: 1, color: '#f59e0b', ruler: 'Venus', element: 'air', ta: 'துலாம்' },
-  { key: 'scorpio', spriteCol: 3, spriteRow: 1, color: '#f59e0b', ruler: 'Mars', element: 'water', ta: 'விருச்சிகம்' },
-  { key: 'sagittarius', spriteCol: 0, spriteRow: 2, color: '#f59e0b', ruler: 'Jupiter', element: 'fire', ta: 'தனுசு' },
-  { key: 'capricorn', spriteCol: 1, spriteRow: 2, color: '#f59e0b', ruler: 'Saturn', element: 'earth', ta: 'மகரம்' },
-  { key: 'aquarius', spriteCol: 2, spriteRow: 2, color: '#f97316', ruler: 'Saturn', element: 'air', ta: 'கும்பம்' },
-  { key: 'pisces', spriteCol: 3, spriteRow: 2, color: '#f59e0b', ruler: 'Jupiter', element: 'water', ta: 'மீனம்' },
+  { key: 'aries', color: '#f59e0b', ruler: 'Mars', element: 'fire', ta: 'மேஷம்' },
+  { key: 'taurus', color: '#f59e0b', ruler: 'Venus', element: 'earth', ta: 'ரிஷபம்' },
+  { key: 'gemini', color: '#f97316', ruler: 'Mercury', element: 'air', ta: 'மிதுனம்' },
+  { key: 'cancer', color: '#f59e0b', ruler: 'Moon', element: 'water', ta: 'கடகம்' },
+  { key: 'leo', color: '#f97316', ruler: 'Sun', element: 'fire', ta: 'சிம்மம்' },
+  { key: 'virgo', color: '#f97316', ruler: 'Mercury', element: 'earth', ta: 'கன்னி' },
+  { key: 'libra', color: '#f59e0b', ruler: 'Venus', element: 'air', ta: 'துலாம்' },
+  { key: 'scorpio', color: '#f59e0b', ruler: 'Mars', element: 'water', ta: 'விருச்சிகம்' },
+  { key: 'sagittarius', color: '#f59e0b', ruler: 'Jupiter', element: 'fire', ta: 'தனுசு' },
+  { key: 'capricorn', color: '#f59e0b', ruler: 'Saturn', element: 'earth', ta: 'மகரம்' },
+  { key: 'aquarius', color: '#f97316', ruler: 'Saturn', element: 'air', ta: 'கும்பம்' },
+  { key: 'pisces', color: '#f59e0b', ruler: 'Jupiter', element: 'water', ta: 'மீனம்' },
 ];
 
 // Calculate dynamic Rashi score based on current transits and date
@@ -409,29 +449,9 @@ const RashiPalanTicker = ({ transits, language, t, userRashi, onRashiPress }) =>
               userRashi.toLowerCase().includes(rashi.key.substring(0, 4))
             );
 
-            // Sprite sheet is 4 columns x 3 rows
-            const iconSize = 30;
-            const spriteSheetWidth = 800; // from URL width parameter
-            const spriteSheetHeight = 600; // estimated based on 4:3 aspect for 4x3 grid
-            const cellWidth = spriteSheetWidth / 4;
-            const cellHeight = spriteSheetHeight / 3;
-            const scale = iconSize / cellWidth;
-
             return (
               <View key={`${rashi.key}-${index}`} style={rashiTickerStyles.rashiItem}>
-                <View style={[rashiTickerStyles.iconContainer, { width: iconSize, height: iconSize, borderRadius: iconSize / 2 }]}>
-                  <Image
-                    source={{ uri: ZODIAC_SPRITE_URL }}
-                    style={{
-                      position: 'absolute',
-                      width: spriteSheetWidth * scale,
-                      height: spriteSheetHeight * scale,
-                      left: -(rashi.spriteCol * cellWidth * scale),
-                      top: -(rashi.spriteRow * cellHeight * scale),
-                    }}
-                    resizeMode="stretch"
-                  />
-                </View>
+                <ZodiacIcon sign={rashi.key} size={30} />
                 <Text style={[
                   rashiTickerStyles.rashiName,
                   isUserRashi && rashiTickerStyles.rashiNameHighlight
