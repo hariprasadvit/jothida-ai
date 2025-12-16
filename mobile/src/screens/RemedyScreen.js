@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -240,39 +240,41 @@ export default function RemedyScreen({ navigation }) {
   const [remedyData, setRemedyData] = useState(null);
   const [error, setError] = useState(null);
 
-  const fetchRemedies = async (goal = null) => {
-    try {
-      setLoading(true);
-      setError(null);
+  const fetchRemedies = useCallback(
+    async (goal = null) => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      if (!userProfile?.birthDate || !userProfile?.birthTime || !userProfile?.birthPlace) {
-        setError(t('birthDetailsRequired'));
+        if (!userProfile?.birthDate || !userProfile?.birthTime || !userProfile?.birthPlace) {
+          setError(t('birthDetailsRequired'));
+          setLoading(false);
+          return;
+        }
+
+        const birthDetails = {
+          name: userProfile.name,
+          birthDate: userProfile.birthDate,
+          birthTime: userProfile.birthTime,
+          birthPlace: userProfile.birthPlace,
+        };
+
+        const data = await remedyAPI.getPersonalized(birthDetails, goal, language);
+        setRemedyData(data);
+      } catch (err) {
+        console.error('Remedy API error:', err);
+        setError(t('failedToLoadRemedies'));
+      } finally {
         setLoading(false);
-        return;
+        setRefreshing(false);
       }
-
-      const birthDetails = {
-        name: userProfile.name,
-        birthDate: userProfile.birthDate,
-        birthTime: userProfile.birthTime,
-        birthPlace: userProfile.birthPlace,
-      };
-
-      const data = await remedyAPI.getPersonalized(birthDetails, goal, language);
-      setRemedyData(data);
-    } catch (err) {
-      console.error('Remedy API error:', err);
-      setError(t('failedToLoadRemedies'));
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
+    },
+    [language, t, userProfile],
+  );
 
   useEffect(() => {
     fetchRemedies(selectedGoal);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedGoal, language]);
+  }, [fetchRemedies, selectedGoal]);
 
   const onRefresh = () => {
     setRefreshing(true);
