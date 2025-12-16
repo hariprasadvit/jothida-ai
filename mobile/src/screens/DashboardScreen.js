@@ -3439,49 +3439,49 @@ const styles = StyleSheet.create({
   peakLowText: { fontSize: 12, color: '#cbd5e1' },
 
   // Aura Heatmap styles
-  auraCard: { borderColor: '#8b5cf6' },
-  auraBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
-  auraBadgeText: { fontSize: 14, fontWeight: '700' },
-  auraOverview: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-  auraLevelBadge: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 16 },
-  auraLevelText: { fontSize: 13, fontWeight: '600' },
+  auraCard: { borderColor: 'rgba(139, 92, 246, 0.6)', shadowColor: '#8b5cf6', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16, elevation: 10 },
+  auraBadge: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 14, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 4, elevation: 3 },
+  auraBadgeText: { fontSize: 15, fontWeight: '900', letterSpacing: 0.3 },
+  auraOverview: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 },
+  auraLevelBadge: { paddingHorizontal: 16, paddingVertical: 7, borderRadius: 18, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 4, elevation: 3 },
+  auraLevelText: { fontSize: 14, fontWeight: '800', letterSpacing: 0.4 },
   auraStats: { flexDirection: 'row', gap: 12 },
   auraStat: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   auraStatText: { fontSize: 13, color: '#e5e7eb', fontWeight: '500' },
 
   // Radial container
-  auraRadialContainer: { width: 220, height: 220, alignSelf: 'center', position: 'relative', marginVertical: 10 },
-  auraCenterCircle: { position: 'absolute', left: 85, top: 85, width: 50, height: 50, borderRadius: 25, backgroundColor: '#4c1d95', justifyContent: 'center', alignItems: 'center', zIndex: 10 },
-  auraCenterScore: { fontSize: 18, fontWeight: 'bold', color: '#fff' },
-  auraCenterLabel: { fontSize: 9, color: '#c4b5fd' },
+  auraRadialContainer: { width: 230, height: 230, alignSelf: 'center', position: 'relative', marginVertical: 14 },
+  auraCenterCircle: { position: 'absolute', left: 90, top: 90, width: 50, height: 50, borderRadius: 25, backgroundColor: '#4c1d95', justifyContent: 'center', alignItems: 'center', zIndex: 10, borderWidth: 3, borderColor: '#7c3aed', shadowColor: '#8b5cf6', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.4, shadowRadius: 8, elevation: 6 },
+  auraCenterScore: { fontSize: 19, fontWeight: '900', color: '#fff', letterSpacing: -0.5 },
+  auraCenterLabel: { fontSize: 9, color: '#c4b5fd', fontWeight: '600' },
 
   // Planet orbs
-  auraPlanetOrb: { position: 'absolute', width: 44, height: 44, borderRadius: 22, borderWidth: 2, justifyContent: 'center', alignItems: 'center', zIndex: 5 },
-  auraPlanetSymbol: { fontSize: 16, color: '#fff' },
-  auraPlanetStrength: { position: 'absolute', bottom: -4, right: -4, width: 20, height: 20, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
-  auraPlanetScore: { fontSize: 9, fontWeight: 'bold', color: '#fff' },
+  auraPlanetOrb: { position: 'absolute', width: 46, height: 46, borderRadius: 23, borderWidth: 2.5, justifyContent: 'center', alignItems: 'center', zIndex: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.3, shadowRadius: 6, elevation: 5 },
+  auraPlanetSymbol: { fontSize: 17, color: '#fff', fontWeight: '600' },
+  auraPlanetStrength: { position: 'absolute', bottom: -5, right: -5, width: 22, height: 22, borderRadius: 11, justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#1e1b4b', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 3, elevation: 3 },
+  auraPlanetScore: { fontSize: 10, fontWeight: '900', color: '#fff' },
 
   // Rings
   auraRings: { position: 'absolute', left: 20, top: 20, width: 180, height: 180, justifyContent: 'center', alignItems: 'center' },
   auraRing: { position: 'absolute', borderRadius: 100, borderWidth: 1, borderColor: 'rgba(167, 139, 250, 0.2)' },
 
   // Legend
-  auraLegendScroll: { paddingVertical: 12, paddingHorizontal: 4 },
-  auraLegendItem: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 16, marginRight: 8, borderWidth: 1 },
-  auraLegendItemActive: { backgroundColor: 'rgba(255,255,255,0.2)' },
-  auraLegendDot: { width: 8, height: 8, borderRadius: 4 },
-  auraLegendName: { fontSize: 11, color: '#e5e7eb' },
-  auraLegendScore: { fontSize: 11, fontWeight: '600' },
+  auraLegendScroll: { paddingVertical: 14, paddingHorizontal: 4 },
+  auraLegendItem: { flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: 'rgba(255,255,255,0.12)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 18, marginRight: 10, borderWidth: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2 },
+  auraLegendItemActive: { backgroundColor: 'rgba(255,255,255,0.25)', borderWidth: 1.5 },
+  auraLegendDot: { width: 9, height: 9, borderRadius: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 2 },
+  auraLegendName: { fontSize: 12, color: '#e5e7eb', fontWeight: '600' },
+  auraLegendScore: { fontSize: 12, fontWeight: '800' },
 
   // Planet detail
-  auraPlanetDetail: { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 12, padding: 12, marginTop: 8, borderLeftWidth: 3 },
-  auraPlanetDetailHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  auraPlanetDetailSymbol: { fontSize: 24, color: '#fff' },
-  auraPlanetDetailName: { fontSize: 14, fontWeight: '600', color: '#fff' },
-  auraPlanetDetailDomain: { fontSize: 11, color: '#a78bfa', textTransform: 'capitalize' },
-  auraPlanetDetailScore: { marginLeft: 'auto', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
-  auraPlanetDetailScoreText: { fontSize: 13, fontWeight: 'bold', color: '#fff' },
-  auraPlanetDetailInsight: { fontSize: 12, color: '#c4b5fd', marginTop: 8, lineHeight: 18 },
+  auraPlanetDetail: { backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 14, padding: 14, marginTop: 10, borderLeftWidth: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 4, elevation: 2 },
+  auraPlanetDetailHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  auraPlanetDetailSymbol: { fontSize: 26, color: '#fff', fontWeight: '600' },
+  auraPlanetDetailName: { fontSize: 15, fontWeight: '800', color: '#fff', letterSpacing: 0.3 },
+  auraPlanetDetailDomain: { fontSize: 11, color: '#a78bfa', textTransform: 'capitalize', fontWeight: '600', marginTop: 2 },
+  auraPlanetDetailScore: { marginLeft: 'auto', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.15, shadowRadius: 2 },
+  auraPlanetDetailScoreText: { fontSize: 14, fontWeight: '900', color: '#fff' },
+  auraPlanetDetailInsight: { fontSize: 13, color: '#c4b5fd', marginTop: 10, lineHeight: 20, fontWeight: '500' },
   auraPlanetDetailTags: { flexDirection: 'row', gap: 6, marginTop: 8, flexWrap: 'wrap' },
   auraKeywordTag: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
   auraKeywordText: { fontSize: 10, fontWeight: '500' },
@@ -3491,11 +3491,11 @@ const styles = StyleSheet.create({
   auraTransitText: { flex: 1, fontSize: 11, color: '#c4b5fd', lineHeight: 16 },
 
   // Dominant planets
-  auraDominantRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: 'rgba(167, 139, 250, 0.2)' },
+  auraDominantRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 14, paddingTop: 14, borderTopWidth: 1, borderTopColor: 'rgba(167, 139, 250, 0.25)' },
   auraDominantSection: { flex: 1 },
-  auraDominantLabel: { fontSize: 11, color: '#9ca3af', marginBottom: 4 },
-  auraDominantList: { flexDirection: 'row', gap: 6 },
-  auraDominantPlanet: { fontSize: 12, color: '#22c55e', fontWeight: '500' },
+  auraDominantLabel: { fontSize: 11, color: '#9ca3af', marginBottom: 6, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
+  auraDominantList: { flexDirection: 'row', gap: 8 },
+  auraDominantPlanet: { fontSize: 13, color: '#22c55e', fontWeight: '700', letterSpacing: 0.2 },
 
   // Transits Map - Premium Styles
   transitsContainer: { marginTop: 16, marginHorizontal: 16, borderRadius: 24, overflow: 'hidden', backgroundColor: '#1e1b4b', shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 20, elevation: 10 },
