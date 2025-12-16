@@ -3504,9 +3504,9 @@ const styles = StyleSheet.create({
   moonHeroLabel: { fontSize: 11, color: '#6366f1', textTransform: 'uppercase', letterSpacing: 1.2, fontWeight: '700', marginBottom: 6 },
   moonHeroSign: { fontSize: 24, fontWeight: '800', color: '#1e293b', marginBottom: 4 },
   moonHeroPhase: { fontSize: 13, color: '#64748b', fontWeight: '600' },
-  moonEnergyCard: { paddingHorizontal: 16, paddingVertical: 12, borderRadius: 16, alignItems: 'center', borderWidth: 2, borderColor: 'rgba(255,255,255,0.5)' },
+  moonEnergyCard: { paddingHorizontal: 16, paddingVertical: 12, borderRadius: 16, alignItems: 'center', backgroundColor: '#fff', borderWidth: 2, borderColor: '#e2e8f0' },
   moonEnergyEmoji: { fontSize: 24, marginBottom: 4 },
-  moonEnergyMood: { fontSize: 11, fontWeight: '700', textAlign: 'center' },
+  moonEnergyMood: { fontSize: 12, fontWeight: '800', textAlign: 'center', textTransform: 'capitalize' },
 
   // Countdown Timer
   countdownContainer: { alignItems: 'center', marginTop: 28, paddingTop: 28, borderTopWidth: 2, borderTopColor: '#f1f5f9', backgroundColor: '#fafafa', marginHorizontal: -24, paddingHorizontal: 24, paddingBottom: 24 },
@@ -3521,7 +3521,7 @@ const styles = StyleSheet.create({
   nextSignText: { fontSize: 15, fontWeight: '700', color: '#fff', flex: 1 },
 
   // Alert Message
-  alertMessageBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 14, backgroundColor: '#fffbeb', borderRadius: 16, padding: 18, paddingVertical: 20, marginTop: 24, marginHorizontal: -24, marginBottom: -24, borderLeftWidth: 4, borderLeftColor: '#f59e0b' },
+  alertMessageBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 14, backgroundColor: '#fffbeb', padding: 18, paddingVertical: 20, marginTop: 24, marginHorizontal: -24, marginBottom: -24, borderLeftWidth: 4, borderLeftColor: '#f59e0b' },
   alertMessageIconWrapper: { marginTop: 2, width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
   alertMessageText: { flex: 1, fontSize: 14, color: '#92400e', lineHeight: 22, fontWeight: '600', letterSpacing: 0.2 },
 
