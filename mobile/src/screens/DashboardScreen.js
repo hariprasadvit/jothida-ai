@@ -475,11 +475,18 @@ const RashiPalanTicker = ({ transits, language, t, userRashi, onRashiPress }) =>
 // Rashi Ticker Styles - News Bulletin Style
 const rashiTickerStyles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
-    marginTop: 0,
-    marginHorizontal: -16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    backgroundColor: '#fff8f0',
+    marginTop: 12,
+    marginHorizontal: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e8d5c4',
+    shadowColor: '#d4a574',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 2,
+    overflow: 'hidden',
   },
   header: {
     flexDirection: 'row',
@@ -1593,7 +1600,7 @@ const TimelineYearModal = ({ visible, onClose, data, language, t }) => {
   );
 };
 
-// Using simple emojis and borders instead of complex SVGs for traditional elements
+import { LotusCorner } from '../components/DivinePatterns';
 
 export default function DashboardScreen({ navigation }) {
   const { userProfile } = useAuth();
@@ -2064,15 +2071,6 @@ export default function DashboardScreen({ navigation }) {
             style={styles.headerBar}
           />
 
-          {/* Traditional Decorative Border */}
-          <View style={{ marginVertical: 8, paddingHorizontal: 16 }}>
-            <View style={{ height: 2, backgroundColor: '#f97316', borderRadius: 1 }} />
-            <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: -8 }}>
-              <View style={{ backgroundColor: '#faf7f2', paddingHorizontal: 12 }}>
-                <Text style={{ fontSize: 18, color: '#f97316' }}>🪔</Text>
-              </View>
-            </View>
-          </View>
 
           {/* Header */}
           <Animated.View
@@ -2502,32 +2500,20 @@ export default function DashboardScreen({ navigation }) {
           </AnimatedCard>
 
           {/* Today's Parigaram - Gamified Remedies */}
-          <View style={{ marginVertical: 8, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center' }}>
-            <View style={{ flex: 1, height: 1, backgroundColor: '#f97316', opacity: 0.3 }} />
-            <Text style={{ marginHorizontal: 8, fontSize: 14, color: '#f97316' }}>✦</Text>
-            <View style={{ flex: 1, height: 1, backgroundColor: '#f97316', opacity: 0.3 }} />
-          </View>
+          <DecorativeBorder />
           {planetAura?.challenged_planets?.length > 0 && (
             <AnimatedCard delay={450}>
               <TouchableOpacity
                 activeOpacity={0.9}
                 onPress={() => navigation.getParent()?.navigate('Remedy')}
               >
-                <View style={[styles.card, styles.parigaramCard, { backgroundColor: '#fef6ed', overflow: 'hidden' }]}>
-                  {/* Traditional Hindu Border Pattern */}
-                  <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, backgroundColor: '#f97316' }} />
-                  <View style={{ position: 'absolute', top: 4, left: 0, right: 0, height: 2, backgroundColor: '#fbbf24' }} />
-
-                  <View style={{ position: 'absolute', top: 8, right: 8 }}>
-                    <Text style={{ fontSize: 20, opacity: 0.3 }}>🪷</Text>
-                  </View>
-                  <View style={{ position: 'absolute', top: 8, left: 8 }}>
-                    <Text style={{ fontSize: 20, opacity: 0.3 }}>🪷</Text>
-                  </View>
+                <View style={[styles.card, styles.parigaramCard, { backgroundColor: '#fef6ed' }]}>
+                  <LotusCorner style={{ position: 'absolute', top: 0, right: 0, opacity: 0.8 }} color="#d4a574" size={52} />
+                  <LotusCorner style={{ position: 'absolute', bottom: 0, left: 0, opacity: 0.6, transform: [{ rotate: '180deg' }] }} color="#d4a574" size={52} />
 
                   <View style={styles.parigaramHeader}>
                     <View style={styles.parigaramIconBadge}>
-                      <Text style={{ fontSize: 24 }}>🪔</Text>
+                      <DiyaIcon size={28} color="#d97706" />
                     </View>
                     <View style={styles.parigaramTitleSection}>
                       <Text style={styles.parigaramTitle}>{t('todayParigaram')}</Text>
@@ -2573,27 +2559,14 @@ export default function DashboardScreen({ navigation }) {
           )}
 
           {/* Current Dasha */}
-          <View style={{ marginVertical: 8, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center' }}>
-            <View style={{ flex: 1, height: 1, backgroundColor: '#f97316', opacity: 0.3 }} />
-            <Text style={{ marginHorizontal: 8, fontSize: 14, color: '#f97316' }}>✦</Text>
-            <View style={{ flex: 1, height: 1, backgroundColor: '#f97316', opacity: 0.3 }} />
-          </View>
+          <DecorativeBorder />
           {jathagam?.dasha?.mahadasha && (
             <AnimatedCard delay={500}>
-              <View style={[styles.card, styles.dashaCard, { backgroundColor: '#fef6ed', overflow: 'hidden' }]}>
-                {/* Traditional Hindu Border */}
-                <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, backgroundColor: '#f97316' }} />
-                <View style={{ position: 'absolute', top: 4, left: 0, right: 0, height: 2, backgroundColor: '#fbbf24' }} />
-
-                <View style={{ position: 'absolute', top: 8, right: 8 }}>
-                  <Text style={{ fontSize: 18, opacity: 0.3 }}>🪷</Text>
-                </View>
-                <View style={{ position: 'absolute', top: 8, left: 8 }}>
-                  <Text style={{ fontSize: 18, opacity: 0.3 }}>🪷</Text>
-                </View>
+              <View style={[styles.card, styles.dashaCard, { backgroundColor: '#fef6ed' }]}>
+                <LotusCorner style={{ position: 'absolute', top: 0, right: 0, opacity: 0.8 }} color="#d4a574" size={52} />
 
                 <View style={styles.cardHeader}>
-                  <Text style={{ fontSize: 16, marginRight: 4 }}>🪔</Text>
+                  <DiyaIcon size={18} color="#d97706" />
                   <Text style={[styles.cardTitle, { color: '#6b5644', fontWeight: '800' }]}>{t('currentDasha')}</Text>
                 </View>
                 <View style={styles.dashaGrid}>
@@ -2689,27 +2662,14 @@ export default function DashboardScreen({ navigation }) {
           </AnimatedCard>
 
           {/* Aura Heatmap - Planet Strength Visualization */}
-          <View style={{ marginVertical: 8, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center' }}>
-            <View style={{ flex: 1, height: 1, backgroundColor: '#f97316', opacity: 0.3 }} />
-            <Text style={{ marginHorizontal: 8, fontSize: 14, color: '#f97316' }}>✦</Text>
-            <View style={{ flex: 1, height: 1, backgroundColor: '#f97316', opacity: 0.3 }} />
-          </View>
+          <DecorativeBorder />
           {planetAura && (
             <AnimatedCard delay={600}>
-              <View style={[styles.card, styles.auraCard, { overflow: 'hidden' }]}>
-                {/* Traditional Hindu Border */}
-                <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, backgroundColor: '#f97316' }} />
-                <View style={{ position: 'absolute', top: 4, left: 0, right: 0, height: 2, backgroundColor: '#fbbf24' }} />
-
-                <View style={{ position: 'absolute', top: 8, right: 8 }}>
-                  <Text style={{ fontSize: 18, opacity: 0.3 }}>🪷</Text>
-                </View>
-                <View style={{ position: 'absolute', top: 8, left: 8 }}>
-                  <Text style={{ fontSize: 18, opacity: 0.3 }}>🪷</Text>
-                </View>
+              <View style={[styles.card, styles.auraCard]}>
+                <LotusCorner style={{ position: 'absolute', top: 0, right: 0, opacity: 0.8 }} color="#d4a574" size={52} />
 
                 <View style={styles.cardHeader}>
-                  <Text style={{ fontSize: 16, marginRight: 4 }}>🪔</Text>
+                  <DiyaIcon size={18} color="#d97706" />
                   <Text style={styles.cardTitle}>
                     {t('planetAuraMap')}
                   </Text>
