@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 19,
     fontWeight: '800',
-    color: '#0f172a',
+    color: '#6b5644',
     letterSpacing: 0.3,
   },
   subtitle: {
@@ -242,13 +242,13 @@ const styles = StyleSheet.create({
   },
   planetSymbol: {
     fontSize: 20,
-    color: '#0f172a',
+    color: '#6b5644',
     fontWeight: '700',
   },
   planetName: {
     fontSize: 14,
     fontWeight: '800',
-    color: '#0f172a',
+    color: '#6b5644',
     letterSpacing: 0.2,
   },
   remedySection: {
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   },
   remedyLabel: {
     fontSize: 12,
-    color: '#0f172a',
+    color: '#6b5644',
     fontWeight: '700',
     letterSpacing: 0.2,
   },
