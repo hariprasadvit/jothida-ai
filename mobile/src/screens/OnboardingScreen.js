@@ -741,13 +741,20 @@ export default function OnboardingScreen({ navigation }) {
         >
           <Paginator data={onboardingData} scrollX={scrollX} />
 
-          <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
+          <Animated.View
+            style={{
+              transform: [{ scale: buttonScale }],
+              zIndex: 100
+            }}
+          >
             <TouchableOpacity
               onPress={handleNext}
               onPressIn={handlePressIn}
               onPressOut={handlePressOut}
               activeOpacity={0.95}
               style={styles.buttonWrapper}
+              disabled={false}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <LinearGradient
                 colors={currentItem.gradient}
