@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
+  ActivityIndicator,
   View,
   Text,
   StyleSheet,
@@ -64,14 +65,14 @@ const rasiData = {
   'மீனம்': { english: 'Pisces', kannada: 'ಮೀನ', symbol: '♓', element: 'water' },
 };
 
-// Gradient backgrounds for stories
+// Gradient backgrounds for stories (warm theme to match Home)
 const storyGradients = {
-  [STORY_TYPES.PLANET_INFLUENCE]: ['#1a1a2e', '#16213e', '#0f3460'],
-  [STORY_TYPES.MOON_TRANSIT]: ['#0f0f23', '#1a1a3a', '#2d2d5a'],
-  [STORY_TYPES.DAILY_INSIGHT]: ['#1a0a2e', '#2d1b4e', '#4a2c7a'],
-  [STORY_TYPES.NAKSHATRA_EFFECT]: ['#0a1628', '#162d50', '#234b7a'],
-  [STORY_TYPES.REMEDY]: ['#1a2e1a', '#2e4a2e', '#3d6b3d'],
-  [STORY_TYPES.LUCKY_TIME]: ['#2e1a1a', '#4a2e2e', '#6b3d3d'],
+  [STORY_TYPES.PLANET_INFLUENCE]: ['#fff7ed', '#ffedd5', '#fff8f0'],
+  [STORY_TYPES.MOON_TRANSIT]: ['#f5f3ff', '#ede9fe', '#fff8f0'],
+  [STORY_TYPES.DAILY_INSIGHT]: ['#fefce8', '#fef9c3', '#fff8f0'],
+  [STORY_TYPES.NAKSHATRA_EFFECT]: ['#ecfeff', '#cffafe', '#fff8f0'],
+  [STORY_TYPES.REMEDY]: ['#f0fdf4', '#dcfce7', '#fff8f0'],
+  [STORY_TYPES.LUCKY_TIME]: ['#fffbeb', '#fef3c7', '#fff8f0'],
 };
 
 // Progress bar component for story timer
@@ -302,7 +303,7 @@ const StoryCard = ({ story, isActive, onShare, language, userRasi }) => {
         },
       ]}
     >
-      {renderStoryContent()}
+      <View style={styles.storyCardInner}>{renderStoryContent()}</View>
     </Animated.View>
   );
 };
@@ -520,14 +521,6 @@ export default function AstroFeedScreen({ navigation }) {
     }
   };
 
-  const handlePress = (event) => {
-    const { locationX } = event.nativeEvent;
-    if (locationX < width / 3) {
-      goToPrevious();
-    } else if (locationX > (width * 2) / 3) {
-      goToNext();
-    }
-  };
 
   const handleShare = async () => {
     const story = stories[currentIndex];
@@ -548,7 +541,7 @@ export default function AstroFeedScreen({ navigation }) {
 
   const renderStory = ({ item, index }) => {
     // Calculate content height accounting for tab bar on web
-    const contentHeight = Platform.OS === 'web' ? 'calc(100vh - 60px)' : height;
+    const contentHeight = height;
 
     return (
       <View style={[styles.storyContainer, { width, height: contentHeight }]}>
@@ -568,105 +561,143 @@ export default function AstroFeedScreen({ navigation }) {
     );
   };
 
+  const handleScrollBeginDrag = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+  };
+
+  const handleMomentumScrollEnd = (event) => {
+    const nextIndex = Math.round(event.nativeEvent.contentOffset.x / width);
+    if (!Number.isNaN(nextIndex) && nextIndex !== currentIndex) {
+      setCurrentIndex(nextIndex);
+    }
+  };
+
   if (loading) {
     return (
-      <View style={[styles.loadingContainer, { paddingTop: insets.top }]}>
-        <LinearGradient colors={['#1a1a2e', '#16213e', '#0f3460']} style={styles.fullScreen}>
-          <Text style={styles.loadingText}>{t('loading')}</Text>
+      <View style={styles.container}>
+        <LinearGradient colors={['#faf7f2', '#f5ede5', '#fff8f0']} style={styles.fullScreen}>
+          <View style={[styles.loadingContainer, { paddingTop: insets.top }]}>
+            <ActivityIndicator size="large" color="#f97316" />
+            <Text style={styles.loadingText}>{t('loading')}</Text>
+          </View>
         </LinearGradient>
       </View>
     );
   }
 
-  // Calculate content height accounting for tab bar on web
-  const webContentHeight = Platform.OS === 'web' ? 'calc(100vh - 60px)' : undefined;
-
   return (
-    <View style={[styles.container, Platform.OS === 'web' && { height: webContentHeight }]}>
-      <StatusBar barStyle="light-content" />
-      <TouchableOpacity
-        activeOpacity={1}
-        style={styles.touchContainer}
-        onPress={handlePress}
-      >
-        <FlatList
-          ref={flatListRef}
-          data={stories}
-          renderItem={renderStory}
-          keyExtractor={(item) => item.id}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          scrollEnabled={false}
-          getItemLayout={(data, index) => ({
-            length: width,
-            offset: width * index,
-            index,
-          })}
-        />
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" />
 
-        {/* Progress Bars */}
-        <View style={[styles.progressContainer, { top: insets.top + 10 }]}>
-          {stories.map((_, index) => (
-            <ProgressBar
-              key={index}
-              index={index}
-              activeIndex={currentIndex}
-              duration={STORY_DURATION}
-            />
-          ))}
-        </View>
+      <FlatList
+        ref={flatListRef}
+        data={stories}
+        renderItem={renderStory}
+        keyExtractor={(item) => item.id}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        scrollEnabled
+        onScrollBeginDrag={handleScrollBeginDrag}
+        onMomentumScrollEnd={handleMomentumScrollEnd}
+        getItemLayout={(data, index) => ({
+          length: width,
+          offset: width * index,
+          index,
+        })}
+      />
 
-        {/* Header */}
-        <View style={[styles.header, { top: insets.top + 24 }]}>
-          <View style={styles.headerLeft}>
-            <View style={styles.logoContainer}>
-              <Svg width={28} height={28} viewBox="0 0 100 100">
-                <Path
-                  d="M50 5 L55 40 L90 30 L60 50 L90 70 L55 60 L50 95 L45 60 L10 70 L40 50 L10 30 L45 40 Z"
-                  fill="#fff"
-                />
-                <Circle cx="50" cy="50" r="10" fill="rgba(255,255,255,0.3)" />
-              </Svg>
-            </View>
-            <View>
-              <Text style={styles.appName}>{t('appName')}</Text>
-              <Text style={styles.storyTime}>
-                {language === 'en' ? 'Daily Stories' : language === 'kn' ? 'ದೈನಿಕ ಕಥೆಗಳು' : 'தினசரி கதைகள்'}
-              </Text>
-            </View>
-          </View>
-          <TouchableOpacity style={styles.closeButton} onPress={() => navigation.goBack()}>
-            <Ionicons name="close" size={28} color="#fff" />
-          </TouchableOpacity>
-        </View>
+      {/* Progress Bars */}
+      <View style={[styles.progressContainer, { top: insets.top + 10 }]}>
+        {stories.map((_, index) => (
+          <ProgressBar key={index} index={index} activeIndex={currentIndex} duration={STORY_DURATION} />
+        ))}
+      </View>
 
-        {/* Bottom Actions */}
-        <View style={[styles.bottomActions, { bottom: insets.bottom + 20 }]}>
-          <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
-            <Ionicons name="share-outline" size={28} color="#fff" />
-            <Text style={styles.actionLabel}>
-              {language === 'en' ? 'Share' : language === 'kn' ? 'ಹಂಚಿಕೊಳ್ಳಿ' : 'பகிர்'}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => navigation.navigate('Chat')}
-          >
-            <Ionicons name="chatbubble-outline" size={28} color="#fff" />
-            <Text style={styles.actionLabel}>
-              {language === 'en' ? 'Ask AI' : language === 'kn' ? 'AI ಕೇಳಿ' : 'AI கேள்'}
-            </Text>
-          </TouchableOpacity>
-        </View>
+      {/* Top Bar */}
+      <View style={[styles.topBar, { top: insets.top + 20 }]}>
+        <TouchableOpacity style={styles.topIconButton} onPress={() => navigation.goBack()} activeOpacity={0.8}>
+          <Ionicons name="close" size={24} color="#6b5644" />
+        </TouchableOpacity>
 
-        {/* Story Counter */}
-        <View style={[styles.counterContainer, { bottom: insets.bottom + 90 }]}>
-          <Text style={styles.counterText}>
-            {currentIndex + 1} / {stories.length}
+        <View style={styles.topTitleWrap}>
+          <Text style={styles.topTitle}>{t('appName')}</Text>
+          <Text style={styles.topSubtitle}>
+            {language === 'en' ? 'Daily Stories' : language === 'kn' ? 'ದೈನಿಕ ಕಥೆಗಳು' : 'தினசரி கதைகள்'}
           </Text>
         </View>
-      </TouchableOpacity>
+
+        <TouchableOpacity style={styles.topIconButton} onPress={handleShare} activeOpacity={0.8}>
+          <Ionicons name="share-outline" size={20} color="#6b5644" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Side Navigation */}
+      <View style={styles.sideNav} pointerEvents="box-none">
+        <TouchableOpacity
+          style={[styles.navButton, currentIndex === 0 && styles.navButtonDisabled]}
+          onPress={goToPrevious}
+          disabled={currentIndex === 0}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="chevron-back" size={22} color={currentIndex === 0 ? '#cbd5e1' : '#6b5644'} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.navButton, currentIndex === stories.length - 1 && styles.navButtonDisabled]}
+          onPress={goToNext}
+          disabled={currentIndex === stories.length - 1}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="chevron-forward" size={22} color={currentIndex === stories.length - 1 ? '#cbd5e1' : '#6b5644'} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Quick Story Icons (same order as Dashboard) */}
+      <View style={[styles.quickNavRow, { top: insets.top + 72 }]}>
+        {[
+          { key: 'planet', index: 0, label: t('planet'), icon: 'sunny', colors: ['#f97316', '#ef4444', '#ec4899'] },
+          { key: 'moon', index: 1, label: t('moon'), icon: 'moon', colors: ['#8b5cf6', '#6366f1', '#3b82f6'] },
+          { key: 'insight', index: 2, label: t('insight'), icon: 'sparkles', colors: ['#22c55e', '#16a34a', '#15803d'] },
+          { key: 'star', index: 3, label: t('star'), icon: 'star', colors: ['#f59e0b', '#d97706', '#b45309'] },
+          { key: 'more', index: 4, label: t('more'), icon: 'add', colors: ['#f97316', '#f59e0b', '#fb923c'] },
+        ].map((item) => {
+          const isActive = currentIndex === item.index;
+          return (
+            <TouchableOpacity
+              key={item.key}
+              style={[styles.quickNavItem, isActive && styles.quickNavItemActive]}
+              activeOpacity={0.8}
+              onPress={() => {
+                setCurrentIndex(item.index);
+                flatListRef.current?.scrollToIndex({ index: item.index, animated: true });
+              }}
+            >
+              <LinearGradient colors={item.colors} style={styles.quickNavBorder}>
+                <View style={styles.quickNavInner}>
+                  <Ionicons name={item.icon} size={18} color={item.key === 'moon' ? '#a78bfa' : item.key === 'insight' ? '#22c55e' : item.key === 'star' ? '#f59e0b' : '#f59e0b'} />
+                </View>
+              </LinearGradient>
+              <Text style={styles.quickNavLabel}>{item.label}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      {/* Swipe hint */}
+      <View style={[styles.bottomBar, { bottom: insets.bottom + 18 }]}>
+        <Text style={styles.swipeHint}>
+          {language === 'en' ? 'Swipe left/right' : language === 'kn' ? 'ಎಡ/ಬಲಕ್ಕೆ ಸ್ವೈಪ್ ಮಾಡಿ' : 'இடது/வலது ஸ்வைப் செய்யுங்கள்'}
+        </Text>
+      </View>
+
+      {/* Story Counter */}
+      <View style={[styles.counterContainer, { bottom: insets.bottom + 96 }]}>
+        <Text style={styles.counterText}>
+          {currentIndex + 1} / {stories.length}
+        </Text>
+      </View>
     </View>
   );
 }
@@ -928,7 +959,7 @@ function getLuckyTimeDescription(language) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: '#ffffff',
     ...(Platform.OS === 'web' && { height: '100vh', maxHeight: '100vh', overflow: 'hidden' }),
   },
   fullScreen: {
@@ -941,9 +972,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    color: '#fff',
-    fontSize: 16,
-    marginTop: 16,
+    color: '#6b5644',
+    fontSize: 13,
+    marginTop: 14,
+    fontWeight: '800',
   },
   touchContainer: {
     flex: 1,
@@ -966,31 +998,48 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
   },
+  storyCardInner: {
+    width: '100%',
+    backgroundColor: '#fff8f0',
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: '#e8d5c4',
+    paddingHorizontal: 18,
+    paddingVertical: 22,
+    shadowColor: '#d4a574',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
+  },
   storyContent: {
     alignItems: 'center',
     width: '100%',
   },
   storyLabel: {
-    color: '#9ca3af',
-    fontSize: 12,
-    fontWeight: '600',
-    letterSpacing: 2,
+    color: '#8b6f47',
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 1.2,
     marginBottom: 8,
-    marginTop: 20,
+    marginTop: 6,
+    textTransform: 'uppercase',
   },
   storyTitle: {
-    color: '#fff',
-    fontSize: 28,
-    fontWeight: 'bold',
+    color: '#6b5644',
+    fontSize: 26,
+    fontWeight: '900',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 14,
+    letterSpacing: -0.3,
   },
   storyDescription: {
-    color: '#d1d5db',
-    fontSize: 16,
+    color: '#6b5644',
+    fontSize: 15,
     textAlign: 'center',
     lineHeight: 24,
-    marginTop: 16,
+    marginTop: 12,
+    fontWeight: '600',
   },
 
   // Planet Influence styles
@@ -1036,12 +1085,13 @@ const styles = StyleSheet.create({
   },
   rasiSymbol: {
     fontSize: 48,
-    color: '#fff',
+    color: '#6b5644',
   },
   rasiName: {
-    color: '#9ca3af',
+    color: '#8b6f47',
     fontSize: 14,
     marginTop: 4,
+    fontWeight: '800',
   },
   personalMessageBox: {
     flexDirection: 'row',
@@ -1070,12 +1120,12 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: 'rgba(249, 115, 22, 0.2)',
+    backgroundColor: '#fff7ed',
     borderWidth: 4,
     borderColor: '#f97316',
     justifyContent: 'center',
     alignItems: 'center',
-    marginVertical: 20,
+    marginVertical: 18,
   },
   scoreValue: {
     color: '#f97316',
@@ -1083,9 +1133,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   scoreLabel: {
-    color: '#9ca3af',
-    fontSize: 12,
+    color: '#8b6f47',
+    fontSize: 11,
     marginTop: 4,
+    fontWeight: '800',
   },
   tipBox: {
     flexDirection: 'row',
@@ -1170,9 +1221,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   stepText: {
-    color: '#d1d5db',
+    color: '#6b5644',
     fontSize: 14,
     flex: 1,
+    fontWeight: '700',
   },
 
   // Lucky Time styles
@@ -1199,15 +1251,16 @@ const styles = StyleSheet.create({
     minWidth: 100,
   },
   timeSlotTime: {
-    color: '#fff',
+    color: '#6b5644',
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: '900',
     marginTop: 8,
   },
   timeSlotLabel: {
-    color: '#9ca3af',
+    color: '#8b6f47',
     fontSize: 10,
     marginTop: 4,
+    fontWeight: '800',
   },
 
   // Progress bar styles
@@ -1222,13 +1275,13 @@ const styles = StyleSheet.create({
   progressBarContainer: {
     flex: 1,
     height: 3,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: '#e8d5c4',
     borderRadius: 2,
     overflow: 'hidden',
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#fff',
+    backgroundColor: '#f97316',
     borderRadius: 2,
   },
 
@@ -1299,7 +1352,121 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   counterText: {
-    color: '#9ca3af',
+    color: '#6b5644',
     fontSize: 12,
+    fontWeight: '800',
+  },
+
+  topBar: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    zIndex: 20,
+  },
+  topIconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#fff8f0',
+    borderWidth: 1,
+    borderColor: '#e8d5c4',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  topTitleWrap: {
+    alignItems: 'center',
+    flex: 1,
+    paddingHorizontal: 10,
+  },
+  topTitle: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#6b5644',
+    letterSpacing: 0.2,
+  },
+  topSubtitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#8b6f47',
+    marginTop: 2,
+  },
+
+  sideNav: {
+    position: 'absolute',
+    left: 12,
+    right: 12,
+    top: '50%',
+    transform: [{ translateY: -24 }],
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    zIndex: 20,
+  },
+  navButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#fff8f0',
+    borderWidth: 1,
+    borderColor: '#e8d5c4',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  navButtonDisabled: {
+    opacity: 0.55,
+  },
+
+  bottomBar: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 20,
+  },
+  swipeHint: {
+    color: '#8b6f47',
+    fontSize: 11,
+    fontWeight: '800',
+    marginBottom: 10,
+  },
+  quickNavRow: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 14,
+    zIndex: 20,
+  },
+  quickNavItem: {
+    alignItems: 'center',
+    width: 56,
+  },
+  quickNavItemActive: {
+    transform: [{ scale: 1.03 }],
+  },
+  quickNavBorder: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    padding: 2,
+  },
+  quickNavInner: {
+    flex: 1,
+    borderRadius: 22,
+    backgroundColor: '#fff8f0',
+    borderWidth: 1,
+    borderColor: '#e8d5c4',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  quickNavLabel: {
+    marginTop: 6,
+    fontSize: 10,
+    color: '#6b5644',
+    fontWeight: '800',
+    textAlign: 'center',
   },
 });

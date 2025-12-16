@@ -1,19 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
   ActivityIndicator,
   Animated,
   Dimensions,
+  Platform,
   RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Circle, Path, Defs, RadialGradient, Stop } from 'react-native-svg';
+import Svg, { Circle, Defs, Path, RadialGradient, Stop } from 'react-native-svg';
+import AppHeader from '../components/AppHeader';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { mobileAPI } from '../services/api';
@@ -422,6 +424,7 @@ export default function ChakraScreen({ navigation }) {
   const { userProfile } = useAuth();
   const { t, language } = useLanguage();
   const insets = useSafeAreaInsets();
+  const bottomPadding = Platform.OS === 'android' ? Math.max(insets.bottom, 80) : insets.bottom + 80;
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -520,44 +523,55 @@ export default function ChakraScreen({ navigation }) {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#9333ea" />
-        <Text style={styles.loadingText}>
-          {language === 'ta' ? 'சக்ரங்களை பகுப்பாய்வு செய்கிறது...' : 'Analyzing chakras...'}
-        </Text>
+      <View style={styles.container}>
+        <LinearGradient colors={['#faf7f2', '#f5ede5', '#fff8f0']} style={styles.gradient}>
+          <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]} showsVerticalScrollIndicator={false}>
+            <AppHeader
+              t={t}
+              userProfile={userProfile}
+              title={language === 'ta' ? 'சக்ர பகுப்பாய்வு' : 'Chakra Analysis'}
+              subtitle={language === 'ta' ? 'ஜோதிட அடிப்படையில்' : 'Vedic Astrology Based'}
+              showBackButton
+              onBackPress={() => navigation.goBack()}
+              showTime={false}
+            />
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#9333ea" />
+              <Text style={styles.loadingText}>
+                {language === 'ta' ? 'சக்ரங்களை பகுப்பாய்வு செய்கிறது...' : 'Analyzing chakras...'}
+              </Text>
+            </View>
+          </ScrollView>
+        </LinearGradient>
       </View>
     );
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <LinearGradient colors={['#1e1b4b', '#312e81', '#1e1b4b']} style={styles.gradient}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#fff" />
-          </TouchableOpacity>
-          <View style={styles.headerCenter}>
-            <Text style={styles.headerTitle}>
-              {language === 'ta' ? 'சக்ர பகுப்பாய்வு' : 'Chakra Analysis'}
-            </Text>
-            <Text style={styles.headerSubtitle}>
-              {language === 'ta' ? 'ஜோதிட அடிப்படையில்' : 'Vedic Astrology Based'}
-            </Text>
-          </View>
-          <View style={styles.energyBadge}>
-            <Text style={styles.energyValue}>{overallEnergy}%</Text>
-            <Text style={styles.energyLabel}>{language === 'ta' ? 'ஆற்றல்' : 'Energy'}</Text>
-          </View>
-        </View>
-
+    <View style={styles.container}>
+      <LinearGradient colors={['#faf7f2', '#f5ede5', '#fff8f0']} style={styles.gradient}>
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#a855f7" />
-          }
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#9333ea" />}
         >
+          <AppHeader
+            t={t}
+            userProfile={userProfile}
+            title={language === 'ta' ? 'சக்ர பகுப்பாய்வு' : 'Chakra Analysis'}
+            subtitle={language === 'ta' ? 'ஜோதிட அடிப்படையில்' : 'Vedic Astrology Based'}
+            showBackButton
+            onBackPress={() => navigation.goBack()}
+            showTime={false}
+          />
+
+          <View style={styles.energyRow}>
+            <View style={styles.energyBadge}>
+              <Text style={styles.energyValue}>{overallEnergy}%</Text>
+              <Text style={styles.energyLabel}>{language === 'ta' ? 'ஆற்றல்' : 'Energy'}</Text>
+            </View>
+          </View>
+
           {/* Dasha Info */}
           {timeFactors?.dasha_lord && (
             <View style={styles.dashaBanner}>
@@ -796,10 +810,24 @@ export default function ChakraScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#1e1b4b' },
+  container: { flex: 1, backgroundColor: '#ffffff' },
   gradient: { flex: 1 },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#1e1b4b' },
-  loadingText: { marginTop: 16, color: '#a855f7', fontSize: 14 },
+  loadingContainer: {
+    marginHorizontal: 16,
+    marginTop: 18,
+    paddingVertical: 70,
+    alignItems: 'center',
+    backgroundColor: '#fff8f0',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#e8d5c4',
+    shadowColor: '#d4a574',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  loadingText: { marginTop: 16, color: '#8b6f47', fontSize: 13, fontWeight: '800' },
 
   // Header
   header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.1)' },
@@ -807,18 +835,54 @@ const styles = StyleSheet.create({
   headerCenter: { flex: 1, marginLeft: 8 },
   headerTitle: { fontSize: 20, fontWeight: '700', color: '#fff' },
   headerSubtitle: { fontSize: 11, color: '#a5b4fc', marginTop: 2 },
-  energyBadge: { backgroundColor: 'rgba(168,85,247,0.2)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, alignItems: 'center' },
-  energyValue: { fontSize: 18, fontWeight: '800', color: '#a855f7' },
-  energyLabel: { fontSize: 9, color: '#c4b5fd' },
+  energyRow: { marginHorizontal: 16, marginTop: 12, alignItems: 'flex-end' },
+  energyBadge: {
+    backgroundColor: '#f5f3ff',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e9d5ff',
+  },
+  energyValue: { fontSize: 18, fontWeight: '900', color: '#7c3aed' },
+  energyLabel: { fontSize: 9, color: '#6d28d9', fontWeight: '800' },
 
-  scrollContent: { paddingBottom: 40 },
+  scrollContent: { paddingBottom: 24 },
 
   // Dasha Banner
-  dashaBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(168,85,247,0.15)', marginHorizontal: 16, marginTop: 12, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10, borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)' },
-  dashaText: { fontSize: 13, color: '#c4b5fd', fontWeight: '500' },
+  dashaBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#fff8f0',
+    marginHorizontal: 16,
+    marginTop: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#e8d5c4',
+  },
+  dashaText: { fontSize: 13, color: '#6b5644', fontWeight: '700' },
 
   // Main Content
-  mainContent: { flexDirection: 'row', paddingHorizontal: 12, paddingTop: 16, minHeight: 400 },
+  mainContent: {
+    flexDirection: 'row',
+    marginHorizontal: 16,
+    marginTop: 16,
+    padding: 16,
+    minHeight: 400,
+    backgroundColor: '#fff8f0',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#e8d5c4',
+    shadowColor: '#d4a574',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 2,
+  },
 
   // Left Panel - Body
   leftPanel: { width: 120, alignItems: 'center', justifyContent: 'flex-start' },
@@ -828,12 +892,33 @@ const styles = StyleSheet.create({
   // Chakra Points
   chakraPoint: { position: 'absolute', left: 35, width: 50, height: 40, alignItems: 'center', justifyContent: 'center', zIndex: 10 },
   chakraGlow: { position: 'absolute', width: 44, height: 44, borderRadius: 22 },
-  chakraCircle: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.4, shadowRadius: 5, elevation: 6 },
+  chakraCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#d4a574',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.22,
+    shadowRadius: 6,
+    elevation: 4,
+  },
   chakraCircleScore: { fontSize: 12, fontWeight: '800', color: '#fff' },
 
   // Right Panel - Details
   rightPanel: { flex: 1, paddingLeft: 10 },
-  detailCard: { borderRadius: 16, padding: 14, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
+  detailCard: {
+    borderRadius: 16,
+    padding: 14,
+    shadowColor: '#d4a574',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(232,213,196,0.9)',
+  },
 
   // Detail Header
   detailHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
@@ -852,7 +937,7 @@ const styles = StyleSheet.create({
   statusText: { fontSize: 12, fontWeight: '700' },
 
   // Sections
-  sectionLabel: { fontSize: 10, fontWeight: '700', color: '#6b7280', marginBottom: 6, letterSpacing: 0.5 },
+  sectionLabel: { fontSize: 10, fontWeight: '900', color: '#8b6f47', marginBottom: 6, letterSpacing: 0.8 },
 
   // Represents
   representsSection: { marginBottom: 12 },
@@ -885,24 +970,43 @@ const styles = StyleSheet.create({
   affirmationText: { fontSize: 13, fontWeight: '600', fontStyle: 'italic', lineHeight: 18 },
 
   // Factors Section
-  factorsSection: { marginHorizontal: 16, marginTop: 16 },
-  factorsSectionTitle: { fontSize: 14, fontWeight: '700', color: '#e2e8f0', marginBottom: 10 },
+  factorsSection: { marginHorizontal: 16, marginTop: 18 },
+  factorsSectionTitle: { fontSize: 14, fontWeight: '900', color: '#6b5644', marginBottom: 10 },
   factorsList: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   factorChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10 },
   factorText: { fontSize: 11, fontWeight: '600' },
 
   // Summary Section
-  summarySection: { marginHorizontal: 16, marginTop: 20, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 16, padding: 14 },
-  summarySectionTitle: { fontSize: 14, fontWeight: '700', color: '#e2e8f0', marginBottom: 12 },
-  summaryRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 8, borderRadius: 8 },
-  summaryRowActive: { backgroundColor: 'rgba(168,85,247,0.15)' },
+  summarySection: {
+    marginHorizontal: 16,
+    marginTop: 20,
+    backgroundColor: '#fff8f0',
+    borderRadius: 20,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#e8d5c4',
+  },
+  summarySectionTitle: { fontSize: 14, fontWeight: '900', color: '#6b5644', marginBottom: 12 },
+  summaryRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 10, borderRadius: 12 },
+  summaryRowActive: { backgroundColor: '#f4e4d7' },
   summaryDot: { width: 12, height: 12, borderRadius: 6, marginRight: 10 },
-  summaryName: { width: 100, fontSize: 12, color: '#e2e8f0', fontWeight: '500' },
-  summaryProgress: { flex: 1, height: 6, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 3, marginRight: 10, overflow: 'hidden' },
+  summaryName: { width: 100, fontSize: 12, color: '#6b5644', fontWeight: '800' },
+  summaryProgress: { flex: 1, height: 6, backgroundColor: '#f4e4d7', borderRadius: 3, marginRight: 10, overflow: 'hidden' },
   summaryBar: { height: '100%', borderRadius: 3 },
   summaryScore: { fontSize: 12, fontWeight: '700', width: 45, textAlign: 'right' },
 
   // Disclaimer
-  disclaimer: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginHorizontal: 16, marginTop: 20, padding: 12, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 10 },
-  disclaimerText: { flex: 1, fontSize: 11, color: '#94a3b8', lineHeight: 16 },
+  disclaimer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    marginHorizontal: 16,
+    marginTop: 20,
+    padding: 12,
+    backgroundColor: '#fef6ed',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#e8d5c4',
+  },
+  disclaimerText: { flex: 1, fontSize: 11, color: '#6b5644', lineHeight: 16, fontWeight: '600' },
 });

@@ -1,6 +1,8 @@
 import React from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import GaneshaLoader from '../components/GaneshaLoader';
 import { useAuth } from '../context/AuthContext';
 
 import AuthNavigator from './AuthNavigator';
@@ -16,8 +18,10 @@ export default function RootNavigator() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff7ed' }}>
-        <ActivityIndicator size="large" color="#f97316" />
+      <View style={{ flex: 1 }}>
+        <LinearGradient colors={['#faf7f2', '#f5ede5', '#fff8f0']} style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <GaneshaLoader label="Loading" />
+        </LinearGradient>
       </View>
     );
   }

@@ -23,6 +23,8 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage, languageOptions } from '../context/LanguageContext';
 import { mobileAPI, reportAPI } from '../services/api';
+import { generateComprehensivePDFHTML } from '../services/reportGenerator';
+import AppHeader from '../components/AppHeader';
 import { searchCities, POPULAR_CITIES } from '../data/cities';
 import * as FileSystem from 'expo-file-system';
 
@@ -2012,17 +2014,6 @@ export default function ProfileScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const bottomPadding = Platform.OS === 'android' ? Math.max(insets.bottom, 80) : insets.bottom + 80;
 
-  // Animation refs
-  const headerFadeAnim = useRef(new Animated.Value(0)).current;
-  const headerSlideAnim = useRef(new Animated.Value(-20)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(headerFadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
-      Animated.timing(headerSlideAnim, { toValue: 0, duration: 500, useNativeDriver: true, easing: Easing.out(Easing.ease) }),
-    ]).start();
-  }, []);
-
   useEffect(() => {
     if (userProfile?.birthDate && userProfile?.birthTime && userProfile?.birthPlace) {
       fetchChartData();
@@ -2497,22 +2488,15 @@ export default function ProfileScreen({ navigation }) {
   if (!userProfile) {
     return (
       <View style={styles.container}>
-        <LinearGradient colors={['#fff7ed', '#ffffff', '#fff7ed']} style={styles.gradient}>
-          <LinearGradient
-            colors={['#f97316', '#ef4444', '#f97316']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.headerBar}
-          />
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>{t('profileTitle')}</Text>
-            <Text style={styles.headerSubtitle}>{t('profileSubtitle')}</Text>
-          </View>
-          <View style={styles.emptyCard}>
-            <Ionicons name="person-circle-outline" size={80} color="#fed7aa" />
-            <Text style={styles.emptyTitle}>{t('newRegRequired')}</Text>
-            <Text style={styles.emptyText}>{t('pleaseLogin')}</Text>
-          </View>
+        <LinearGradient colors={['#faf7f2', '#f5ede5', '#fff8f0']} style={styles.gradient}>
+          <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]} showsVerticalScrollIndicator={false}>
+            <AppHeader t={t} title={t('profileTitle')} subtitle={t('profileSubtitle')} showTime={false} />
+            <View style={styles.emptyCard}>
+              <Ionicons name="person-circle-outline" size={80} color="#fed7aa" />
+              <Text style={styles.emptyTitle}>{t('newRegRequired')}</Text>
+              <Text style={styles.emptyText}>{t('pleaseLogin')}</Text>
+            </View>
+          </ScrollView>
         </LinearGradient>
       </View>
     );
@@ -2520,22 +2504,9 @@ export default function ProfileScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <LinearGradient colors={['#fff7ed', '#ffffff', '#fff7ed']} style={styles.gradient}>
-        <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]}>
-          <LinearGradient
-            colors={['#f97316', '#ef4444', '#f97316']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.headerBar}
-          />
-
-          {/* Header */}
-          <Animated.View style={[styles.header, { opacity: headerFadeAnim, transform: [{ translateY: headerSlideAnim }] }]}>
-            <View>
-              <Text style={styles.headerTitle}>{t('profileTitle')}</Text>
-              <Text style={styles.headerSubtitle}>{t('profileSubtitle')}</Text>
-            </View>
-          </Animated.View>
+      <LinearGradient colors={['#faf7f2', '#f5ede5', '#fff8f0']} style={styles.gradient}>
+        <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]} showsVerticalScrollIndicator={false}>
+          <AppHeader t={t} userProfile={userProfile} />
 
           {/* User Info Card */}
           <AnimatedCard delay={0} style={styles.card}>
@@ -2894,37 +2865,18 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 100,
   },
-  headerBar: {
-    height: 4,
-  },
-  header: {
-    padding: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#fed7aa',
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#9a3412',
-  },
-  headerSubtitle: {
-    fontSize: 12,
-    color: '#6b7280',
-    marginTop: 2,
-  },
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
+    backgroundColor: '#fff8f0',
+    borderRadius: 20,
+    padding: 20,
     marginHorizontal: 16,
-    marginTop: 16,
+    marginTop: 20,
     borderWidth: 1,
-    borderColor: '#fed7aa',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    borderColor: '#e8d5c4',
+    shadowColor: '#d4a574',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
     elevation: 2,
   },
   cardHeader: {
@@ -3380,11 +3332,17 @@ const styles = StyleSheet.create({
   emptyCard: {
     alignItems: 'center',
     padding: 32,
-    margin: 16,
-    backgroundColor: '#fff',
-    borderRadius: 16,
+    marginHorizontal: 16,
+    marginTop: 20,
+    backgroundColor: '#fff8f0',
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#fed7aa',
+    borderColor: '#e8d5c4',
+    shadowColor: '#d4a574',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 2,
   },
   emptyTitle: {
     fontSize: 18,

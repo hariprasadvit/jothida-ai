@@ -15,6 +15,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { mobileAPI } from '../services/api';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
+import AppHeader from '../components/AppHeader';
 
 // Animated Card Component
 const AnimatedCard = ({ children, delay = 0, style }) => {
@@ -227,6 +229,7 @@ const eventTypeIds = [
 export default function MuhurthamScreen() {
   const insets = useSafeAreaInsets();
   const bottomPadding = Platform.OS === 'android' ? Math.max(insets.bottom, 80) : insets.bottom + 80;
+  const { userProfile } = useAuth();
   const { t, getMonthName, getShortDayName, language } = useLanguage();
 
   // language is already 'ta', 'en', or 'kn' from LanguageContext
@@ -246,17 +249,6 @@ export default function MuhurthamScreen() {
   const [loadingCalendar, setLoadingCalendar] = useState(true);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [error, setError] = useState(null);
-
-  // Animation refs
-  const headerFadeAnim = useRef(new Animated.Value(0)).current;
-  const headerSlideAnim = useRef(new Animated.Value(-20)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(headerFadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
-      Animated.timing(headerSlideAnim, { toValue: 0, duration: 500, useNativeDriver: true, easing: Easing.out(Easing.ease) }),
-    ]).start();
-  }, []);
 
   useEffect(() => {
     fetchCalendar();
@@ -400,24 +392,21 @@ export default function MuhurthamScreen() {
 
   return (
     <View style={styles.container}>
-      <LinearGradient colors={['#fff7ed', '#ffffff', '#fff7ed']} style={styles.gradient}>
-        <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]}>
-          {/* Header Bar */}
-          <LinearGradient
-            colors={['#16a34a', '#22c55e', '#16a34a']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.headerBar}
-          />
+      <LinearGradient colors={['#faf7f2', '#f5ede5', '#fff8f0']} style={styles.gradient}>
+        <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]} showsVerticalScrollIndicator={false}>
+          <AppHeader t={t} userProfile={userProfile} />
 
-          {/* Header */}
-          <Animated.View style={[styles.header, { opacity: headerFadeAnim, transform: [{ translateY: headerSlideAnim }] }]}>
-            <View style={styles.headerRow}>
-              <Ionicons name="calendar" size={20} color="#16a34a" />
-              <Text style={styles.headerTitle}>{t('muhurthamFinder')}</Text>
+          <AnimatedCard delay={40} style={styles.sectionCard}>
+            <View style={styles.sectionRow}>
+              <View style={styles.sectionIcon}>
+                <Ionicons name="calendar" size={18} color="#f97316" />
+              </View>
+              <View style={styles.sectionText}>
+                <Text style={styles.sectionTitle}>{t('muhurthamFinder')}</Text>
+                <Text style={styles.sectionSubtitle}>{t('auspiciousTime')}</Text>
+              </View>
             </View>
-            <Text style={styles.headerSubtitle}>{t('auspiciousTime')}</Text>
-          </Animated.View>
+          </AnimatedCard>
 
           {/* Event Type Selector */}
           <AnimatedCard delay={100} style={styles.card}>
@@ -641,38 +630,63 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
   },
-  headerBar: {
-    height: 4,
-  },
-  header: {
-    padding: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#fed7aa',
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#15803d',
-  },
-  headerSubtitle: {
-    fontSize: 12,
-    color: '#6b7280',
-    marginTop: 2,
-  },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
+  sectionCard: {
+    backgroundColor: '#fff8f0',
+    borderRadius: 20,
+    padding: 18,
     marginHorizontal: 16,
     marginTop: 16,
     borderWidth: 1,
-    borderColor: '#fed7aa',
+    borderColor: '#e8d5c4',
+    shadowColor: '#d4a574',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  sectionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  sectionIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#f4e4d7',
+    borderWidth: 1,
+    borderColor: '#e8d5c4',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sectionText: {
+    flex: 1,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#6b5644',
+    letterSpacing: 0.2,
+  },
+  sectionSubtitle: {
+    fontSize: 12,
+    color: '#8b6f47',
+    marginTop: 2,
+    fontWeight: '600',
+  },
+  card: {
+    backgroundColor: '#fff8f0',
+    borderRadius: 20,
+    padding: 20,
+    marginHorizontal: 16,
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: '#e8d5c4',
+    shadowColor: '#d4a574',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 2,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -974,11 +988,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 32,
     marginHorizontal: 16,
-    marginTop: 16,
-    backgroundColor: '#fff7ed',
-    borderRadius: 16,
+    marginTop: 20,
+    backgroundColor: '#fff8f0',
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#fed7aa',
+    borderColor: '#e8d5c4',
+    shadowColor: '#d4a574',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 2,
   },
   promptTitle: {
     fontSize: 14,

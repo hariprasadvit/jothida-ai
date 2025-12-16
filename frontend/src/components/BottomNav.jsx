@@ -18,10 +18,10 @@ export default function BottomNav() {
             key={path}
             to={path}
             className={({ isActive }) =>
-              `flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all ${
+              `flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all border ${
                 isActive
-                  ? 'text-orange-600'
-                  : 'text-gray-400 hover:text-gray-600'
+                  ? 'bg-orange-50 border-orange-200 text-orange-600'
+                  : 'border-transparent text-gray-400 hover:text-gray-600 hover:bg-orange-50/40'
               }`
             }
           >

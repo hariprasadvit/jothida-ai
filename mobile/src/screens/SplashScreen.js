@@ -6,9 +6,11 @@ import {
   Animated,
   Dimensions,
   Easing,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Circle, Defs, RadialGradient, Stop, Ellipse, G } from 'react-native-svg';
+import { FESTIVAL_ASSETS } from '../utils/festivalAssets';
 
 const { width, height } = Dimensions.get('window');
 
@@ -442,6 +444,22 @@ export default function SplashScreen({ onFinish }) {
         {/* Sunburst effect in center */}
         <Sunburst style={styles.sunburst} />
 
+        {/* Subtle festival garland overlay */}
+        <Image
+          source={{ uri: FESTIVAL_ASSETS.garland }}
+          style={styles.festivalGarland}
+          resizeMode="contain"
+          pointerEvents="none"
+        />
+
+        {/* Subtle diyas overlay */}
+        <Image
+          source={{ uri: FESTIVAL_ASSETS.diyas }}
+          style={styles.festivalDiyas}
+          resizeMode="contain"
+          pointerEvents="none"
+        />
+
         {/* Top decoration - Mango Toran */}
         <Animated.View
           style={[
@@ -566,6 +584,22 @@ const styles = StyleSheet.create({
     top: height * 0.25,
     left: (width - 400) / 2,
     opacity: 0.6,
+  },
+  festivalGarland: {
+    position: 'absolute',
+    top: 8,
+    left: 0,
+    right: 0,
+    height: 120,
+    opacity: 0.85,
+  },
+  festivalDiyas: {
+    position: 'absolute',
+    right: 10,
+    bottom: 18,
+    width: 160,
+    height: 220,
+    opacity: 0.55,
   },
   toranContainer: {
     position: 'absolute',

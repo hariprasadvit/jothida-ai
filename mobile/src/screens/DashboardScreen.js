@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
+  Image,
   Platform,
   Animated,
   Easing,
@@ -22,6 +23,8 @@ import { useLanguage } from '../context/LanguageContext';
 import { mobileAPI } from '../services/api';
 import { populateScoreCache } from '../services/scoringService';
 import notificationService from '../services/notificationService';
+import GaneshaLoader from '../components/GaneshaLoader';
+import { FESTIVAL_ASSETS } from '../utils/festivalAssets';
 
 const { width } = Dimensions.get('window');
 
@@ -2063,10 +2066,7 @@ export default function DashboardScreen({ navigation }) {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <View style={{ alignItems: 'center' }}>
-          <DiyaIcon size={60} />
-          <Text style={styles.loadingText}>{t('loading')}</Text>
-        </View>
+        <GaneshaLoader label={t('loading')} size={170} />
       </View>
     );
   }
@@ -2087,6 +2087,12 @@ export default function DashboardScreen({ navigation }) {
               { opacity: headerFadeAnim, transform: [{ translateY: headerSlideAnim }] },
             ]}
           >
+            <Image
+              source={{ uri: FESTIVAL_ASSETS.mandala }}
+              style={styles.headerMandala}
+              resizeMode="contain"
+              pointerEvents="none"
+            />
             <View>
               <View style={styles.logoRow}>
                 <View style={styles.logoIcon}>
@@ -3146,6 +3152,7 @@ const styles = StyleSheet.create({
   loadingText: { marginTop: 16, color: '#8b6f47', fontSize: 16, fontWeight: '600' },
   headerBar: { height: 0 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: 24, paddingBottom: 20, backgroundColor: '#fff8f0', marginHorizontal: 16, marginTop: 16, borderRadius: 20, borderWidth: 1, borderColor: '#e8d5c4', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 3, overflow: 'hidden' },
+  headerMandala: { position: 'absolute', right: -40, top: -30, width: 180, height: 180, opacity: 0.12 },
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   logoIcon: { width: 36, height: 36 },
   appTitle: { fontSize: 24, fontWeight: '600', color: '#6b5644', letterSpacing: 0.5, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },

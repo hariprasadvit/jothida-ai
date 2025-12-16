@@ -20,6 +20,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { mobileAPI, CITY_COORDINATES } from '../services/api';
+import AppHeader from '../components/AppHeader';
 
 const rasis = [
   { english: 'Mesha', tamil: 'மேஷம்' },
@@ -35,6 +36,21 @@ const rasis = [
   { english: 'Kumbha', tamil: 'கும்பம்' },
   { english: 'Meena', tamil: 'மீனம்' },
 ];
+
+const WEB_DATE_TIME_INPUT_STYLE = {
+  padding: 12,
+  borderRadius: 12,
+  border: '1px solid #e8d5c4',
+  fontSize: 14,
+  width: '100%',
+  backgroundColor: '#fef6ed',
+  color: '#6b5644',
+  outline: 'none',
+  boxSizing: 'border-box',
+  height: 48,
+  lineHeight: '20px',
+  display: 'block',
+};
 
 // Animated Card Component
 const AnimatedCard = ({ children, delay = 0, style }) => {
@@ -326,17 +342,6 @@ export default function MatchingScreen() {
   const insets = useSafeAreaInsets();
   const bottomPadding = Platform.OS === 'android' ? Math.max(insets.bottom, 80) : insets.bottom + 80;
 
-  // Animation refs
-  const headerFadeAnim = useRef(new Animated.Value(0)).current;
-  const headerSlideAnim = useRef(new Animated.Value(-20)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(headerFadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
-      Animated.timing(headerSlideAnim, { toValue: 0, duration: 500, useNativeDriver: true, easing: Easing.out(Easing.ease) }),
-    ]).start();
-  }, []);
-
   const [step, setStep] = useState('input'); // 'input' | 'loading' | 'result'
   const [groomData, setGroomData] = useState({
     name: '',
@@ -484,22 +489,21 @@ export default function MatchingScreen() {
   if (step === 'input') {
     return (
       <View style={styles.container}>
-        <LinearGradient colors={['#fff7ed', '#ffffff', '#fff7ed']} style={styles.gradient}>
-          <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]}>
-            <LinearGradient
-              colors={['#ef4444', '#ec4899', '#ef4444']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.headerBar}
-            />
+        <LinearGradient colors={['#faf7f2', '#f5ede5', '#fff8f0']} style={styles.gradient}>
+          <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]} showsVerticalScrollIndicator={false}>
+            <AppHeader t={t} userProfile={userProfile} />
 
-            <Animated.View style={[styles.header, { opacity: headerFadeAnim, transform: [{ translateY: headerSlideAnim }] }]}>
-              <View style={styles.headerRow}>
-                <Ionicons name="heart" size={20} color="#ef4444" />
-                <Text style={styles.headerTitle}>{t('marriageMatching')}</Text>
+            <AnimatedCard delay={40} style={styles.sectionCard}>
+              <View style={styles.sectionRow}>
+                <View style={styles.sectionIcon}>
+                  <Ionicons name="heart" size={18} color="#f97316" />
+                </View>
+                <View style={styles.sectionText}>
+                  <Text style={styles.sectionTitle}>{t('marriageMatching')}</Text>
+                  <Text style={styles.sectionSubtitle}>{t('tenPoruthamAnalysis')}</Text>
+                </View>
               </View>
-              <Text style={styles.headerSubtitle}>{t('tenPoruthamAnalysis')}</Text>
-            </Animated.View>
+            </AnimatedCard>
 
             {error && (
               <View style={styles.errorBox}>
@@ -531,15 +535,7 @@ export default function MatchingScreen() {
                   {Platform.OS === 'web' ? (
                     <input
                       type="date"
-                      style={{
-                        padding: 12,
-                        borderRadius: 8,
-                        border: '1px solid #d1d5db',
-                        fontSize: 14,
-                        width: '100%',
-                        backgroundColor: '#fff',
-                        color: '#1f2937',
-                      }}
+                      style={WEB_DATE_TIME_INPUT_STYLE}
                       value={groomData.birthDate}
                       max={new Date().toISOString().split('T')[0]}
                       min="1920-01-01"
@@ -551,7 +547,7 @@ export default function MatchingScreen() {
                       onPress={() => setShowGroomDatePicker(true)}
                     >
                       <Text style={groomData.birthDate ? styles.datePickerText : styles.datePickerPlaceholder}>
-                        {groomData.birthDate || 'Select Date'}
+                        {groomData.birthDate || t('selectDatePlaceholder')}
                       </Text>
                       <Ionicons name="calendar" size={18} color="#6b7280" />
                     </TouchableOpacity>
@@ -562,15 +558,7 @@ export default function MatchingScreen() {
                   {Platform.OS === 'web' ? (
                     <input
                       type="time"
-                      style={{
-                        padding: 12,
-                        borderRadius: 8,
-                        border: '1px solid #d1d5db',
-                        fontSize: 14,
-                        width: '100%',
-                        backgroundColor: '#fff',
-                        color: '#1f2937',
-                      }}
+                      style={WEB_DATE_TIME_INPUT_STYLE}
                       value={groomData.birthTime}
                       onChange={(e) => setGroomData({ ...groomData, birthTime: e.target.value })}
                     />
@@ -580,7 +568,7 @@ export default function MatchingScreen() {
                       onPress={() => setShowGroomTimePicker(true)}
                     >
                       <Text style={groomData.birthTime ? styles.datePickerText : styles.datePickerPlaceholder}>
-                        {groomData.birthTime || 'Select Time'}
+                        {groomData.birthTime || t('selectTimePlaceholder')}
                       </Text>
                       <Ionicons name="time" size={18} color="#6b7280" />
                     </TouchableOpacity>
@@ -659,15 +647,7 @@ export default function MatchingScreen() {
                   {Platform.OS === 'web' ? (
                     <input
                       type="date"
-                      style={{
-                        padding: 12,
-                        borderRadius: 8,
-                        border: '1px solid #f9a8d4',
-                        fontSize: 14,
-                        width: '100%',
-                        backgroundColor: '#fff',
-                        color: '#1f2937',
-                      }}
+                      style={WEB_DATE_TIME_INPUT_STYLE}
                       value={brideData.birthDate}
                       max={new Date().toISOString().split('T')[0]}
                       min="1920-01-01"
@@ -679,7 +659,7 @@ export default function MatchingScreen() {
                       onPress={() => setShowBrideDatePicker(true)}
                     >
                       <Text style={brideData.birthDate ? styles.datePickerText : styles.datePickerPlaceholder}>
-                        {brideData.birthDate || 'Select Date'}
+                        {brideData.birthDate || t('selectDatePlaceholder')}
                       </Text>
                       <Ionicons name="calendar" size={18} color="#db2777" />
                     </TouchableOpacity>
@@ -690,15 +670,7 @@ export default function MatchingScreen() {
                   {Platform.OS === 'web' ? (
                     <input
                       type="time"
-                      style={{
-                        padding: 12,
-                        borderRadius: 8,
-                        border: '1px solid #f9a8d4',
-                        fontSize: 14,
-                        width: '100%',
-                        backgroundColor: '#fff',
-                        color: '#1f2937',
-                      }}
+                      style={WEB_DATE_TIME_INPUT_STYLE}
                       value={brideData.birthTime}
                       onChange={(e) => setBrideData({ ...brideData, birthTime: e.target.value })}
                     />
@@ -708,7 +680,7 @@ export default function MatchingScreen() {
                       onPress={() => setShowBrideTimePicker(true)}
                     >
                       <Text style={brideData.birthTime ? styles.datePickerText : styles.datePickerPlaceholder}>
-                        {brideData.birthTime || 'Select Time'}
+                        {brideData.birthTime || t('selectTimePlaceholder')}
                       </Text>
                       <Ionicons name="time" size={18} color="#db2777" />
                     </TouchableOpacity>
@@ -768,8 +740,8 @@ export default function MatchingScreen() {
             <AnimatedCard delay={300}>
               <AnimatedButton
                 onPress={handleCalculate}
-                disabled={!groomData.name || !groomData.birthDate || !groomData.birthTime ||
-                         !brideData.name || !brideData.birthDate || !brideData.birthTime}
+                disabled={!groomData.name || !groomData.birthDate || !groomData.birthTime || !groomData.birthPlace ||
+                         !brideData.name || !brideData.birthDate || !brideData.birthTime || !brideData.birthPlace}
               >
                 <LinearGradient
                   colors={['#ef4444', '#ec4899']}
@@ -918,12 +890,16 @@ export default function MatchingScreen() {
   // Loading
   if (step === 'loading') {
     return (
-      <View style={styles.loadingContainer}>
-        <FloatingHearts />
-        <AnimatedHeart />
-        <ActivityIndicator size="large" color="#ec4899" style={{ marginTop: 16 }} />
-        <Text style={styles.loadingText}>{t('calculatingPoruthams')}</Text>
-        <Text style={styles.loadingSubtext}>{t('analyzingCompatibility')}</Text>
+      <View style={styles.container}>
+        <LinearGradient colors={['#faf7f2', '#f5ede5', '#fff8f0']} style={styles.gradient}>
+          <View style={styles.loadingContainer}>
+            <FloatingHearts />
+            <AnimatedHeart />
+            <ActivityIndicator size="large" color="#ec4899" style={{ marginTop: 16 }} />
+            <Text style={styles.loadingText}>{t('calculatingPoruthams')}</Text>
+            <Text style={styles.loadingSubtext}>{t('analyzingCompatibility')}</Text>
+          </View>
+        </LinearGradient>
       </View>
     );
   }
@@ -937,24 +913,24 @@ export default function MatchingScreen() {
 
   return (
     <View style={styles.container}>
-      <LinearGradient colors={['#fff7ed', '#ffffff', '#fff7ed']} style={styles.gradient}>
-        <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]}>
-          <LinearGradient
-            colors={['#ef4444', '#ec4899', '#ef4444']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.headerBar}
-          />
+      <LinearGradient colors={['#faf7f2', '#f5ede5', '#fff8f0']} style={styles.gradient}>
+        <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]} showsVerticalScrollIndicator={false}>
+          <AppHeader t={t} userProfile={userProfile} />
 
-          <Animated.View style={[styles.header, { opacity: headerFadeAnim, transform: [{ translateY: headerSlideAnim }] }]}>
-            <View style={styles.headerRow}>
-              <Ionicons name="heart" size={20} color="#ef4444" />
-              <Text style={styles.headerTitle}>{t('marriageMatching')}</Text>
+          <AnimatedCard delay={40} style={styles.sectionCard}>
+            <View style={styles.sectionRow}>
+              <View style={styles.sectionIcon}>
+                <Ionicons name="heart" size={18} color="#f97316" />
+              </View>
+              <View style={styles.sectionText}>
+                <Text style={styles.sectionTitle}>{t('marriageMatching')}</Text>
+                <Text style={styles.sectionSubtitle}>{t('tenPoruthamAnalysis')}</Text>
+              </View>
+              <TouchableOpacity onPress={resetForm} style={styles.sectionActionBtn} activeOpacity={0.8}>
+                <Ionicons name="refresh" size={18} color="#ea580c" />
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity onPress={resetForm} style={styles.resetBtn}>
-              <Ionicons name="refresh" size={20} color="#ea580c" />
-            </TouchableOpacity>
-          </Animated.View>
+          </AnimatedCard>
 
           {/* Couple Names */}
           <AnimatedCard delay={0} style={styles.card}>
@@ -1057,7 +1033,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff7ed',
   },
   loadingText: {
     marginTop: 16,
@@ -1104,6 +1079,60 @@ const styles = StyleSheet.create({
     height: 100,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  sectionCard: {
+    backgroundColor: '#fff8f0',
+    borderRadius: 20,
+    padding: 18,
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: '#e8d5c4',
+    shadowColor: '#d4a574',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  sectionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  sectionIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#f4e4d7',
+    borderWidth: 1,
+    borderColor: '#e8d5c4',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sectionText: {
+    flex: 1,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#6b5644',
+    letterSpacing: 0.2,
+  },
+  sectionSubtitle: {
+    fontSize: 12,
+    color: '#8b6f47',
+    marginTop: 2,
+    fontWeight: '600',
+  },
+  sectionActionBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#fef6ed',
+    borderWidth: 1,
+    borderColor: '#e8d5c4',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerBar: {
     height: 4,
@@ -1157,15 +1186,23 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
+    backgroundColor: '#fff8f0',
+    borderRadius: 20,
+    padding: 20,
     marginHorizontal: 16,
-    marginTop: 16,
+    marginTop: 20,
     borderWidth: 1,
-    borderColor: '#fed7aa',
+    borderColor: '#e8d5c4',
+    shadowColor: '#d4a574',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 2,
   },
   cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
     marginBottom: 12,
   },
   cardTitle: {
@@ -1173,68 +1210,80 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   groomCard: {
-    borderColor: '#bfdbfe',
+    borderColor: '#e8d5c4',
+    borderLeftWidth: 4,
+    borderLeftColor: '#3b82f6',
   },
   brideCard: {
-    borderColor: '#fbcfe8',
+    borderColor: '#e8d5c4',
+    borderLeftWidth: 4,
+    borderLeftColor: '#ec4899',
   },
   inputGroup: {
     marginBottom: 12,
   },
   label: {
     fontSize: 12,
-    color: '#6b7280',
+    color: '#8b6f47',
     marginBottom: 6,
+    fontWeight: '600',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#d1d5db',
+    borderColor: '#e8d5c4',
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 14,
+    backgroundColor: '#fef6ed',
+    color: '#6b5644',
   },
   brideInput: {
-    borderColor: '#fbcfe8',
+    borderColor: '#e8d5c4',
   },
   datePickerButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1,
-    borderColor: '#d1d5db',
+    borderColor: '#e8d5c4',
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    backgroundColor: '#fff',
+    backgroundColor: '#fef6ed',
   },
   brideDatePicker: {
-    borderColor: '#fbcfe8',
+    borderColor: '#e8d5c4',
   },
   datePickerText: {
     fontSize: 14,
-    color: '#374151',
+    color: '#6b5644',
+    fontWeight: '600',
   },
   datePickerPlaceholder: {
     fontSize: 14,
-    color: '#9ca3af',
+    color: '#b8997a',
+    fontWeight: '600',
   },
   row: {
     flexDirection: 'row',
+    alignItems: 'flex-start',
     gap: 12,
     marginBottom: 12,
   },
   halfInput: {
     flex: 1,
+    minWidth: 0,
   },
   pickerContainer: {
     borderWidth: 1,
-    borderColor: '#d1d5db',
+    borderColor: '#e8d5c4',
     borderRadius: 12,
     overflow: 'hidden',
+    backgroundColor: '#fef6ed',
   },
   bridePicker: {
-    borderColor: '#fbcfe8',
+    borderColor: '#e8d5c4',
   },
   picker: {
     height: 50,
@@ -1397,14 +1446,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   progressBar: {
-    height: 4,
-    backgroundColor: '#e5e7eb',
-    borderRadius: 2,
-    marginTop: 8,
+    height: 6,
+    backgroundColor: '#f4e4d7',
+    borderRadius: 3,
+    marginTop: 10,
   },
   progressFill: {
-    height: 4,
-    borderRadius: 2,
+    height: 6,
+    borderRadius: 3,
   },
   poruthamExpanded: {
     marginTop: 12,
@@ -1421,12 +1470,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 6,
-    marginTop: 8,
-    padding: 8,
-    backgroundColor: '#fff7ed',
-    borderRadius: 8,
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: '#fef6ed',
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#fed7aa',
+    borderColor: '#e8d5c4',
   },
   remedyText: {
     flex: 1,
@@ -1443,10 +1492,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     padding: 16,
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: '#fff8f0',
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#fed7aa',
+    borderColor: '#e8d5c4',
+    shadowColor: '#d4a574',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 2,
   },
   newMatchBtnText: {
     fontSize: 14,
