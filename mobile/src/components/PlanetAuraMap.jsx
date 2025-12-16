@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 18,
     fontWeight: '800',
-    color: '#0f172a',
+    color: '#6b5644',
     letterSpacing: 0.3,
   },
   overallBadge: {
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
   overallScore: {
     fontSize: 16,
     fontWeight: '900',
-    color: '#0f172a',
+    color: '#6b5644',
     letterSpacing: 0.3,
   },
   levelSection: {
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
   centerScore: {
     fontSize: 22,
     fontWeight: '900',
-    color: '#0f172a',
+    color: '#6b5644',
     letterSpacing: -0.5,
   },
   centerLabel: {
@@ -466,7 +466,7 @@ const styles = StyleSheet.create({
   legendName: {
     fontSize: 14,
     fontWeight: '800',
-    color: '#0f172a',
+    color: '#6b5644',
     letterSpacing: 0.3,
   },
   legendScore: {
@@ -499,7 +499,7 @@ const styles = StyleSheet.create({
   summaryList: {
     fontSize: 15,
     fontWeight: '900',
-    color: '#0f172a',
+    color: '#6b5644',
     lineHeight: 24,
     paddingLeft: 24,
   },
@@ -517,7 +517,7 @@ const styles = StyleSheet.create({
   insightText: {
     flex: 1,
     fontSize: 14,
-    color: '#0f172a',
+    color: '#6b5644',
     lineHeight: 22,
     fontWeight: '700',
   },
