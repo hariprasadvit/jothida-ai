@@ -701,6 +701,22 @@ export default function OnboardingScreen({ navigation }) {
           viewabilityConfig={viewConfig}
           scrollEventThrottle={16}
           decelerationRate="fast"
+          onScrollToIndexFailed={(info) => {
+            console.warn('Scroll to index failed:', info);
+            // Fallback: scroll to offset
+            const wait = new Promise(resolve => setTimeout(resolve, 100));
+            wait.then(() => {
+              flatListRef.current?.scrollToOffset({
+                offset: info.index * width,
+                animated: true
+              });
+            });
+          }}
+          getItemLayout={(data, index) => ({
+            length: width,
+            offset: width * index,
+            index,
+          })}
         />
 
         {/* Footer */}
