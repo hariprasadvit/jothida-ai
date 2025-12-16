@@ -749,7 +749,10 @@ export default function OnboardingScreen({ navigation }) {
             }}
           >
             <TouchableOpacity
-              onPress={handleNext}
+              onPress={() => {
+                console.log('Button pressed!');
+                handleNext();
+              }}
               onPressIn={handlePressIn}
               onPressOut={handlePressOut}
               activeOpacity={0.95}
