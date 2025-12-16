@@ -598,7 +598,7 @@ export default function RegisterScreen({ route, navigation }) {
                 >
                   {formData.gender === 'male' && (
                     <LinearGradient
-                      colors={['#3b82f6', '#2563eb']}
+                      colors={['#f97316', '#ea580c']}
                       style={styles.genderGradient}
                     />
                   )}
@@ -641,7 +641,6 @@ export default function RegisterScreen({ route, navigation }) {
                     <Text style={[styles.genderText, formData.gender === 'female' && styles.genderTextActive]}>
                       பெண்
                     </Text>
-                    )}
                   </View>
                 </TouchableOpacity>
               </View>
