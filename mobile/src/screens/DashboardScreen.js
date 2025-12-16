@@ -3244,18 +3244,18 @@ const styles = StyleSheet.create({
   chakraNewBadge: { backgroundColor: '#22c55e', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
   chakraNewText: { fontSize: 10, fontWeight: '800', color: '#fff' },
 
-  // Parigaram Card Styles - Gamified
-  parigaramCard: { borderColor: '#fbbf24', borderWidth: 2, shadowColor: '#f59e0b', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.35, shadowRadius: 12, elevation: 8 },
-  parigaramHeader: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  parigaramIconBadge: { width: 52, height: 52, borderRadius: 26, backgroundColor: 'rgba(146, 64, 14, 0.2)', justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: 'rgba(251, 191, 36, 0.3)', shadowColor: '#f59e0b', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 3 },
+  // Parigaram Card Styles - Zen
+  parigaramCard: { backgroundColor: '#e8ecf3', shadowColor: '#a3b9d9', shadowOffset: { width: 7, height: 7 }, shadowOpacity: 0.35, shadowRadius: 14 },
+  parigaramHeader: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  parigaramIconBadge: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#e8ecf3', justifyContent: 'center', alignItems: 'center', shadowColor: '#ffffff', shadowOffset: { width: -4, height: -4 }, shadowOpacity: 1, shadowRadius: 8 },
   parigaramTitleSection: { flex: 1 },
-  parigaramTitle: { fontSize: 17, fontWeight: '900', color: '#92400e', letterSpacing: 0.3 },
-  parigaramSubtitle: { fontSize: 12, color: '#b45309', marginTop: 3, fontWeight: '600' },
+  parigaramTitle: { fontSize: 18, fontWeight: '900', color: '#5a6c8f', letterSpacing: 0.6 },
+  parigaramSubtitle: { fontSize: 12, color: '#7a8ba8', marginTop: 4, fontWeight: '700' },
   parigaramArrow: { padding: 4 },
-  parigaramPlanets: { flexDirection: 'row', gap: 12, marginTop: 16, marginBottom: 14 },
-  parigaramPlanetBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.8)', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 22, borderWidth: 1.5, borderColor: '#fbbf24', gap: 7, shadowColor: '#f59e0b', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 4, elevation: 3 },
-  parigaramPlanetIcon: { fontSize: 17, color: '#b45309' },
-  parigaramPlanetName: { fontSize: 13, fontWeight: '700', color: '#92400e', letterSpacing: 0.2 },
+  parigaramPlanets: { flexDirection: 'row', gap: 14, marginTop: 18, marginBottom: 16 },
+  parigaramPlanetBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#e8ecf3', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, gap: 8, shadowColor: '#a3b9d9', shadowOffset: { width: 3, height: 3 }, shadowOpacity: 0.25, shadowRadius: 6 },
+  parigaramPlanetIcon: { fontSize: 18, color: '#6b7fa0' },
+  parigaramPlanetName: { fontSize: 13, fontWeight: '800', color: '#5a6c8f', letterSpacing: 0.4 },
   parigaramQuickTips: { flexDirection: 'row', justifyContent: 'space-around', paddingTop: 10, borderTopWidth: 1, borderTopColor: 'rgba(180, 83, 9, 0.2)' },
   parigaramTip: { alignItems: 'center', gap: 4 },
   parigaramTipText: { fontSize: 10, color: '#92400e', fontWeight: '500' },
@@ -3439,9 +3439,9 @@ const styles = StyleSheet.create({
   peakLowText: { fontSize: 12, color: '#cbd5e1' },
 
   // Aura Heatmap styles
-  auraCard: { borderColor: 'rgba(139, 92, 246, 0.6)', shadowColor: '#8b5cf6', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16, elevation: 10 },
-  auraBadge: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 14, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 4, elevation: 3 },
-  auraBadgeText: { fontSize: 15, fontWeight: '900', letterSpacing: 0.3 },
+  auraCard: { backgroundColor: '#d4dce8', shadowColor: '#a3b9d9', shadowOffset: { width: 8, height: 8 }, shadowOpacity: 0.35, shadowRadius: 16 },
+  auraBadge: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 16, backgroundColor: '#e8ecf3', shadowColor: '#ffffff', shadowOffset: { width: -3, height: -3 }, shadowOpacity: 1, shadowRadius: 6 },
+  auraBadgeText: { fontSize: 15, fontWeight: '900', letterSpacing: 0.5 },
   auraOverview: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 },
   auraLevelBadge: { paddingHorizontal: 16, paddingVertical: 7, borderRadius: 18, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 4, elevation: 3 },
   auraLevelText: { fontSize: 14, fontWeight: '800', letterSpacing: 0.4 },
@@ -3497,8 +3497,8 @@ const styles = StyleSheet.create({
   auraDominantList: { flexDirection: 'row', gap: 8 },
   auraDominantPlanet: { fontSize: 13, color: '#22c55e', fontWeight: '700', letterSpacing: 0.2 },
 
-  // Transits Map - Premium Styles
-  transitsContainer: { marginTop: 16, marginHorizontal: 16, borderRadius: 24, overflow: 'hidden', backgroundColor: '#1e1b4b', shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 20, elevation: 10 },
+  // Transits Map - Zen Styles
+  transitsContainer: { marginTop: 20, marginHorizontal: 16, borderRadius: 28, overflow: 'hidden', backgroundColor: '#d4dce8', shadowColor: '#a3b9d9', shadowOffset: { width: 8, height: 8 }, shadowOpacity: 0.35, shadowRadius: 16 },
   transitsHeader: { padding: 20, paddingBottom: 16 },
   transitsHeaderContent: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   transitsHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 14 },
