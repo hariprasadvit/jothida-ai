@@ -3122,15 +3122,15 @@ const styles = StyleSheet.create({
   dateCard: { backgroundColor: '#e8ecf3', marginHorizontal: 16, marginTop: 20, padding: 16, borderRadius: 24, alignItems: 'center', shadowColor: '#ffffff', shadowOffset: { width: -6, height: -6 }, shadowOpacity: 1, shadowRadius: 12, elevation: 0 },
   dateText: { fontSize: 16, color: '#5a6c8f', fontWeight: '800', letterSpacing: 0.8 },
 
-  // Story Preview Row (Instagram-style)
-  storyPreviewRow: { paddingHorizontal: 16, paddingVertical: 16 },
+  // Story Preview Row (Zen style)
+  storyPreviewRow: { paddingHorizontal: 16, paddingVertical: 20 },
   storyCirclesContainer: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' },
-  storyCircle: { alignItems: 'center', width: 68 },
+  storyCircle: { alignItems: 'center', width: 72 },
   storyCircleActive: {},
-  storyGradientBorder: { width: 60, height: 60, borderRadius: 30, padding: 3, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 6, elevation: 6 },
-  storyInner: { width: 52, height: 52, borderRadius: 26, backgroundColor: '#1a1a2e', justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#2d2d5a' },
-  storyMoreCircle: { width: 60, height: 60, borderRadius: 30, backgroundColor: '#fff', borderWidth: 2.5, borderColor: '#fcd34d', borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center', shadowColor: '#f97316', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.15, shadowRadius: 5, elevation: 4 },
-  storyLabel: { fontSize: 11, color: '#4b5563', marginTop: 6, textAlign: 'center', fontWeight: '600' },
+  storyGradientBorder: { width: 64, height: 64, borderRadius: 32, padding: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: '#e8ecf3', shadowColor: '#a3b9d9', shadowOffset: { width: 6, height: 6 }, shadowOpacity: 0.3, shadowRadius: 10 },
+  storyInner: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#d4dce8', justifyContent: 'center', alignItems: 'center' },
+  storyMoreCircle: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#e8ecf3', justifyContent: 'center', alignItems: 'center', shadowColor: '#ffffff', shadowOffset: { width: -4, height: -4 }, shadowOpacity: 1, shadowRadius: 8 },
+  storyLabel: { fontSize: 11, color: '#7a8ba8', marginTop: 8, textAlign: 'center', fontWeight: '800', letterSpacing: 0.5 },
 
   card: { backgroundColor: '#e8ecf3', borderRadius: 28, padding: 24, marginTop: 20, marginHorizontal: 16, shadowColor: '#ffffff', shadowOffset: { width: -8, height: -8 }, shadowOpacity: 1, shadowRadius: 16, elevation: 0 },
   cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 18 },
@@ -3152,8 +3152,8 @@ const styles = StyleSheet.create({
   scoreCircleText: { fontSize: 20, fontWeight: '900', color: '#6b7fa0', letterSpacing: -0.5 },
   tapHint: { fontSize: 8, color: '#9ca3af', marginTop: 2 },
 
-  insightBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, padding: 16, borderRadius: 14, marginTop: 16, borderWidth: 1, borderColor: 'rgba(254, 215, 170, 0.5)', backgroundColor: '#fffbeb', shadowColor: '#f97316', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 },
-  insightText: { flex: 1, fontSize: 14, color: '#374151', lineHeight: 22, fontWeight: '500' },
+  insightBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, padding: 18, borderRadius: 20, marginTop: 18, backgroundColor: '#e8ecf3', shadowColor: '#a3b9d9', shadowOffset: { width: 4, height: 4 }, shadowOpacity: 0.25, shadowRadius: 8 },
+  insightText: { flex: 1, fontSize: 14, color: '#5a6c8f', lineHeight: 24, fontWeight: '600' },
 
   lifeAreasRow: { flexDirection: 'row', gap: 14, marginBottom: 14 },
   lifeAreaCard: { flex: 1, backgroundColor: '#e8ecf3', borderRadius: 22, padding: 18, minHeight: 140, shadowColor: '#a3b9d9', shadowOffset: { width: 5, height: 5 }, shadowOpacity: 0.3, shadowRadius: 10 },
@@ -3220,13 +3220,13 @@ const styles = StyleSheet.create({
   dashaValue: { fontSize: 15, fontWeight: '800', color: '#7c3aed', marginTop: 6, letterSpacing: 0.2 },
 
   // Chakra Card Styles
-  chakraCard: { borderRadius: 22, padding: 18, borderWidth: 1, borderColor: 'rgba(168, 85, 247, 0.5)', shadowColor: '#a855f7', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.25, shadowRadius: 12, elevation: 8 },
-  chakraCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  chakraIconContainer: { width: 56, height: 56, borderRadius: 28, backgroundColor: 'rgba(168, 85, 247, 0.3)', justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: 'rgba(255,255,255,0.2)', shadowColor: '#a855f7', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.3, shadowRadius: 6, elevation: 4 },
-  chakraIconLarge: { fontSize: 30 },
+  chakraCard: { borderRadius: 28, padding: 24, backgroundColor: '#d4dce8', shadowColor: '#a3b9d9', shadowOffset: { width: 8, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16 },
+  chakraCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  chakraIconContainer: { width: 60, height: 60, borderRadius: 30, backgroundColor: '#e8ecf3', justifyContent: 'center', alignItems: 'center', shadowColor: '#ffffff', shadowOffset: { width: -4, height: -4 }, shadowOpacity: 1, shadowRadius: 8 },
+  chakraIconLarge: { fontSize: 32 },
   chakraCardInfo: { flex: 1 },
-  chakraCardTitle: { fontSize: 18, fontWeight: '900', color: '#fff', letterSpacing: 0.3 },
-  chakraCardSubtitle: { fontSize: 13, color: '#c4b5fd', marginTop: 4, fontWeight: '600' },
+  chakraCardTitle: { fontSize: 19, fontWeight: '900', color: '#5a6c8f', letterSpacing: 0.6 },
+  chakraCardSubtitle: { fontSize: 13, color: '#7a8ba8', marginTop: 5, fontWeight: '700' },
   chakraArrowContainer: { padding: 4 },
   chakraMiniPreview: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 16, paddingVertical: 10, paddingHorizontal: 4, backgroundColor: 'rgba(0,0,0,0.25)', borderRadius: 12 },
   chakraMiniItem: { alignItems: 'center', flex: 1, paddingHorizontal: 2 },
