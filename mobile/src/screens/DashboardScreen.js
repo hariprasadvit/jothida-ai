@@ -1593,7 +1593,7 @@ const TimelineYearModal = ({ visible, onClose, data, language, t }) => {
   );
 };
 
-import { KolamPattern, DivineDivider, OmWatermark, LotusCorner } from '../components/DivinePatterns';
+// Using simple emojis and borders instead of complex SVGs for traditional elements
 
 export default function DashboardScreen({ navigation }) {
   const { userProfile } = useAuth();
