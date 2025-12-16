@@ -264,20 +264,20 @@ const translateEventLabel = (event, language, t) => {
 
 // ============== RASHI PALAN DATA & COMPONENT ==============
 
-// 12 Zodiac signs with symbols and ruling planets
+// 12 Zodiac signs with emoji icons and ruling planets
 const RASHI_DATA = [
-  { key: 'aries', symbol: '♈', ruler: 'Mars', element: 'fire', ta: 'மேஷம்' },
-  { key: 'taurus', symbol: '♉', ruler: 'Venus', element: 'earth', ta: 'ரிஷபம்' },
-  { key: 'gemini', symbol: '♊', ruler: 'Mercury', element: 'air', ta: 'மிதுனம்' },
-  { key: 'cancer', symbol: '♋', ruler: 'Moon', element: 'water', ta: 'கடகம்' },
-  { key: 'leo', symbol: '♌', ruler: 'Sun', element: 'fire', ta: 'சிம்மம்' },
-  { key: 'virgo', symbol: '♍', ruler: 'Mercury', element: 'earth', ta: 'கன்னி' },
-  { key: 'libra', symbol: '♎', ruler: 'Venus', element: 'air', ta: 'துலாம்' },
-  { key: 'scorpio', symbol: '♏', ruler: 'Mars', element: 'water', ta: 'விருச்சிகம்' },
-  { key: 'sagittarius', symbol: '♐', ruler: 'Jupiter', element: 'fire', ta: 'தனுசு' },
-  { key: 'capricorn', symbol: '♑', ruler: 'Saturn', element: 'earth', ta: 'மகரம்' },
-  { key: 'aquarius', symbol: '♒', ruler: 'Saturn', element: 'air', ta: 'கும்பம்' },
-  { key: 'pisces', symbol: '♓', ruler: 'Jupiter', element: 'water', ta: 'மீனம்' },
+  { key: 'aries', symbol: '🐏', ruler: 'Mars', element: 'fire', ta: 'மேஷம்' },
+  { key: 'taurus', symbol: '🐂', ruler: 'Venus', element: 'earth', ta: 'ரிஷபம்' },
+  { key: 'gemini', symbol: '👯', ruler: 'Mercury', element: 'air', ta: 'மிதுனம்' },
+  { key: 'cancer', symbol: '🦀', ruler: 'Moon', element: 'water', ta: 'கடகம்' },
+  { key: 'leo', symbol: '🦁', ruler: 'Sun', element: 'fire', ta: 'சிம்மம்' },
+  { key: 'virgo', symbol: '👰', ruler: 'Mercury', element: 'earth', ta: 'கன்னி' },
+  { key: 'libra', symbol: '⚖️', ruler: 'Venus', element: 'air', ta: 'துலாம்' },
+  { key: 'scorpio', symbol: '🦂', ruler: 'Mars', element: 'water', ta: 'விருச்சிகம்' },
+  { key: 'sagittarius', symbol: '🏹', ruler: 'Jupiter', element: 'fire', ta: 'தனுசு' },
+  { key: 'capricorn', symbol: '🐐', ruler: 'Saturn', element: 'earth', ta: 'மகரம்' },
+  { key: 'aquarius', symbol: '🏺', ruler: 'Saturn', element: 'air', ta: 'கும்பம்' },
+  { key: 'pisces', symbol: '🐟', ruler: 'Jupiter', element: 'water', ta: 'மீனம்' },
 ];
 
 // Calculate dynamic Rashi score based on current transits and date
@@ -432,14 +432,15 @@ const RashiPalanTicker = ({ transits, language, t, userRashi, onRashiPress }) =>
 const rashiTickerStyles = StyleSheet.create({
   container: {
     backgroundColor: '#0c0c0c',
-    marginTop: 4,
+    marginTop: 0,
+    marginHorizontal: 0,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 10,
     paddingVertical: 5,
-    backgroundColor: '#b91c1c',
+    backgroundColor: '#ea580c',
     gap: 8,
   },
   liveIndicator: {
@@ -455,12 +456,12 @@ const rashiTickerStyles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#dc2626',
+    backgroundColor: '#f97316',
   },
   liveText: {
     fontSize: 10,
     fontWeight: '900',
-    color: '#dc2626',
+    color: '#f97316',
     letterSpacing: 0.5,
   },
   title: {
@@ -471,7 +472,7 @@ const rashiTickerStyles = StyleSheet.create({
   },
   date: {
     fontSize: 11,
-    color: '#fecaca',
+    color: '#fed7aa',
     fontWeight: '600',
   },
   tickerWrapper: {
