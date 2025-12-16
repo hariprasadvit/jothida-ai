@@ -12,6 +12,7 @@ import {
   Easing,
   Modal,
   Dimensions,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -264,20 +265,23 @@ const translateEventLabel = (event, language, t) => {
 
 // ============== RASHI PALAN DATA & COMPONENT ==============
 
-// 12 Zodiac signs with Ionicons and ruling planets
+// Zodiac sprite image URL
+const ZODIAC_SPRITE_URL = 'https://cdn.builder.io/api/v1/image/assets%2Feb321189c4b84461803d094998b7a875%2F76cbc95c6f4b42b6ad4a9f5ea6f304da?format=webp&width=800';
+
+// 12 Zodiac signs with sprite positions (4 columns x 3 rows)
 const RASHI_DATA = [
-  { key: 'aries', icon: 'flame', color: '#ef4444', ruler: 'Mars', element: 'fire', ta: 'மேஷம்' },
-  { key: 'taurus', icon: 'leaf', color: '#22c55e', ruler: 'Venus', element: 'earth', ta: 'ரிஷபம்' },
-  { key: 'gemini', icon: 'people', color: '#3b82f6', ruler: 'Mercury', element: 'air', ta: 'மிதுனம்' },
-  { key: 'cancer', icon: 'water', color: '#06b6d4', ruler: 'Moon', element: 'water', ta: 'கடகம்' },
-  { key: 'leo', icon: 'sunny', color: '#f59e0b', ruler: 'Sun', element: 'fire', ta: 'சிம்மம்' },
-  { key: 'virgo', icon: 'flower', color: '#84cc16', ruler: 'Mercury', element: 'earth', ta: 'கன்னி' },
-  { key: 'libra', icon: 'scale', color: '#ec4899', ruler: 'Venus', element: 'air', ta: 'துலாம்' },
-  { key: 'scorpio', icon: 'flash', color: '#8b5cf6', ruler: 'Mars', element: 'water', ta: 'விருச்சிகம்' },
-  { key: 'sagittarius', icon: 'navigate', color: '#f97316', ruler: 'Jupiter', element: 'fire', ta: 'தனுசு' },
-  { key: 'capricorn', icon: 'triangle', color: '#737373', ruler: 'Saturn', element: 'earth', ta: 'மகரம்' },
-  { key: 'aquarius', icon: 'fitness', color: '#0ea5e9', ruler: 'Saturn', element: 'air', ta: 'கும்பம்' },
-  { key: 'pisces', icon: 'fish', color: '#14b8a6', ruler: 'Jupiter', element: 'water', ta: 'மீனம்' },
+  { key: 'aries', spriteCol: 0, spriteRow: 0, color: '#f59e0b', ruler: 'Mars', element: 'fire', ta: 'மேஷம்' },
+  { key: 'taurus', spriteCol: 1, spriteRow: 0, color: '#f59e0b', ruler: 'Venus', element: 'earth', ta: 'ரிஷபம்' },
+  { key: 'gemini', spriteCol: 2, spriteRow: 0, color: '#f97316', ruler: 'Mercury', element: 'air', ta: 'மிதுனம்' },
+  { key: 'cancer', spriteCol: 3, spriteRow: 0, color: '#f59e0b', ruler: 'Moon', element: 'water', ta: 'கடகம்' },
+  { key: 'leo', spriteCol: 0, spriteRow: 1, color: '#f97316', ruler: 'Sun', element: 'fire', ta: 'சிம்மம்' },
+  { key: 'virgo', spriteCol: 1, spriteRow: 1, color: '#f97316', ruler: 'Mercury', element: 'earth', ta: 'கன்னி' },
+  { key: 'libra', spriteCol: 2, spriteRow: 1, color: '#f59e0b', ruler: 'Venus', element: 'air', ta: 'துலாம்' },
+  { key: 'scorpio', spriteCol: 3, spriteRow: 1, color: '#f59e0b', ruler: 'Mars', element: 'water', ta: 'விருச்சிகம்' },
+  { key: 'sagittarius', spriteCol: 0, spriteRow: 2, color: '#f59e0b', ruler: 'Jupiter', element: 'fire', ta: 'தனுசு' },
+  { key: 'capricorn', spriteCol: 1, spriteRow: 2, color: '#f59e0b', ruler: 'Saturn', element: 'earth', ta: 'மகரம்' },
+  { key: 'aquarius', spriteCol: 2, spriteRow: 2, color: '#f97316', ruler: 'Saturn', element: 'air', ta: 'கும்பம்' },
+  { key: 'pisces', spriteCol: 3, spriteRow: 2, color: '#f59e0b', ruler: 'Jupiter', element: 'water', ta: 'மீனம்' },
 ];
 
 // Calculate dynamic Rashi score based on current transits and date
@@ -407,8 +411,20 @@ const RashiPalanTicker = ({ transits, language, t, userRashi, onRashiPress }) =>
 
             return (
               <View key={`${rashi.key}-${index}`} style={rashiTickerStyles.rashiItem}>
-                <View style={[rashiTickerStyles.iconContainer, { backgroundColor: rashi.color + '20' }]}>
-                  <Ionicons name={rashi.icon} size={16} color={rashi.color} />
+                <View style={rashiTickerStyles.iconContainer}>
+                  <Image
+                    source={{ uri: ZODIAC_SPRITE_URL }}
+                    style={[
+                      rashiTickerStyles.spriteIcon,
+                      {
+                        transform: [
+                          { translateX: -(rashi.spriteCol * 28) },
+                          { translateY: -(rashi.spriteRow * 28) },
+                        ],
+                      },
+                    ]}
+                    resizeMode="cover"
+                  />
                 </View>
                 <Text style={[
                   rashiTickerStyles.rashiName,
@@ -498,8 +514,12 @@ const rashiTickerStyles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
+    overflow: 'hidden',
+    backgroundColor: '#fff',
+  },
+  spriteIcon: {
+    width: 112,
+    height: 84,
   },
   rashiName: {
     fontSize: 13,
