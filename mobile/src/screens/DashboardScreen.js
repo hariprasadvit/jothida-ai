@@ -103,7 +103,21 @@ const TAMIL_MOON_PHASE_MAP = {
 // Tamil Aura level to translation key mapping
 const TAMIL_AURA_MAP = {
   'வலிமையான ஒளி': 'strongAura', 'மிதமான ஒளி': 'moderateAura',
-  'பலவீனமான ஒளி': 'weakAura',
+  'பலவீனமான ஒளி': 'weakAura', 'சமநிலை ஒளி': 'balancedAura',
+};
+
+// Tamil time period names to English
+const TAMIL_TIME_PERIOD_MAP = {
+  'மத்தியானம்': 'Afternoon', 'காலை': 'Morning', 'மாலை': 'Evening',
+  'இரவு': 'Night', 'நள்ளிரவு': 'Midnight', 'அதிகாலை': 'Early Morning',
+  'சூரிய உதயம்': 'Sunrise', 'சூரிய அஸ்தமனம்': 'Sunset',
+};
+
+// Tamil mood names to English
+const TAMIL_MOOD_MAP = {
+  'சுறுசுறுப்பு': 'Active', 'அமைதி': 'Calm', 'உற்சாகம்': 'Energetic',
+  'சோர்வு': 'Tired', 'படைப்பாற்றல்': 'Creative', 'உணர்வுபூர்வமான': 'Emotional',
+  'நிலையான': 'Stable', 'மாறுபடும்': 'Variable',
 };
 
 // Tamil Life Trend direction to translation key mapping
@@ -208,6 +222,18 @@ const translateAuraLevel = (auraLabel, t) => {
   const key = TAMIL_AURA_MAP[auraLabel];
   if (key) return t(key);
   return auraLabel;
+};
+
+// Helper to translate Tamil time period to English
+const translateTimePeriod = (periodName) => {
+  if (!periodName) return periodName;
+  return TAMIL_TIME_PERIOD_MAP[periodName] || periodName;
+};
+
+// Helper to translate Tamil mood to English
+const translateMood = (moodName) => {
+  if (!moodName) return moodName;
+  return TAMIL_MOOD_MAP[moodName] || moodName;
 };
 
 // Helper to translate planet name from string (for dominant/challenged planets)
@@ -2670,7 +2696,7 @@ export default function DashboardScreen({ navigation }) {
                 <View style={styles.auraOverview}>
                   <View style={[styles.auraLevelBadge, { backgroundColor: planetAura.overall?.aura_color + '20' }]}>
                     <Text style={[styles.auraLevelText, { color: planetAura.overall?.aura_color }]}>
-                      {translateAuraLevel(planetAura.overall?.aura_tamil, t) || planetAura.overall?.aura_label}
+                      {language === 'ta' ? (planetAura.overall?.aura_tamil || planetAura.overall?.aura_label) : (translateAuraLevel(planetAura.overall?.aura_tamil, t) || planetAura.overall?.aura_label)}
                     </Text>
                   </View>
                   <View style={styles.auraStats}>
@@ -2870,7 +2896,7 @@ export default function DashboardScreen({ navigation }) {
                         <View style={styles.moonEnergyCard}>
                           <Text style={styles.moonEnergyEmoji}>{transitsMap.moon_transit.energy.icon}</Text>
                           <Text style={[styles.moonEnergyMood, { color: '#8b6f47' }]}>
-                            {language === 'ta' ? transitsMap.moon_transit.energy.mood : (transitsMap.moon_transit.energy.mood_en || transitsMap.moon_transit.energy.mood)}
+                            {language === 'ta' ? transitsMap.moon_transit.energy.mood : (transitsMap.moon_transit.energy.mood_en || translateMood(transitsMap.moon_transit.energy.mood))}
                           </Text>
                         </View>
                       )}
@@ -3080,7 +3106,7 @@ export default function DashboardScreen({ navigation }) {
                   >
                     <Ionicons name="sparkles" size={16} color={transitsMap.auspicious_time.color} />
                     <Text style={[styles.auspiciousText, { color: transitsMap.auspicious_time.color }]}>
-                      {language === 'ta' ? transitsMap.auspicious_time.name : (transitsMap.auspicious_time.name_en || transitsMap.auspicious_time.name)}
+                      {language === 'ta' ? transitsMap.auspicious_time.name : (transitsMap.auspicious_time.name_en || translateTimePeriod(transitsMap.auspicious_time.name))}
                     </Text>
                   </LinearGradient>
                 )}
@@ -3134,7 +3160,7 @@ const styles = StyleSheet.create({
   greeting: { fontSize: 16, color: '#8b6f47', fontWeight: '500' },
   rasiInfo: { fontSize: 14, color: '#c69c6d', marginTop: 3, fontWeight: '600' },
   timeContainer: { alignItems: 'flex-end' },
-  currentTime: { fontSize: 22, fontFamily: 'monospace', color: '#6b5644', fontWeight: '600', letterSpacing: 1 },
+  currentTime: { fontSize: 16, fontFamily: 'monospace', color: '#6b5644', fontWeight: '600', letterSpacing: 0.5 },
   periodBadge: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 16, marginTop: 8, backgroundColor: '#f4e4d7', borderWidth: 1, borderColor: '#e8d5c4' },
   periodText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.5, color: '#8b6f47' },
 
@@ -3211,8 +3237,8 @@ const styles = StyleSheet.create({
   toggleTextActive: { color: '#6b5644', fontWeight: '800' },
 
   monthsScroll: { marginHorizontal: -4 },
-  monthCard: { width: 90, backgroundColor: '#fef6ed', borderRadius: 16, padding: 14, marginHorizontal: 6, alignItems: 'center', borderWidth: 1, borderColor: '#f4e4d7', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6 },
-  monthName: { fontSize: 11, color: '#8b6f47', fontWeight: '700', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.8 },
+  monthCard: { width: 100, backgroundColor: '#fef6ed', borderRadius: 16, padding: 12, marginHorizontal: 5, alignItems: 'center', borderWidth: 1, borderColor: '#f4e4d7', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6 },
+  monthName: { fontSize: 9, color: '#8b6f47', fontWeight: '700', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.3, textAlign: 'center' },
   monthScoreBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14, marginBottom: 10, backgroundColor: '#f4e4d7' },
   monthScore: { fontSize: 16, fontWeight: '800' },
   monthBarContainer: { width: '100%', height: 6, backgroundColor: '#f4e4d7', borderRadius: 3 },
@@ -3243,8 +3269,8 @@ const styles = StyleSheet.create({
   yearScoreFill: { height: 4, borderRadius: 2 },
 
   quickActionsGrid: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 16 },
-  quickActionBtn: { flex: 1, alignItems: 'center', backgroundColor: '#fef6ed', borderRadius: 18, padding: 20, marginHorizontal: 6, borderWidth: 1, borderColor: '#e8d5c4', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6 },
-  quickActionLabel: { fontSize: 11, color: '#6b5644', marginTop: 12, fontWeight: '700', letterSpacing: 0.4 },
+  quickActionBtn: { flex: 1, alignItems: 'center', backgroundColor: '#fef6ed', borderRadius: 18, padding: 16, marginHorizontal: 4, borderWidth: 1, borderColor: '#e8d5c4', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6, minWidth: 70 },
+  quickActionLabel: { fontSize: 10, color: '#6b5644', marginTop: 8, fontWeight: '700', letterSpacing: 0.2, textAlign: 'center' },
 
   dashaCard: { backgroundColor: '#fef6ed', borderWidth: 1, borderColor: '#f4e4d7' },
   dashaGrid: { flexDirection: 'row', gap: 16 },

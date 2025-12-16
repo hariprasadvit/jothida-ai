@@ -600,11 +600,11 @@ const styles = StyleSheet.create({
   },
   languageOptions: {
     width: '100%',
-    maxWidth: 500,
-    gap: 14,
+    maxWidth: 400,
+    gap: 10,
   },
   languageButton: {
-    borderRadius: 16,
+    borderRadius: 12,
     overflow: 'hidden',
     borderWidth: 2,
     borderColor: '#fed7aa',
@@ -617,8 +617,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 18,
-    paddingHorizontal: 28,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
   },
   languageTextContainer: {
     flex: 1,
@@ -627,7 +627,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   languageName: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: '600',
     color: '#1f2937',
   },
@@ -635,7 +635,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   languageNameEn: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#6b7280',
   },
   languageNameEnSelected: {

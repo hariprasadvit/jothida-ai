@@ -665,6 +665,7 @@ export const reportAPI = {
     const coords = getCityCoordinates(birthDetails.birthPlace);
     const isWeb = Platform.OS === 'web';
 
+    // Use longer timeout for PDF generation (2 minutes)
     const response = await api.post('/api/report/generate', {
       name: birthDetails.name,
       birth_date: birthDetails.birthDate,
@@ -674,6 +675,7 @@ export const reportAPI = {
       longitude: coords.lon,
     }, {
       responseType: isWeb ? 'blob' : 'arraybuffer',
+      timeout: 120000, // 2 minutes for PDF generation
     });
 
     // For web, return blob directly
