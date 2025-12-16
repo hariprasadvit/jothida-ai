@@ -16,7 +16,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Path, Circle, Defs, RadialGradient, Stop, Ellipse } from 'react-native-svg';
+import Svg, { Path, Circle, Defs, RadialGradient, Stop, Ellipse, Text as SvgText } from 'react-native-svg';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { mobileAPI } from '../services/api';
@@ -264,20 +264,64 @@ const translateEventLabel = (event, language, t) => {
 
 // ============== RASHI PALAN DATA & COMPONENT ==============
 
-// 12 Zodiac signs with symbols and ruling planets
+// Zodiac Icon Component using SVG
+const ZodiacIcon = ({ sign, size = 30 }) => {
+  const zodiacData = {
+    aries: { symbol: '♈', color1: '#f59e0b', color2: '#fb923c' },
+    taurus: { symbol: '♉', color1: '#f59e0b', color2: '#fbbf24' },
+    gemini: { symbol: '♊', color1: '#f97316', color2: '#fb923c' },
+    cancer: { symbol: '♋', color1: '#f59e0b', color2: '#fbbf24' },
+    leo: { symbol: '♌', color1: '#f97316', color2: '#fb923c' },
+    virgo: { symbol: '♍', color1: '#f97316', color2: '#fbbf24' },
+    libra: { symbol: '♎', color1: '#f59e0b', color2: '#fb923c' },
+    scorpio: { symbol: '♏', color1: '#f59e0b', color2: '#fbbf24' },
+    sagittarius: { symbol: '♐', color1: '#f59e0b', color2: '#fb923c' },
+    capricorn: { symbol: '♑', color1: '#f59e0b', color2: '#fbbf24' },
+    aquarius: { symbol: '♒', color1: '#f97316', color2: '#fb923c' },
+    pisces: { symbol: '♓', color1: '#f59e0b', color2: '#fbbf24' },
+  };
+
+  const data = zodiacData[sign];
+
+  return (
+    <Svg width={size} height={size} viewBox="0 0 100 100">
+      <Defs>
+        <RadialGradient id={`grad-${sign}`} cx="50%" cy="50%" r="50%">
+          <Stop offset="0%" stopColor={data.color1} stopOpacity="1" />
+          <Stop offset="100%" stopColor={data.color2} stopOpacity="1" />
+        </RadialGradient>
+      </Defs>
+      <Circle cx="50" cy="50" r="48" fill={`url(#grad-${sign})`} stroke="#fff" strokeWidth="2" />
+      <SvgText
+        x="50"
+        y="50"
+        fontSize="48"
+        fontWeight="bold"
+        fill="#fff"
+        textAnchor="middle"
+        alignmentBaseline="central"
+        dy="3"
+      >
+        {data.symbol}
+      </SvgText>
+    </Svg>
+  );
+};
+
+// 12 Zodiac signs data
 const RASHI_DATA = [
-  { key: 'aries', symbol: '♈', ruler: 'Mars', element: 'fire', ta: 'மேஷம்' },
-  { key: 'taurus', symbol: '♉', ruler: 'Venus', element: 'earth', ta: 'ரிஷபம்' },
-  { key: 'gemini', symbol: '♊', ruler: 'Mercury', element: 'air', ta: 'மிதுனம்' },
-  { key: 'cancer', symbol: '♋', ruler: 'Moon', element: 'water', ta: 'கடகம்' },
-  { key: 'leo', symbol: '♌', ruler: 'Sun', element: 'fire', ta: 'சிம்மம்' },
-  { key: 'virgo', symbol: '♍', ruler: 'Mercury', element: 'earth', ta: 'கன்னி' },
-  { key: 'libra', symbol: '♎', ruler: 'Venus', element: 'air', ta: 'துலாம்' },
-  { key: 'scorpio', symbol: '♏', ruler: 'Mars', element: 'water', ta: 'விருச்சிகம்' },
-  { key: 'sagittarius', symbol: '♐', ruler: 'Jupiter', element: 'fire', ta: 'தனுசு' },
-  { key: 'capricorn', symbol: '♑', ruler: 'Saturn', element: 'earth', ta: 'மகரம்' },
-  { key: 'aquarius', symbol: '♒', ruler: 'Saturn', element: 'air', ta: 'கும்பம்' },
-  { key: 'pisces', symbol: '♓', ruler: 'Jupiter', element: 'water', ta: 'மீனம்' },
+  { key: 'aries', color: '#f59e0b', ruler: 'Mars', element: 'fire', ta: 'மேஷம்' },
+  { key: 'taurus', color: '#f59e0b', ruler: 'Venus', element: 'earth', ta: 'ரிஷபம்' },
+  { key: 'gemini', color: '#f97316', ruler: 'Mercury', element: 'air', ta: 'மிதுனம்' },
+  { key: 'cancer', color: '#f59e0b', ruler: 'Moon', element: 'water', ta: 'கடகம்' },
+  { key: 'leo', color: '#f97316', ruler: 'Sun', element: 'fire', ta: 'சிம்மம்' },
+  { key: 'virgo', color: '#f97316', ruler: 'Mercury', element: 'earth', ta: 'கன்னி' },
+  { key: 'libra', color: '#f59e0b', ruler: 'Venus', element: 'air', ta: 'துலாம்' },
+  { key: 'scorpio', color: '#f59e0b', ruler: 'Mars', element: 'water', ta: 'விருச்சிகம்' },
+  { key: 'sagittarius', color: '#f59e0b', ruler: 'Jupiter', element: 'fire', ta: 'தனுசு' },
+  { key: 'capricorn', color: '#f59e0b', ruler: 'Saturn', element: 'earth', ta: 'மகரம்' },
+  { key: 'aquarius', color: '#f97316', ruler: 'Saturn', element: 'air', ta: 'கும்பம்' },
+  { key: 'pisces', color: '#f59e0b', ruler: 'Jupiter', element: 'water', ta: 'மீனம்' },
 ];
 
 // Calculate dynamic Rashi score based on current transits and date
@@ -407,7 +451,7 @@ const RashiPalanTicker = ({ transits, language, t, userRashi, onRashiPress }) =>
 
             return (
               <View key={`${rashi.key}-${index}`} style={rashiTickerStyles.rashiItem}>
-                <Text style={rashiTickerStyles.rashiSymbol}>{rashi.symbol}</Text>
+                <ZodiacIcon sign={rashi.key} size={30} />
                 <Text style={[
                   rashiTickerStyles.rashiName,
                   isUserRashi && rashiTickerStyles.rashiNameHighlight
@@ -417,7 +461,7 @@ const RashiPalanTicker = ({ transits, language, t, userRashi, onRashiPress }) =>
                 <Text style={[rashiTickerStyles.scoreText, { color: getScoreColor(rashi.score) }]}>
                   {rashi.score}%
                 </Text>
-                {isUserRashi && <Text style={rashiTickerStyles.youIndicator}>★</Text>}
+                {isUserRashi && <Ionicons name="star" size={14} color="#f97316" style={rashiTickerStyles.youIndicator} />}
                 <Text style={rashiTickerStyles.separator}>│</Text>
               </View>
             );
@@ -431,15 +475,25 @@ const RashiPalanTicker = ({ transits, language, t, userRashi, onRashiPress }) =>
 // Rashi Ticker Styles - News Bulletin Style
 const rashiTickerStyles = StyleSheet.create({
   container: {
-    backgroundColor: '#0c0c0c',
-    marginTop: 4,
+    backgroundColor: '#fff8f0',
+    marginTop: 12,
+    marginHorizontal: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e8d5c4',
+    shadowColor: '#d4a574',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 2,
+    overflow: 'hidden',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 10,
     paddingVertical: 5,
-    backgroundColor: '#b91c1c',
+    backgroundColor: '#ea580c',
     gap: 8,
   },
   liveIndicator: {
@@ -455,12 +509,12 @@ const rashiTickerStyles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#dc2626',
+    backgroundColor: '#f97316',
   },
   liveText: {
     fontSize: 10,
     fontWeight: '900',
-    color: '#dc2626',
+    color: '#f97316',
     letterSpacing: 0.5,
   },
   title: {
@@ -471,13 +525,13 @@ const rashiTickerStyles = StyleSheet.create({
   },
   date: {
     fontSize: 11,
-    color: '#fecaca',
+    color: '#fed7aa',
     fontWeight: '600',
   },
   tickerWrapper: {
     overflow: 'hidden',
-    backgroundColor: '#111',
-    paddingVertical: 10,
+    backgroundColor: '#fff8f0',
+    paddingVertical: 12,
   },
   tickerContent: {
     flexDirection: 'row',
@@ -486,34 +540,32 @@ const rashiTickerStyles = StyleSheet.create({
   rashiItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 4,
-    gap: 5,
-  },
-  rashiSymbol: {
-    fontSize: 16,
+    paddingHorizontal: 6,
+    gap: 6,
   },
   rashiName: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#fff',
+    color: '#1f2937',
+    lineHeight: 18,
   },
   rashiNameHighlight: {
-    color: '#fbbf24',
+    color: '#f97316',
     fontWeight: '800',
   },
   scoreText: {
     fontSize: 14,
     fontWeight: '800',
-    minWidth: 40,
+    minWidth: 45,
+    textAlign: 'right',
+    lineHeight: 18,
   },
   youIndicator: {
-    fontSize: 12,
-    color: '#fbbf24',
     marginLeft: -2,
   },
   separator: {
     fontSize: 16,
-    color: '#444',
+    color: '#d1d5db',
     marginHorizontal: 8,
   },
 });
@@ -534,35 +586,31 @@ const DecorativeBorder = ({ style }) => {
 };
 
 // Detailed Diya (Oil Lamp) Icon - Traditional style
-const DiyaIcon = ({ size = 40, color = '#d97706' }) => (
-  <Svg width={size} height={size} viewBox="0 0 100 100">
-    <Defs>
-      <RadialGradient id="flameGlow" cx="50%" cy="20%" r="60%">
-        <Stop offset="0%" stopColor="#fbbf24" stopOpacity="1" />
-        <Stop offset="50%" stopColor="#f97316" stopOpacity="0.6" />
-        <Stop offset="100%" stopColor="#f97316" stopOpacity="0" />
-      </RadialGradient>
-    </Defs>
-    {/* Flame glow */}
-    <Ellipse cx="50" cy="22" rx="18" ry="22" fill="url(#flameGlow)" />
-    {/* Outer flame */}
-    <Path d="M50 5 Q58 18 55 30 Q52 38 50 42 Q48 38 45 30 Q42 18 50 5" fill="#f97316" />
-    {/* Inner flame */}
-    <Path d="M50 12 Q54 20 52 28 Q51 34 50 38 Q49 34 48 28 Q46 20 50 12" fill="#fbbf24" />
-    {/* Flame core */}
-    <Path d="M50 18 Q52 24 51 30 Q50 34 50 36 Q50 34 49 30 Q48 24 50 18" fill="#fff" opacity="0.8" />
-    {/* Lamp body */}
-    <Ellipse cx="50" cy="52" rx="28" ry="10" fill={color} />
-    <Path d="M22 52 Q22 68 32 78 L68 78 Q78 68 78 52" fill={color} />
-    {/* Lamp decorations */}
-    <Ellipse cx="50" cy="60" rx="20" ry="6" fill="#b45309" opacity="0.5" />
-    {/* Base */}
-    <Ellipse cx="50" cy="82" rx="22" ry="6" fill={color} />
-    <Ellipse cx="50" cy="88" rx="18" ry="4" fill="#92400e" />
-    {/* Highlight */}
-    <Ellipse cx="40" cy="52" rx="8" ry="3" fill="#fcd34d" opacity="0.4" />
-  </Svg>
-);
+const DiyaIcon = ({ size = 40, color = '#d97706' }) => {
+  const glowId = useRef(`flameGlow-${Math.random().toString(36).slice(2)}`).current;
+
+  return (
+    <Svg width={size} height={size} viewBox="0 0 100 100">
+      <Defs>
+        <RadialGradient id={glowId} cx="50%" cy="20%" r="60%">
+          <Stop offset="0%" stopColor="#fbbf24" stopOpacity="1" />
+          <Stop offset="50%" stopColor="#f97316" stopOpacity="0.6" />
+          <Stop offset="100%" stopColor="#f97316" stopOpacity="0" />
+        </RadialGradient>
+      </Defs>
+      <Ellipse cx="50" cy="22" rx="18" ry="22" fill={`url(#${glowId})`} />
+      <Path d="M50 5 Q58 18 55 30 Q52 38 50 42 Q48 38 45 30 Q42 18 50 5" fill="#f97316" />
+      <Path d="M50 12 Q54 20 52 28 Q51 34 50 38 Q49 34 48 28 Q46 20 50 12" fill="#fbbf24" />
+      <Path d="M50 18 Q52 24 51 30 Q50 34 50 36 Q50 34 49 30 Q48 24 50 18" fill="#fff" opacity="0.8" />
+      <Ellipse cx="50" cy="52" rx="28" ry="10" fill={color} />
+      <Path d="M22 52 Q22 68 32 78 L68 78 Q78 68 78 52" fill={color} />
+      <Ellipse cx="50" cy="60" rx="20" ry="6" fill="#b45309" opacity="0.5" />
+      <Ellipse cx="50" cy="82" rx="22" ry="6" fill={color} />
+      <Ellipse cx="50" cy="88" rx="18" ry="4" fill="#92400e" />
+      <Ellipse cx="40" cy="52" rx="8" ry="3" fill="#fcd34d" opacity="0.4" />
+    </Svg>
+  );
+};
 
 
 
@@ -933,16 +981,13 @@ const generateAISummary = (data, score, t, language = 'en') => {
   // Build highlights from actual breakdown/factors
   if (factors.length > 0) {
     highlights = factors.slice(0, 3).map(f => {
-      const isPositive = f.impact > 0 || f.type === 'positive';
-      const icon = isPositive ? '✅' : '⚠️';
-      return `${icon} ${f.description || f.factor || f.name}`;
+      return `${f.description || f.factor || f.name}`;
     });
   } else if (Object.keys(breakdown).length > 0) {
     // Build from breakdown
     Object.entries(breakdown).slice(0, 3).forEach(([key, val]) => {
       const value = typeof val === 'object' ? val.value || val.score : val;
-      const isGood = value >= 60;
-      highlights.push(`${isGood ? '✅' : '⚠️'} ${key.replace(/_/g, ' ')}: ${value}%`);
+      highlights.push(`${key.replace(/_/g, ' ')}: ${value}%`);
     });
   }
 
@@ -951,54 +996,54 @@ const generateAISummary = (data, score, t, language = 'en') => {
     if (lang === 'ta') {
       if (area === 'love') {
         highlights = score >= 60
-          ? [`💕 ${houseInfo.ta.karaka} பலமாக உள்ளது`, `🤝 உறவுகள் வளரும்`, `💫 புரிதல் அதிகரிக்கும்`]
-          : [`⚠️ ${houseInfo.ta.karaka} பலவீனம்`, `🛡️ பொறுமை தேவை`, `🙏 தொடர்பில் கவனம்`];
+          ? [`${houseInfo.ta.karaka} பலமாக உள்ளது`, `உறவுகள் வளரும்`, `புரிதல் அதிகரிக்கும்`]
+          : [`${houseInfo.ta.karaka} பலவீனம்`, `பொறுமை தேவை`, `தொடர்பில் கவனம்`];
       } else if (area === 'career') {
         highlights = score >= 60
-          ? [`📈 ${houseInfo.ta.house} பலமாக`, `💼 வளர்ச்சி வாய்ப்புகள்`, `🏆 முயற்சி வெற்றி`]
-          : [`⚠️ வேலை சுமை அதிகம்`, `🛡️ மோதல்களைத் தவிர்க்கவும்`, `⏸️ பெரிய மாற்றங்கள் வேண்டாம்`];
+          ? [`${houseInfo.ta.house} பலமாக`, `வளர்ச்சி வாய்ப்புகள்`, `முயற்சி வெற்றி`]
+          : [`வேலை சுமை அதிகம்`, `மோதல்களைத் தவிர்க்கவும்`, `பெரிய மாற்றங்கள் வேண்டாம்`];
       } else if (area === 'education') {
         highlights = score >= 60
-          ? [`📚 கற்றல் எளிது`, `🧠 நினைவாற்றல் சிறப்பு`, `🎓 தேர்வு வெற்றி`]
-          : [`⚠️ கவனம் சிதறும்`, `📅 திட்டமிடல் அவசியம்`, `💪 கூடுதல் முயற்சி தேவை`];
+          ? [`கற்றல் எளிது`, `நினைவாற்றல் சிறப்பு`, `தேர்வு வெற்றி`]
+          : [`கவனம் சிதறும்`, `திட்டமிடல் அவசியம்`, `கூடுதல் முயற்சி தேவை`];
       } else if (area === 'family') {
         highlights = score >= 60
-          ? [`🏠 வீட்டில் மகிழ்ச்சி`, `👨‍👩‍👧‍👦 ஒற்றுமை`, `💝 அன்பு பெருகும்`]
-          : [`⚠️ கருத்து வேறுபாடுகள்`, `🕊️ சமரசம் தேவை`, `🙏 பொறுமை முக்கியம்`];
+          ? [`வீட்டில் மகிழ்ச்சி`, `ஒற்றுமை`, `அன்பு பெருகும்`]
+          : [`கருத்து வேறுபாடுகள்`, `சமரசம் தேவை`, `பொறுமை முக்கியம்`];
       } else if (area === 'health') {
         highlights = score >= 60
-          ? [`💪 ஆற்றல் அதிகம்`, `😊 மன அமைதி`, `🏃 உடற்பயிற்சி நல்லது`]
-          : [`⚠️ ஓய்வு எடுங்கள்`, `🏥 பரிசோதனை செய்யுங்கள்`, `🧘 மன அழுத்தம் குறைக்கவும்`];
+          ? [`ஆற்றல் அதிகம்`, `மன அமைதி`, `உடற்பயிற்சி நல்லது`]
+          : [`ஓய்வு எடுங்கள்`, `பரிசோதனை செய்யுங்கள்`, `மன அழுத்தம் குறைக்கவும்`];
       } else {
         highlights = score >= 60
-          ? [`✨ சாதகமான காலம்`, `📈 முன்னேற்றம்`, `🎯 இலக்குகள் அடையலாம்`]
-          : [`⚠️ கவனமாக இருங்கள்`, `⏸️ பெரிய முடிவுகள் வேண்டாம்`, `🙏 பொறுமை தேவை`];
+          ? [`சாதகமான காலம்`, `முன்னேற்றம்`, `இலக்குகள் அடையலாம்`]
+          : [`கவனமாக இருங்கள்`, `பெரிய முடிவுகள் வேண்டாம்`, `பொறுமை தேவை`];
       }
     } else {
       if (area === 'love') {
         highlights = score >= 60
-          ? [`💕 ${houseInfo.karaka} is strong in your chart`, `🤝 Relationships will flourish`, `💫 Understanding deepens`]
-          : [`⚠️ ${houseInfo.karaka} needs strengthening`, `🛡️ Patience required`, `🙏 Focus on communication`];
+          ? [`${houseInfo.karaka} is strong in your chart`, `Relationships will flourish`, `Understanding deepens`]
+          : [`${houseInfo.karaka} needs strengthening`, `Patience required`, `Focus on communication`];
       } else if (area === 'career') {
         highlights = score >= 60
-          ? [`📈 House ${houseInfo.house} is well-placed`, `💼 Growth opportunities ahead`, `🏆 Efforts will be recognized`]
-          : [`⚠️ Heavy workload expected`, `🛡️ Avoid workplace conflicts`, `⏸️ Delay major changes`];
+          ? [`House ${houseInfo.house} is well-placed`, `Growth opportunities ahead`, `Efforts will be recognized`]
+          : [`Heavy workload expected`, `Avoid workplace conflicts`, `Delay major changes`];
       } else if (area === 'education') {
         highlights = score >= 60
-          ? [`📚 Learning comes easy`, `🧠 Sharp memory and focus`, `🎓 Success in exams`]
-          : [`⚠️ Concentration may waver`, `📅 Study plan essential`, `💪 Extra effort needed`];
+          ? [`Learning comes easy`, `Sharp memory and focus`, `Success in exams`]
+          : [`Concentration may waver`, `Study plan essential`, `Extra effort needed`];
       } else if (area === 'family') {
         highlights = score >= 60
-          ? [`🏠 Harmony at home`, `👨‍👩‍👧‍👦 Family unity strong`, `💝 Love and bonding increase`]
-          : [`⚠️ Differences may arise`, `🕊️ Compromise needed`, `🙏 Patience is key`];
+          ? [`Harmony at home`, `Family unity strong`, `Love and bonding increase`]
+          : [`Differences may arise`, `Compromise needed`, `Patience is key`];
       } else if (area === 'health') {
         highlights = score >= 60
-          ? [`💪 Energy levels high`, `😊 Mental peace`, `🏃 Good time for fitness`]
-          : [`⚠️ Take adequate rest`, `🏥 Get checkups done`, `🧘 Reduce stress`];
+          ? [`Energy levels high`, `Mental peace`, `Good time for fitness`]
+          : [`Take adequate rest`, `Get checkups done`, `Reduce stress`];
       } else {
         highlights = score >= 60
-          ? [`✨ Favorable period`, `📈 Progress expected`, `🎯 Goals achievable`]
-          : [`⚠️ Be cautious`, `⏸️ Delay major decisions`, `🙏 Patience needed`];
+          ? [`Favorable period`, `Progress expected`, `Goals achievable`]
+          : [`Be cautious`, `Delay major decisions`, `Patience needed`];
       }
     }
   }
@@ -2003,20 +2048,12 @@ export default function DashboardScreen({ navigation }) {
   return (
     <View style={styles.container}>
       {/* Warm auspicious gradient background */}
-      <LinearGradient colors={['#fffbeb', '#fef3c7', '#fff7ed']} style={styles.gradient}>
+      <LinearGradient colors={['#faf7f2', '#f5ede5', '#fff8f0']} style={styles.gradient}>
         <ScrollView
           contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#f97316']} tintColor="#f97316" />}
           showsVerticalScrollIndicator={false}
         >
-          {/* Top accent bar */}
-          <LinearGradient
-            colors={['#f97316', '#ea580c', '#f97316']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.headerBar}
-          />
-
           {/* Header */}
           <Animated.View
             style={[
@@ -2088,13 +2125,13 @@ export default function DashboardScreen({ navigation }) {
 
           {/* Story Preview Row */}
           <AnimatedCard delay={75}>
-            <TouchableOpacity
-              style={styles.storyPreviewRow}
-              onPress={() => navigation.navigate('AstroFeed')}
-              activeOpacity={0.8}
-            >
+            <View style={styles.storyPreviewRow}>
               <View style={styles.storyCirclesContainer}>
-                <View style={[styles.storyCircle, styles.storyCircleActive]}>
+                <TouchableOpacity
+                  style={[styles.storyCircle, styles.storyCircleActive]}
+                  onPress={() => navigation.navigate('AstroFeed', { initialStory: 'planet' })}
+                  activeOpacity={0.7}
+                >
                   <LinearGradient
                     colors={['#f97316', '#ef4444', '#ec4899']}
                     style={styles.storyGradientBorder}
@@ -2104,8 +2141,12 @@ export default function DashboardScreen({ navigation }) {
                     </View>
                   </LinearGradient>
                   <Text style={styles.storyLabel}>{t('planet')}</Text>
-                </View>
-                <View style={[styles.storyCircle, styles.storyCircleActive]}>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.storyCircle, styles.storyCircleActive]}
+                  onPress={() => navigation.navigate('AstroFeed', { initialStory: 'moon' })}
+                  activeOpacity={0.7}
+                >
                   <LinearGradient
                     colors={['#8b5cf6', '#6366f1', '#3b82f6']}
                     style={styles.storyGradientBorder}
@@ -2115,8 +2156,12 @@ export default function DashboardScreen({ navigation }) {
                     </View>
                   </LinearGradient>
                   <Text style={styles.storyLabel}>{t('moon')}</Text>
-                </View>
-                <View style={[styles.storyCircle, styles.storyCircleActive]}>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.storyCircle, styles.storyCircleActive]}
+                  onPress={() => navigation.navigate('AstroFeed', { initialStory: 'insight' })}
+                  activeOpacity={0.7}
+                >
                   <LinearGradient
                     colors={['#22c55e', '#16a34a', '#15803d']}
                     style={styles.storyGradientBorder}
@@ -2126,8 +2171,12 @@ export default function DashboardScreen({ navigation }) {
                     </View>
                   </LinearGradient>
                   <Text style={styles.storyLabel}>{t('insight')}</Text>
-                </View>
-                <View style={[styles.storyCircle, styles.storyCircleActive]}>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.storyCircle, styles.storyCircleActive]}
+                  onPress={() => navigation.navigate('AstroFeed', { initialStory: 'star' })}
+                  activeOpacity={0.7}
+                >
                   <LinearGradient
                     colors={['#f59e0b', '#d97706', '#b45309']}
                     style={styles.storyGradientBorder}
@@ -2137,21 +2186,27 @@ export default function DashboardScreen({ navigation }) {
                     </View>
                   </LinearGradient>
                   <Text style={styles.storyLabel}>{t('star')}</Text>
-                </View>
-                <View style={styles.storyCircle}>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.storyCircle}
+                  onPress={() => navigation.navigate('AstroFeed')}
+                  activeOpacity={0.7}
+                >
                   <View style={styles.storyMoreCircle}>
                     <Ionicons name="add" size={24} color="#f97316" />
                   </View>
                   <Text style={styles.storyLabel}>{t('more')}</Text>
-                </View>
+                </TouchableOpacity>
               </View>
-            </TouchableOpacity>
+            </View>
           </AnimatedCard>
 
           {/* Tamil Calendar */}
           <AnimatedCard delay={100} style={styles.card}>
             <View style={styles.cardHeader}>
-              <DiyaIcon size={32} color="#d97706" />
+              <View style={styles.sectionIconBadge}>
+                <DiyaIcon size={20} color="#d97706" />
+              </View>
               <Text style={styles.cardTitle}>{t('todayPanchangam')}</Text>
             </View>
             <View style={styles.panchangamGrid}>
@@ -2176,24 +2231,52 @@ export default function DashboardScreen({ navigation }) {
 
           {/* Today's Score */}
           <AnimatedCard delay={200} style={styles.card}>
-            <View style={styles.scoreRow}>
-              <View>
-                <Text style={styles.scoreLabel}>{t('todayScore')}</Text>
-                <View style={styles.scoreValue}>
-                  <Text style={styles.scoreNumber}>{overallScore}</Text>
-                  <Text style={styles.scoreMax}>/100</Text>
-                  <View style={[styles.scoreBadge, { backgroundColor: overallScore >= 70 ? '#dcfce7' : '#fef3c7' }]}>
-                    <Ionicons name="trending-up" size={14} color={overallScore >= 70 ? '#16a34a' : '#d97706'} />
-                    <Text style={[styles.scoreBadgeText, { color: overallScore >= 70 ? '#16a34a' : '#d97706' }]}>
+            <Text style={styles.cardTitle}>{t('todayScore')}</Text>
+
+            {/* Radial Birth Chart Visualization */}
+            <View style={styles.radialChartContainer}>
+              {/* Outer decorative ring */}
+              <View style={styles.radialOuterRing} />
+              <View style={styles.radialMiddleRing} />
+
+              {/* Center score circle */}
+              <TouchableOpacity onPress={handleOverallScorePress} activeOpacity={0.8}>
+                <View style={styles.radialCenterCircle}>
+                  <Text style={styles.radialScoreNumber}>{overallScore}</Text>
+                  <Text style={styles.radialScoreLabel}>/100</Text>
+                  <View style={[styles.radialStatusBadge, { backgroundColor: overallScore >= 70 ? '#b8dfd0' : '#d4bfeb' }]}>
+                    <Text style={[styles.radialStatusText, { color: overallScore >= 70 ? '#4a7c68' : '#7a5c9e' }]}>
                       {overallScore >= 70 ? t('good') : t('average')}
                     </Text>
                   </View>
                 </View>
-              </View>
-              <AnimatedScoreCircle score={overallScore} onPress={handleOverallScorePress} tapText={t('tap')} />
+              </TouchableOpacity>
+
+              {/* Orbital indicators - 12 positions like zodiac wheel */}
+              {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((angle, i) => {
+                const radian = (angle * Math.PI) / 180;
+                const radius = 105;
+                const x = Math.cos(radian) * radius;
+                const y = Math.sin(radian) * radius;
+                const opacity = (i % 3 === 0) ? 1 : 0.4;
+                return (
+                  <View
+                    key={i}
+                    style={[
+                      styles.radialOrbitalDot,
+                      {
+                        left: 110 + x - 3,
+                        top: 110 + y - 3,
+                        opacity,
+                        backgroundColor: i % 3 === 0 ? '#9babc7' : '#c5d0e3',
+                      },
+                    ]}
+                  />
+                );
+              })}
             </View>
 
-            <LinearGradient colors={['#fff7ed', '#fef3c7']} style={styles.insightBox}>
+            <View style={styles.insightBox}>
               <PulsingSparkle />
               <Text style={styles.insightText}>
                 {jathagam?.dasha?.mahadasha
@@ -2201,7 +2284,7 @@ export default function DashboardScreen({ navigation }) {
                   : t('defaultInsight')
                 }
               </Text>
-            </LinearGradient>
+            </View>
           </AnimatedCard>
 
           {/* Life Areas */}
@@ -2289,7 +2372,9 @@ export default function DashboardScreen({ navigation }) {
           {/* Month & Year Projections */}
           <AnimatedCard delay={350} style={styles.card}>
             <View style={styles.cardHeader}>
-              <Ionicons name="analytics" size={16} color="#ea580c" />
+              <View style={styles.sectionIconBadge}>
+                <Ionicons name="analytics" size={18} color="#ea580c" />
+              </View>
               <Text style={styles.cardTitle}>{t('futureProjection')}</Text>
               {dynamicProjections?.projections ? (
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 'auto', backgroundColor: '#dcfce7', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 }}>
@@ -2339,7 +2424,9 @@ export default function DashboardScreen({ navigation }) {
           {lifeTimeline?.past_years?.length > 0 && (
             <AnimatedCard delay={375} style={styles.card}>
               <View style={styles.cardHeader}>
-                <Ionicons name="time-outline" size={16} color="#6b7280" />
+                <View style={styles.sectionIconBadge}>
+                  <Ionicons name="time-outline" size={18} color="#8b6f47" />
+                </View>
                 <Text style={styles.cardTitle}>
                   {t('pastYears')}
                 </Text>
@@ -2407,12 +2494,7 @@ export default function DashboardScreen({ navigation }) {
                 activeOpacity={0.9}
                 onPress={() => navigation.getParent()?.navigate('Remedy')}
               >
-                <LinearGradient
-                  colors={['#fef3c7', '#fde68a', '#fcd34d']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={[styles.card, styles.parigaramCard]}
-                >
+                <View style={[styles.card, styles.parigaramCard, { backgroundColor: '#fef6ed' }]}>
                   <View style={styles.parigaramHeader}>
                     <View style={styles.parigaramIconBadge}>
                       <Ionicons name="leaf" size={24} color="#92400e" />
@@ -2455,7 +2537,7 @@ export default function DashboardScreen({ navigation }) {
                       <Text style={styles.parigaramTipText}>{t('mantra')}</Text>
                     </View>
                   </View>
-                </LinearGradient>
+                </View>
               </TouchableOpacity>
             </AnimatedCard>
           )}
@@ -2463,10 +2545,10 @@ export default function DashboardScreen({ navigation }) {
           {/* Current Dasha */}
           {jathagam?.dasha?.mahadasha && (
             <AnimatedCard delay={500}>
-              <LinearGradient colors={['#faf5ff', '#eef2ff']} style={[styles.card, styles.dashaCard]}>
+              <View style={[styles.card, styles.dashaCard, { backgroundColor: '#fef6ed' }]}>
                 <View style={styles.cardHeader}>
-                  <Ionicons name="sparkles" size={16} color="#7c3aed" />
-                  <Text style={[styles.cardTitle, { color: '#6b21a8' }]}>{t('currentDasha')}</Text>
+                  <Ionicons name="sparkles" size={16} color="#d4a574" />
+                  <Text style={[styles.cardTitle, { color: '#6b5644', fontWeight: '800' }]}>{t('currentDasha')}</Text>
                 </View>
                 <View style={styles.dashaGrid}>
                   <View style={styles.dashaItem}>
@@ -2484,7 +2566,7 @@ export default function DashboardScreen({ navigation }) {
                     </View>
                   )}
                 </View>
-              </LinearGradient>
+              </View>
             </AnimatedCard>
           )}
 
@@ -2494,15 +2576,10 @@ export default function DashboardScreen({ navigation }) {
               activeOpacity={0.85}
               onPress={() => navigation.navigate('Chakra')}
             >
-              <LinearGradient
-                colors={['#1e1b4b', '#4c1d95', '#5b21b6']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={[styles.card, styles.chakraCard]}
-              >
+              <View style={[styles.card, styles.chakraCard]}>
                 <View style={styles.chakraCardHeader}>
                   <View style={styles.chakraIconContainer}>
-                    <Text style={styles.chakraIconLarge}>🧘</Text>
+                    <Ionicons name="body" size={28} color="#8b6f47" />
                   </View>
                   <View style={styles.chakraCardInfo}>
                     <Text style={styles.chakraCardTitle}>
@@ -2513,20 +2590,20 @@ export default function DashboardScreen({ navigation }) {
                     </Text>
                   </View>
                   <View style={styles.chakraArrowContainer}>
-                    <Ionicons name="chevron-forward" size={24} color="#c4b5fd" />
+                    <Ionicons name="chevron-forward" size={24} color="#8b6f47" />
                   </View>
                 </View>
 
                 {/* Chakra Mini Preview with Scores */}
                 <View style={styles.chakraMiniPreview}>
                   {[
-                    { color: '#9333ea', score: 72, name: 'Crown', nameTa: 'கிரீடம்' },
-                    { color: '#4f46e5', score: 68, name: 'Third Eye', nameTa: '3வது கண்' },
-                    { color: '#0ea5e9', score: 61, name: 'Throat', nameTa: 'தொண்டை' },
-                    { color: '#22c55e', score: 78, name: 'Heart', nameTa: 'இதயம்' },
-                    { color: '#eab308', score: 65, name: 'Solar', nameTa: 'சூரியன்' },
-                    { color: '#f97316', score: 58, name: 'Sacral', nameTa: 'சேக்ரல்' },
-                    { color: '#ef4444', score: 70, name: 'Root', nameTa: 'வேர்' },
+                    { color: '#9b7e5a', score: 72, name: 'Crown', nameTa: 'கிரீடம்' },
+                    { color: '#8b6f47', score: 68, name: 'Third Eye', nameTa: '3வது கண்' },
+                    { color: '#a18768', score: 61, name: 'Throat', nameTa: 'தொண்டை' },
+                    { color: '#7d9b7a', score: 78, name: 'Heart', nameTa: 'இதயம்' },
+                    { color: '#d4a574', score: 65, name: 'Solar', nameTa: 'சூரியன்' },
+                    { color: '#c69c6d', score: 58, name: 'Sacral', nameTa: 'சேக்ரல்' },
+                    { color: '#b8997a', score: 70, name: 'Root', nameTa: 'வேர்' },
                   ].map((chakra, idx) => (
                     <View key={idx} style={styles.chakraMiniItem}>
                       <View style={[styles.chakraMiniCircle, { backgroundColor: chakra.color }]}>
@@ -2542,13 +2619,13 @@ export default function DashboardScreen({ navigation }) {
                 {/* Overall Energy */}
                 <View style={styles.chakraEnergyRow}>
                   <View style={styles.chakraEnergyInfo}>
-                    <Ionicons name="flash" size={14} color="#a855f7" />
+                    <Ionicons name="flash" size={14} color="#c69c6d" />
                     <Text style={styles.chakraEnergyLabel}>
                       {language === 'ta' ? 'ஒட்டுமொத்த ஆற்றல்' : 'Overall Energy'}
                     </Text>
                   </View>
                   <View style={styles.chakraEnergyBar}>
-                    <View style={[styles.chakraEnergyFill, { width: '67%' }]} />
+                    <View style={[styles.chakraEnergyFill, { width: '67%', backgroundColor: '#c69c6d' }]} />
                   </View>
                   <Text style={styles.chakraEnergyPercent}>67%</Text>
                 </View>
@@ -2561,21 +2638,23 @@ export default function DashboardScreen({ navigation }) {
                     <Text style={styles.chakraNewText}>NEW</Text>
                   </View>
                 </View>
-              </LinearGradient>
+              </View>
             </TouchableOpacity>
           </AnimatedCard>
 
           {/* Aura Heatmap - Planet Strength Visualization */}
           {planetAura && (
             <AnimatedCard delay={600}>
-              <LinearGradient colors={['#1e1b4b', '#312e81']} style={[styles.card, styles.auraCard]}>
+              <View style={[styles.card, styles.auraCard]}>
                 <View style={styles.cardHeader}>
-                  <Ionicons name="planet" size={16} color="#a78bfa" />
-                  <Text style={[styles.cardTitle, { color: '#fff' }]}>
+                  <View style={styles.sectionIconBadge}>
+                    <Ionicons name="planet" size={18} color="#c69c6d" />
+                  </View>
+                  <Text style={styles.cardTitle}>
                     {t('planetAuraMap')}
                   </Text>
-                  <View style={[styles.auraBadge, { backgroundColor: planetAura.overall?.aura_color + '30' }]}>
-                    <Text style={[styles.auraBadgeText, { color: planetAura.overall?.aura_color }]}>
+                  <View style={styles.auraBadge}>
+                    <Text style={[styles.auraBadgeText, { color: '#8b6f47' }]}>
                       {planetAura.overall?.aura_score}%
                     </Text>
                   </View>
@@ -2733,7 +2812,7 @@ export default function DashboardScreen({ navigation }) {
                     </View>
                   )}
                 </View>
-              </LinearGradient>
+              </View>
             </AnimatedCard>
           )}
 
@@ -2741,16 +2820,11 @@ export default function DashboardScreen({ navigation }) {
           {transitsMap && (
             <AnimatedCard delay={650}>
               <View style={styles.transitsContainer}>
-                {/* Header with Glassmorphism */}
-                <LinearGradient
-                  colors={['#1e1b4b', '#312e81', '#3730a3']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.transitsHeader}
-                >
+                {/* Header with Warm Mystical Style */}
+                <View style={styles.transitsHeader}>
                   <View style={styles.transitsHeaderContent}>
                     <View style={styles.transitsHeaderLeft}>
-                      <Ionicons name="planet" size={24} color="#a5b4fc" />
+                      <Ionicons name="planet" size={24} color="#c69c6d" />
                       <View>
                         <Text style={styles.transitsHeaderTitle}>
                           {t('liveTransits')}
@@ -2767,14 +2841,11 @@ export default function DashboardScreen({ navigation }) {
                       <Text style={styles.livePulseText}>{t('live')}</Text>
                     </View>
                   </View>
-                </LinearGradient>
+                </View>
 
                 {/* Moon Transit - Hero Section */}
                 {transitsMap.moon_transit && (
-                  <LinearGradient
-                    colors={['#0f172a', '#1e293b']}
-                    style={styles.moonHeroSection}
-                  >
+                  <View style={styles.moonHeroSection}>
                     <View style={styles.moonHeroHeader}>
                       <View style={styles.moonHeroIconContainer}>
                         <Text style={styles.moonHeroIcon}>{transitsMap.moon_transit.phase_icon}</Text>
@@ -2790,15 +2861,12 @@ export default function DashboardScreen({ navigation }) {
                         <Text style={styles.moonHeroPhase}>{translateMoonPhase(transitsMap.moon_transit.phase, t)}</Text>
                       </View>
                       {transitsMap.moon_transit.energy && (
-                        <LinearGradient
-                          colors={[transitsMap.moon_transit.energy.color + '40', transitsMap.moon_transit.energy.color + '20']}
-                          style={styles.moonEnergyCard}
-                        >
+                        <View style={styles.moonEnergyCard}>
                           <Text style={styles.moonEnergyEmoji}>{transitsMap.moon_transit.energy.icon}</Text>
-                          <Text style={[styles.moonEnergyMood, { color: transitsMap.moon_transit.energy.color }]}>
+                          <Text style={[styles.moonEnergyMood, { color: '#8b6f47' }]}>
                             {language === 'ta' ? transitsMap.moon_transit.energy.mood : (transitsMap.moon_transit.energy.mood_en || transitsMap.moon_transit.energy.mood)}
                           </Text>
-                        </LinearGradient>
+                        </View>
                       )}
                     </View>
 
@@ -2809,16 +2877,16 @@ export default function DashboardScreen({ navigation }) {
                       </Text>
                       <View style={styles.countdownTimerRow}>
                         <View style={styles.countdownBox}>
-                          <LinearGradient colors={['#6366f1', '#4f46e5']} style={styles.countdownBoxGradient}>
+                          <View style={styles.countdownBoxGradient}>
                             <Text style={styles.countdownValue}>{transitsMap.moon_transit.time_to_transit?.hours || 0}</Text>
-                          </LinearGradient>
+                          </View>
                           <Text style={styles.countdownUnit}>{t('hours')}</Text>
                         </View>
                         <Text style={styles.countdownSeparator}>:</Text>
                         <View style={styles.countdownBox}>
-                          <LinearGradient colors={['#6366f1', '#4f46e5']} style={styles.countdownBoxGradient}>
+                          <View style={styles.countdownBoxGradient}>
                             <Text style={styles.countdownValue}>{transitsMap.moon_transit.time_to_transit?.minutes || 0}</Text>
-                          </LinearGradient>
+                          </View>
                           <Text style={styles.countdownUnit}>{t('minutes')}</Text>
                         </View>
                       </View>
@@ -2833,11 +2901,13 @@ export default function DashboardScreen({ navigation }) {
                     {/* Alert Message */}
                     {transitsMap.moon_transit.transit_message && (
                       <View style={styles.alertMessageBox}>
-                        <Ionicons name="notifications" size={16} color="#fbbf24" />
+                        <View style={styles.alertMessageIconWrapper}>
+                          <Ionicons name="notifications" size={18} color="#f59e0b" />
+                        </View>
                         <Text style={styles.alertMessageText}>{language === 'ta' ? transitsMap.moon_transit.transit_message : (transitsMap.moon_transit.transit_message_en || transitsMap.moon_transit.transit_message)}</Text>
                       </View>
                     )}
-                  </LinearGradient>
+                  </View>
                 )}
 
                 {/* Sky Map - Orbital View */}
@@ -2852,6 +2922,9 @@ export default function DashboardScreen({ navigation }) {
                     <View style={styles.orbitalRingInner} />
 
                     {/* Planet Positions */}
+                    <View style={{ marginVertical: 8, flexDirection: 'row', alignItems: 'center' }}>
+                      <View style={{ flex: 1, height: 1, backgroundColor: '#f97316', opacity: 0.2 }} />
+                    </View>
                     {transitsMap.sky_positions?.map((planet) => {
                       const angleRad = ((planet.angle - 90) * Math.PI) / 180;
                       const radius = planet.radius_factor * 75;
@@ -2969,7 +3042,7 @@ export default function DashboardScreen({ navigation }) {
                 {transitsMap.upcoming_transits?.length > 0 && (
                   <View style={styles.upcomingSection}>
                     <Text style={styles.upcomingSectionTitle}>
-                      <Ionicons name="calendar" size={16} color="#6366f1" /> {t('comingUp')}
+                      <Ionicons name="calendar" size={16} color="#d4a574" /> {t('comingUp')}
                     </Text>
                     {transitsMap.upcoming_transits.slice(0, 3).map((transit, index) => (
                       <View key={index} style={styles.upcomingCard}>
@@ -3040,182 +3113,195 @@ export default function DashboardScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  gradient: { flex: 1 },
-  scrollContent: { paddingHorizontal: 16 },
+  gradient: { flex: 1, backgroundColor: '#faf7f2' },
+  scrollContent: { paddingHorizontal: 0 },
 
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fef3c7' },
-  loadingText: { marginTop: 16, color: '#92400e', fontSize: 16, fontWeight: '500' },
-  headerBar: { height: 4 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#fcd34d' },
-  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  logoIcon: { width: 28, height: 28 },
-  appTitle: { fontSize: 20, fontWeight: 'bold', color: '#9a3412' },
-  userInfo: { marginTop: 4 },
-  greeting: { fontSize: 14, color: '#6b7280' },
-  rasiInfo: { fontSize: 12, color: '#ea580c' },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#faf7f2' },
+  loadingText: { marginTop: 16, color: '#8b6f47', fontSize: 16, fontWeight: '600' },
+  headerBar: { height: 0 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: 24, paddingBottom: 20, backgroundColor: '#fff8f0', marginHorizontal: 16, marginTop: 16, borderRadius: 20, borderWidth: 1, borderColor: '#e8d5c4', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 3, overflow: 'hidden' },
+  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  logoIcon: { width: 36, height: 36 },
+  appTitle: { fontSize: 24, fontWeight: '600', color: '#6b5644', letterSpacing: 0.5, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
+  userInfo: { marginTop: 8 },
+  greeting: { fontSize: 16, color: '#8b6f47', fontWeight: '500' },
+  rasiInfo: { fontSize: 14, color: '#c69c6d', marginTop: 3, fontWeight: '600' },
   timeContainer: { alignItems: 'flex-end' },
-  currentTime: { fontSize: 18, fontFamily: 'monospace', color: '#1f2937' },
-  periodBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12, marginTop: 4 },
-  periodText: { fontSize: 10, fontWeight: '600' },
+  currentTime: { fontSize: 22, fontFamily: 'monospace', color: '#6b5644', fontWeight: '600', letterSpacing: 1 },
+  periodBadge: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 16, marginTop: 8, backgroundColor: '#f4e4d7', borderWidth: 1, borderColor: '#e8d5c4' },
+  periodText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.5, color: '#8b6f47' },
 
   // Date card
-  dateCard: { backgroundColor: '#fff7ed', marginHorizontal: 16, marginTop: 12, padding: 12, borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: '#fed7aa' },
-  dateText: { fontSize: 14, color: '#9a3412', fontWeight: '500' },
+  dateCard: { backgroundColor: '#fff8f0', marginHorizontal: 16, marginTop: 20, padding: 16, borderRadius: 16, alignItems: 'center', borderWidth: 1, borderColor: '#e8d5c4', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
+  dateText: { fontSize: 16, color: '#6b5644', fontWeight: '600', letterSpacing: 0.3 },
 
-  // Story Preview Row (Instagram-style)
-  storyPreviewRow: { paddingHorizontal: 16, paddingVertical: 12 },
+  // Story Preview Row (Mystical style)
+  storyPreviewRow: { paddingHorizontal: 16, paddingVertical: 20 },
   storyCirclesContainer: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' },
-  storyCircle: { alignItems: 'center', width: 64 },
+  storyCircle: { alignItems: 'center', width: 72 },
   storyCircleActive: {},
-  storyGradientBorder: { width: 56, height: 56, borderRadius: 28, padding: 3, justifyContent: 'center', alignItems: 'center' },
-  storyInner: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#1a1a2e', justifyContent: 'center', alignItems: 'center' },
-  storyMoreCircle: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#fff7ed', borderWidth: 2, borderColor: '#fed7aa', borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center' },
-  storyLabel: { fontSize: 10, color: '#6b7280', marginTop: 4, textAlign: 'center' },
+  storyGradientBorder: { width: 64, height: 64, borderRadius: 32, padding: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fef6ed', borderWidth: 2, borderColor: '#e8d5c4', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.1, shadowRadius: 6 },
+  storyInner: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#f4e4d7', justifyContent: 'center', alignItems: 'center' },
+  storyMoreCircle: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#fef6ed', justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderStyle: 'dashed', borderColor: '#d4a574' },
+  storyLabel: { fontSize: 11, color: '#8b6f47', marginTop: 8, textAlign: 'center', fontWeight: '600', letterSpacing: 0.3 },
 
-  card: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginTop: 16, marginHorizontal: 16, borderWidth: 1, borderColor: '#fcd34d', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 14 },
-  cardTitle: { fontSize: 16, fontWeight: '700', color: '#92400e', flex: 1 },
+  card: { backgroundColor: '#fff8f0', borderRadius: 20, padding: 24, marginTop: 20, marginHorizontal: 16, borderWidth: 1, borderColor: '#e8d5c4', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 2 },
+  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 18 },
+  cardTitle: { fontSize: 19, fontWeight: '600', color: '#6b5644', flex: 1, letterSpacing: 0.3, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
   tapHintSmall: { fontSize: 10, color: '#9ca3af' },
-  panchangamGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  panchangamItem: { flex: 1, minWidth: '45%', backgroundColor: '#fef3c7', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: '#fcd34d' },
-  panchangamLabel: { fontSize: 11, color: '#92400e', marginBottom: 4, fontWeight: '500' },
-  panchangamValue: { fontSize: 13, fontWeight: '700', color: '#78350f' },
+  panchangamGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 14 },
+  panchangamItem: { flex: 1, minWidth: '45%', backgroundColor: '#fef6ed', borderRadius: 16, padding: 18, borderWidth: 1, borderColor: '#f4e4d7' },
+  panchangamLabel: { fontSize: 11, color: '#8b6f47', marginBottom: 8, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8 },
+  panchangamValue: { fontSize: 15, fontWeight: '700', color: '#6b5644', letterSpacing: 0 },
+
+  // Radial Birth Chart Visualization
+  radialChartContainer: { width: 220, height: 220, alignSelf: 'center', marginVertical: 24, position: 'relative', justifyContent: 'center', alignItems: 'center' },
+  radialOuterRing: { position: 'absolute', width: 210, height: 210, borderRadius: 105, borderWidth: 1, borderColor: '#e8d5c4', opacity: 0.8 },
+  radialMiddleRing: { position: 'absolute', width: 170, height: 170, borderRadius: 85, borderWidth: 1, borderColor: '#e8d5c4', opacity: 0.5 },
+  radialCenterCircle: { width: 120, height: 120, borderRadius: 60, backgroundColor: '#fef6ed', justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#e8d5c4', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12 },
+  radialScoreNumber: { fontSize: 44, fontWeight: '700', color: '#8b6f47', letterSpacing: -1 },
+  radialScoreLabel: { fontSize: 14, color: '#b8997a', fontWeight: '600', marginTop: -4 },
+  radialStatusBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12, marginTop: 6 },
+  radialStatusText: { fontSize: 10, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' },
+  radialOrbitalDot: { position: 'absolute', width: 6, height: 6, borderRadius: 3, backgroundColor: '#d4a574' },
 
   scoreRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  scoreLabel: { fontSize: 12, color: '#6b7280' },
-  scoreValue: { flexDirection: 'row', alignItems: 'baseline', gap: 4, marginTop: 4 },
-  scoreNumber: { fontSize: 36, fontWeight: 'bold', color: '#ea580c' },
-  scoreMax: { fontSize: 14, color: '#9ca3af' },
-  scoreBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12, marginLeft: 8, gap: 4 },
-  scoreBadgeText: { fontSize: 12, fontWeight: '500' },
-  scoreCircle: { width: 70, height: 70, borderRadius: 35, backgroundColor: '#fff7ed', borderWidth: 4, borderColor: '#ea580c', justifyContent: 'center', alignItems: 'center' },
-  scoreCircleText: { fontSize: 16, fontWeight: 'bold', color: '#ea580c' },
+  scoreLabel: { fontSize: 13, color: '#7a8ba8', fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1 },
+  scoreValue: { flexDirection: 'row', alignItems: 'baseline', gap: 6, marginTop: 8 },
+  scoreNumber: { fontSize: 48, fontWeight: '900', color: '#6b7fa0', letterSpacing: -2 },
+  scoreMax: { fontSize: 18, color: '#9babc7', fontWeight: '700' },
+  scoreBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 7, borderRadius: 18, marginLeft: 12, gap: 6, backgroundColor: '#e8ecf3', shadowColor: '#a3b9d9', shadowOffset: { width: 3, height: 3 }, shadowOpacity: 0.3, shadowRadius: 6 },
+  scoreBadgeText: { fontSize: 13, fontWeight: '800', letterSpacing: 0.4 },
+  scoreCircle: { width: 90, height: 90, borderRadius: 45, backgroundColor: '#e8ecf3', justifyContent: 'center', alignItems: 'center', shadowColor: '#a3b9d9', shadowOffset: { width: 6, height: 6 }, shadowOpacity: 0.3, shadowRadius: 12 },
+  scoreCircleText: { fontSize: 20, fontWeight: '900', color: '#6b7fa0', letterSpacing: -0.5 },
   tapHint: { fontSize: 8, color: '#9ca3af', marginTop: 2 },
 
-  insightBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, padding: 12, borderRadius: 12, marginTop: 16, borderWidth: 1, borderColor: '#fed7aa' },
-  insightText: { flex: 1, fontSize: 13, color: '#374151', lineHeight: 20 },
+  insightBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, padding: 18, borderRadius: 16, marginTop: 18, backgroundColor: '#fef6ed', borderWidth: 1, borderColor: '#f4e4d7' },
+  insightText: { flex: 1, fontSize: 14, color: '#6b5644', lineHeight: 24, fontWeight: '500' },
 
-  lifeAreasRow: { flexDirection: 'row', gap: 10, marginBottom: 10 },
-  lifeAreaCard: { flex: 1, backgroundColor: '#fff', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: '#fcd34d', minHeight: 120, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 },
-  lifeAreaHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  lifeAreaIconBg: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
-  lifeAreaBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
-  lifeAreaBadgeText: { fontSize: 10, fontWeight: '600' },
-  lifeAreaName: { fontSize: 14, color: '#374151', fontWeight: '600', marginBottom: 6 },
+  lifeAreasRow: { flexDirection: 'row', gap: 14, marginBottom: 14 },
+  lifeAreaCard: { flex: 1, backgroundColor: '#fef6ed', borderRadius: 18, padding: 18, minHeight: 140, borderWidth: 1, borderColor: '#f4e4d7', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 8 },
+  lifeAreaHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
+  lifeAreaIconBg: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff8f0', borderWidth: 1, borderColor: '#e8d5c4' },
+  lifeAreaBadge: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 14, backgroundColor: '#f4e4d7' },
+  lifeAreaBadgeText: { fontSize: 10, fontWeight: '700', letterSpacing: 0.3 },
+  lifeAreaName: { fontSize: 14, color: '#6b5644', fontWeight: '700', marginBottom: 10, letterSpacing: 0.2 },
   lifeAreaScoreRow: { flexDirection: 'row', alignItems: 'baseline' },
-  lifeAreaScore: { fontSize: 26, fontWeight: 'bold' },
-  lifeAreaMax: { fontSize: 11, color: '#9ca3af', marginLeft: 2 },
-  lifeAreaProgressBar: { height: 5, backgroundColor: '#f3f4f6', borderRadius: 3, marginTop: 10, overflow: 'hidden' },
-  lifeAreaProgressFill: { height: 5, borderRadius: 3 },
-  progressBar: { height: 6, backgroundColor: '#f3f4f6', borderRadius: 3, marginTop: 8, overflow: 'hidden' },
-  progressFill: { height: 6, borderRadius: 3 },
+  lifeAreaScore: { fontSize: 34, fontWeight: '800', letterSpacing: -1 },
+  lifeAreaMax: { fontSize: 13, color: '#b8997a', marginLeft: 4, fontWeight: '600' },
+  lifeAreaProgressBar: { height: 8, backgroundColor: '#f4e4d7', borderRadius: 4, marginTop: 14, overflow: 'hidden' },
+  lifeAreaProgressFill: { height: 8, borderRadius: 4 },
+  progressBar: { height: 8, backgroundColor: '#f4e4d7', borderRadius: 4, marginTop: 12, overflow: 'hidden' },
+  progressFill: { height: 8, borderRadius: 4 },
+
+  sectionIconBadge: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#fff8f0', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#e8d5c4' },
 
   // Projection styles
-  projectionToggle: { flexDirection: 'row', backgroundColor: '#f3f4f6', borderRadius: 10, padding: 4, marginBottom: 12 },
-  toggleBtn: { flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: 'center' },
-  toggleBtnActive: { backgroundColor: '#fff', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 },
-  toggleText: { fontSize: 12, color: '#6b7280' },
-  toggleTextActive: { color: '#f97316', fontWeight: '600' },
+  projectionToggle: { flexDirection: 'row', backgroundColor: '#fef6ed', borderRadius: 14, padding: 4, marginBottom: 12, borderWidth: 1, borderColor: '#e8d5c4' },
+  toggleBtn: { flex: 1, paddingVertical: 10, borderRadius: 12, alignItems: 'center' },
+  toggleBtnActive: { backgroundColor: '#fff8f0', borderWidth: 1, borderColor: '#e8d5c4' },
+  toggleText: { fontSize: 12, color: '#8b6f47', fontWeight: '700' },
+  toggleTextActive: { color: '#6b5644', fontWeight: '800' },
 
   monthsScroll: { marginHorizontal: -4 },
-  monthCard: { width: 80, backgroundColor: '#fff', borderRadius: 12, padding: 10, marginHorizontal: 4, borderWidth: 1, borderColor: '#e5e7eb', alignItems: 'center' },
-  monthName: { fontSize: 11, color: '#374151', fontWeight: '500', marginBottom: 6 },
-  monthScoreBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10, marginBottom: 6 },
-  monthScore: { fontSize: 14, fontWeight: 'bold' },
-  monthBarContainer: { width: '100%', height: 4, backgroundColor: '#f3f4f6', borderRadius: 2 },
-  monthBar: { height: 4, borderRadius: 2 },
+  monthCard: { width: 90, backgroundColor: '#fef6ed', borderRadius: 16, padding: 14, marginHorizontal: 6, alignItems: 'center', borderWidth: 1, borderColor: '#f4e4d7', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6 },
+  monthName: { fontSize: 11, color: '#8b6f47', fontWeight: '700', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.8 },
+  monthScoreBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14, marginBottom: 10, backgroundColor: '#f4e4d7' },
+  monthScore: { fontSize: 16, fontWeight: '800' },
+  monthBarContainer: { width: '100%', height: 6, backgroundColor: '#f4e4d7', borderRadius: 3 },
+  monthBar: { height: 6, borderRadius: 3 },
 
   yearsGrid: { gap: 12 },
 
   // Past Years styles
   pastYearsGrid: { flexDirection: 'row', gap: 12 },
-  pastYearCard: { flex: 1, backgroundColor: '#f9fafb', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: '#e5e7eb' },
-  pastYearHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  pastYearLabel: { fontSize: 16, fontWeight: 'bold', color: '#374151' },
-  pastYearBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 },
-  pastYearScore: { fontSize: 13, fontWeight: '600' },
-  pastYearDasha: { fontSize: 11, color: '#6b7280', marginBottom: 8 },
-  pastYearBar: { height: 4, backgroundColor: '#e5e7eb', borderRadius: 2, overflow: 'hidden' },
+  pastYearCard: { flex: 1, backgroundColor: '#fef6ed', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#e8d5c4' },
+  pastYearHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  pastYearLabel: { fontSize: 16, fontWeight: '800', color: '#6b5644' },
+  pastYearBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
+  pastYearScore: { fontSize: 13, fontWeight: '800' },
+  pastYearDasha: { fontSize: 11, color: '#8b6f47', marginBottom: 10, fontWeight: '700' },
+  pastYearBar: { height: 4, backgroundColor: '#f4e4d7', borderRadius: 2, overflow: 'hidden' },
   pastYearBarFill: { height: 4, borderRadius: 2 },
 
-  yearCard: { borderRadius: 14, overflow: 'hidden', borderWidth: 1, borderColor: '#e5e7eb' },
-  yearCardGradient: { flexDirection: 'row', alignItems: 'center', padding: 16, gap: 12 },
-  yearIconBg: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
+  yearCard: { borderRadius: 20, overflow: 'hidden', backgroundColor: '#fef6ed', borderWidth: 1, borderColor: '#e8d5c4', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.08, shadowRadius: 10 },
+  yearCardGradient: { flexDirection: 'row', alignItems: 'center', padding: 20, gap: 16, backgroundColor: '#fef6ed' },
+  yearIconBg: { width: 52, height: 52, borderRadius: 26, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff8f0', borderWidth: 1, borderColor: '#e8d5c4' },
   yearInfo: { flex: 1 },
-  yearName: { fontSize: 18, fontWeight: 'bold', color: '#1f2937' },
-  yearLabel: { fontSize: 12, color: '#6b7280', marginTop: 2 },
-  yearScoreContainer: { alignItems: 'flex-end', marginRight: 8 },
-  yearScore: { fontSize: 22, fontWeight: 'bold' },
+  yearName: { fontSize: 20, fontWeight: '600', color: '#6b5644', letterSpacing: 0.3, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
+  yearLabel: { fontSize: 13, color: '#8b6f47', marginTop: 5, fontWeight: '600' },
+  yearScoreContainer: { alignItems: 'flex-end', marginRight: 10 },
+  yearScore: { fontSize: 26, fontWeight: '800', letterSpacing: -1, color: '#8b6f47' },
   yearScoreBar: { width: 60, height: 4, borderRadius: 2, marginTop: 4 },
   yearScoreFill: { height: 4, borderRadius: 2 },
 
-  quickActionsGrid: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 },
-  quickActionBtn: { flex: 1, alignItems: 'center', backgroundColor: '#fff', borderRadius: 12, padding: 16, marginHorizontal: 4, borderWidth: 1, borderColor: '#fed7aa' },
-  quickActionLabel: { fontSize: 11, color: '#6b7280', marginTop: 8 },
+  quickActionsGrid: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 16 },
+  quickActionBtn: { flex: 1, alignItems: 'center', backgroundColor: '#fef6ed', borderRadius: 18, padding: 20, marginHorizontal: 6, borderWidth: 1, borderColor: '#e8d5c4', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6 },
+  quickActionLabel: { fontSize: 11, color: '#6b5644', marginTop: 12, fontWeight: '700', letterSpacing: 0.4 },
 
-  dashaCard: { borderColor: '#ddd6fe' },
-  dashaGrid: { flexDirection: 'row', gap: 12 },
-  dashaItem: { flex: 1, backgroundColor: 'rgba(255,255,255,0.5)', borderRadius: 12, padding: 12 },
-  dashaLabel: { fontSize: 11, color: '#6b7280' },
-  dashaValue: { fontSize: 14, fontWeight: '600', color: '#7c3aed', marginTop: 4 },
+  dashaCard: { backgroundColor: '#fef6ed', borderWidth: 1, borderColor: '#f4e4d7' },
+  dashaGrid: { flexDirection: 'row', gap: 16 },
+  dashaItem: { flex: 1, backgroundColor: '#fff8f0', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#e8d5c4' },
+  dashaLabel: { fontSize: 11, color: '#6b5644', fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.8 },
+  dashaValue: { fontSize: 16, fontWeight: '900', color: '#6b5644', marginTop: 8, letterSpacing: 0 },
 
   // Chakra Card Styles
-  chakraCard: { borderRadius: 20, padding: 16, borderWidth: 1, borderColor: 'rgba(168, 85, 247, 0.4)' },
-  chakraCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  chakraIconContainer: { width: 50, height: 50, borderRadius: 25, backgroundColor: 'rgba(168, 85, 247, 0.25)', justifyContent: 'center', alignItems: 'center' },
-  chakraIconLarge: { fontSize: 28 },
+  chakraCard: { borderRadius: 20, padding: 24, backgroundColor: '#fef6ed', borderWidth: 1, borderColor: '#e8d5c4', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12 },
+  chakraCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  chakraIconContainer: { width: 60, height: 60, borderRadius: 30, backgroundColor: '#fff8f0', justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#e8d5c4' },
+  chakraIconLarge: { fontSize: 32 },
   chakraCardInfo: { flex: 1 },
-  chakraCardTitle: { fontSize: 17, fontWeight: '700', color: '#fff' },
-  chakraCardSubtitle: { fontSize: 12, color: '#c4b5fd', marginTop: 2 },
+  chakraCardTitle: { fontSize: 19, fontWeight: '600', color: '#6b5644', letterSpacing: 0.3, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
+  chakraCardSubtitle: { fontSize: 13, color: '#8b6f47', marginTop: 5, fontWeight: '600' },
   chakraArrowContainer: { padding: 4 },
-  chakraMiniPreview: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 16, paddingVertical: 10, paddingHorizontal: 4, backgroundColor: 'rgba(0,0,0,0.25)', borderRadius: 12 },
+  chakraMiniPreview: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 16, paddingVertical: 10, paddingHorizontal: 4, backgroundColor: '#f4e4d7', borderRadius: 12, borderWidth: 1, borderColor: '#e8d5c4' },
   chakraMiniItem: { alignItems: 'center', flex: 1, paddingHorizontal: 2 },
-  chakraMiniCircle: { width: 30, height: 30, borderRadius: 15, justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: 'rgba(255,255,255,0.3)' },
+  chakraMiniCircle: { width: 30, height: 30, borderRadius: 15, justifyContent: 'center', alignItems: 'center', borderWidth: 1.5, borderColor: '#fff8f0' },
   chakraMiniScore: { fontSize: 9, fontWeight: '800', color: '#fff' },
-  chakraMiniName: { fontSize: 7, color: '#a5b4fc', marginTop: 3, textAlign: 'center', maxWidth: 45 },
-  chakraEnergyRow: { flexDirection: 'row', alignItems: 'center', marginTop: 14, paddingTop: 12, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)' },
+  chakraMiniName: { fontSize: 7, color: '#8b6f47', marginTop: 3, textAlign: 'center', maxWidth: 45, fontWeight: '600' },
+  chakraEnergyRow: { flexDirection: 'row', alignItems: 'center', marginTop: 14, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#e8d5c4' },
   chakraEnergyInfo: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  chakraEnergyLabel: { fontSize: 11, color: '#c4b5fd', fontWeight: '500' },
-  chakraEnergyBar: { flex: 1, height: 6, backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 3, marginHorizontal: 10, overflow: 'hidden' },
-  chakraEnergyFill: { height: '100%', backgroundColor: '#a855f7', borderRadius: 3 },
-  chakraEnergyPercent: { fontSize: 14, fontWeight: '800', color: '#a855f7' },
+  chakraEnergyLabel: { fontSize: 11, color: '#8b6f47', fontWeight: '600' },
+  chakraEnergyBar: { flex: 1, height: 6, backgroundColor: '#f4e4d7', borderRadius: 3, marginHorizontal: 10, overflow: 'hidden' },
+  chakraEnergyFill: { height: '100%', borderRadius: 3 },
+  chakraEnergyPercent: { fontSize: 14, fontWeight: '800', color: '#8b6f47' },
   chakraCardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 },
-  chakraCardHint: { fontSize: 12, color: '#a5b4fc' },
-  chakraNewBadge: { backgroundColor: '#22c55e', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
+  chakraCardHint: { fontSize: 12, color: '#8b6f47', fontWeight: '600' },
+  chakraNewBadge: { backgroundColor: '#7d9b7a', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
   chakraNewText: { fontSize: 10, fontWeight: '800', color: '#fff' },
 
-  // Parigaram Card Styles - Gamified
-  parigaramCard: { borderColor: '#fbbf24', borderWidth: 2, shadowColor: '#f59e0b', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
-  parigaramHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  parigaramIconBadge: { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(146, 64, 14, 0.15)', justifyContent: 'center', alignItems: 'center' },
+  // Parigaram Card Styles - Mystical
+  parigaramCard: { backgroundColor: '#fef6ed', borderWidth: 1, borderColor: '#e8d5c4', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12 },
+  parigaramHeader: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  parigaramIconBadge: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#fff8f0', justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#e8d5c4' },
   parigaramTitleSection: { flex: 1 },
-  parigaramTitle: { fontSize: 16, fontWeight: 'bold', color: '#92400e' },
-  parigaramSubtitle: { fontSize: 11, color: '#b45309', marginTop: 2 },
+  parigaramTitle: { fontSize: 18, fontWeight: '800', color: '#6b5644', letterSpacing: 0.3, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
+  parigaramSubtitle: { fontSize: 12, color: '#1f2937', marginTop: 4, fontWeight: '700' },
   parigaramArrow: { padding: 4 },
-  parigaramPlanets: { flexDirection: 'row', gap: 10, marginTop: 14, marginBottom: 12 },
-  parigaramPlanetBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.7)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: '#fbbf24', gap: 6 },
-  parigaramPlanetIcon: { fontSize: 16, color: '#b45309' },
-  parigaramPlanetName: { fontSize: 12, fontWeight: '600', color: '#92400e' },
+  parigaramPlanets: { flexDirection: 'row', gap: 14, marginTop: 18, marginBottom: 16 },
+  parigaramPlanetBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f4e4d7', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 18, gap: 8, borderWidth: 1, borderColor: '#e8d5c4' },
+  parigaramPlanetIcon: { fontSize: 18, color: '#8b6f47' },
+  parigaramPlanetName: { fontSize: 13, fontWeight: '800', color: '#6b5644', letterSpacing: 0.2 },
   parigaramQuickTips: { flexDirection: 'row', justifyContent: 'space-around', paddingTop: 10, borderTopWidth: 1, borderTopColor: 'rgba(180, 83, 9, 0.2)' },
   parigaramTip: { alignItems: 'center', gap: 4 },
-  parigaramTipText: { fontSize: 10, color: '#92400e', fontWeight: '500' },
+  parigaramTipText: { fontSize: 10, color: '#6b5644', fontWeight: '700' },
 
   // Modal styles
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' },
-  modalScrollView: { marginTop: 'auto', maxHeight: '85%' },
-  modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, paddingBottom: 40 },
-  modalHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
-  modalIconBg: { width: 48, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center' },
-  modalTitle: { flex: 1, fontSize: 18, fontWeight: 'bold', color: '#1f2937' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(107, 86, 68, 0.3)' },
+  modalScrollView: { marginTop: 'auto', maxHeight: '88%' },
+  modalContent: { backgroundColor: '#faf7f2', borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 28, paddingBottom: 48, shadowColor: '#d4a574', shadowOffset: { width: 0, height: -6 }, shadowOpacity: 0.15, shadowRadius: 20 },
+  modalHeader: { flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 22 },
+  modalIconBg: { width: 56, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff8f0', borderWidth: 2, borderColor: '#e8d5c4' },
+  modalTitle: { flex: 1, fontSize: 21, fontWeight: '600', color: '#6b5644', letterSpacing: 0.3, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
   modalCloseBtn: { padding: 4 },
-  modalScoreSection: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'center', marginBottom: 16 },
-  modalScoreValue: { fontSize: 48, fontWeight: 'bold' },
-  modalScoreMax: { fontSize: 18, color: '#9ca3af', marginLeft: 4 },
-  modalDivider: { height: 1, backgroundColor: '#e5e7eb', marginVertical: 16 },
-  modalSectionTitle: { fontSize: 14, fontWeight: '600', color: '#374151', marginBottom: 12 },
-  factorItem: { backgroundColor: '#f9fafb', borderRadius: 12, padding: 12, marginBottom: 10 },
-  factorHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  factorName: { flex: 1, fontSize: 13, fontWeight: '500', color: '#374151' },
+  modalScoreSection: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'center', marginBottom: 24 },
+  modalScoreValue: { fontSize: 60, fontWeight: '800', letterSpacing: -2, color: '#8b6f47' },
+  modalScoreMax: { fontSize: 22, color: '#b8997a', marginLeft: 8, fontWeight: '700' },
+  modalDivider: { height: 1, backgroundColor: '#e8d5c4', marginVertical: 22 },
+  modalSectionTitle: { fontSize: 15, fontWeight: '700', color: '#6b5644', marginBottom: 16, textTransform: 'uppercase', letterSpacing: 0.8 },
+  factorItem: { backgroundColor: '#fff8f0', borderRadius: 16, padding: 16, marginBottom: 14, borderWidth: 1, borderColor: '#e8d5c4' },
+  factorHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  factorName: { flex: 1, fontSize: 14, fontWeight: '700', color: '#6b5644' },
   factorScore: { fontSize: 14, fontWeight: 'bold' },
   factorDesc: { fontSize: 12, color: '#6b7280', marginTop: 6, marginLeft: 26 },
 
@@ -3379,110 +3465,111 @@ const styles = StyleSheet.create({
   peakLowText: { fontSize: 12, color: '#cbd5e1' },
 
   // Aura Heatmap styles
-  auraCard: { borderColor: '#8b5cf6' },
-  auraBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
-  auraBadgeText: { fontSize: 14, fontWeight: '700' },
-  auraOverview: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-  auraLevelBadge: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 16 },
-  auraLevelText: { fontSize: 13, fontWeight: '600' },
+  auraCard: { backgroundColor: '#fef6ed', borderWidth: 1, borderColor: '#e8d5c4', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12 },
+  auraBadge: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 16, backgroundColor: '#f4e4d7', borderWidth: 1, borderColor: '#e8d5c4' },
+  auraBadgeText: { fontSize: 15, fontWeight: '800', letterSpacing: 0.3 },
+  auraOverview: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 },
+  auraLevelBadge: { paddingHorizontal: 16, paddingVertical: 7, borderRadius: 18, backgroundColor: '#f4e4d7', borderWidth: 1, borderColor: '#e8d5c4' },
+  auraLevelText: { fontSize: 14, fontWeight: '800', letterSpacing: 0.4, color: '#8b6f47' },
   auraStats: { flexDirection: 'row', gap: 12 },
   auraStat: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  auraStatText: { fontSize: 13, color: '#e5e7eb', fontWeight: '500' },
+  auraStatText: { fontSize: 13, color: '#8b6f47', fontWeight: '600' },
 
   // Radial container
-  auraRadialContainer: { width: 220, height: 220, alignSelf: 'center', position: 'relative', marginVertical: 10 },
-  auraCenterCircle: { position: 'absolute', left: 85, top: 85, width: 50, height: 50, borderRadius: 25, backgroundColor: '#4c1d95', justifyContent: 'center', alignItems: 'center', zIndex: 10 },
-  auraCenterScore: { fontSize: 18, fontWeight: 'bold', color: '#fff' },
-  auraCenterLabel: { fontSize: 9, color: '#c4b5fd' },
+  auraRadialContainer: { width: 230, height: 230, alignSelf: 'center', position: 'relative', marginVertical: 14 },
+  auraCenterCircle: { position: 'absolute', left: 90, top: 90, width: 50, height: 50, borderRadius: 25, backgroundColor: '#f4e4d7', justifyContent: 'center', alignItems: 'center', zIndex: 10, borderWidth: 2, borderColor: '#d4a574', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.2, shadowRadius: 6 },
+  auraCenterScore: { fontSize: 19, fontWeight: '900', color: '#8b6f47', letterSpacing: -0.5 },
+  auraCenterLabel: { fontSize: 9, color: '#8b6f47', fontWeight: '700' },
 
   // Planet orbs
-  auraPlanetOrb: { position: 'absolute', width: 44, height: 44, borderRadius: 22, borderWidth: 2, justifyContent: 'center', alignItems: 'center', zIndex: 5 },
-  auraPlanetSymbol: { fontSize: 16, color: '#fff' },
-  auraPlanetStrength: { position: 'absolute', bottom: -4, right: -4, width: 20, height: 20, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
-  auraPlanetScore: { fontSize: 9, fontWeight: 'bold', color: '#fff' },
+  auraPlanetOrb: { position: 'absolute', width: 46, height: 46, borderRadius: 23, borderWidth: 2.5, justifyContent: 'center', alignItems: 'center', zIndex: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.3, shadowRadius: 6, elevation: 5 },
+  auraPlanetSymbol: { fontSize: 17, color: '#fff', fontWeight: '600' },
+  auraPlanetStrength: { position: 'absolute', bottom: -5, right: -5, width: 22, height: 22, borderRadius: 11, justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#1e1b4b', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 3, elevation: 3 },
+  auraPlanetScore: { fontSize: 10, fontWeight: '900', color: '#fff' },
 
   // Rings
   auraRings: { position: 'absolute', left: 20, top: 20, width: 180, height: 180, justifyContent: 'center', alignItems: 'center' },
-  auraRing: { position: 'absolute', borderRadius: 100, borderWidth: 1, borderColor: 'rgba(167, 139, 250, 0.2)' },
+  auraRing: { position: 'absolute', borderRadius: 100, borderWidth: 1, borderColor: '#e8d5c4', opacity: 0.5 },
 
   // Legend
-  auraLegendScroll: { paddingVertical: 12, paddingHorizontal: 4 },
-  auraLegendItem: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 16, marginRight: 8, borderWidth: 1 },
-  auraLegendItemActive: { backgroundColor: 'rgba(255,255,255,0.2)' },
-  auraLegendDot: { width: 8, height: 8, borderRadius: 4 },
-  auraLegendName: { fontSize: 11, color: '#e5e7eb' },
-  auraLegendScore: { fontSize: 11, fontWeight: '600' },
+  auraLegendScroll: { paddingVertical: 14, paddingHorizontal: 4 },
+  auraLegendItem: { flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: '#fff8f0', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 18, marginRight: 10, borderWidth: 1, borderColor: '#e8d5c4' },
+  auraLegendItemActive: { backgroundColor: '#f4e4d7', borderWidth: 1.5, borderColor: '#d4a574' },
+  auraLegendDot: { width: 9, height: 9, borderRadius: 5 },
+  auraLegendName: { fontSize: 12, color: '#6b5644', fontWeight: '700' },
+  auraLegendScore: { fontSize: 12, fontWeight: '900', color: '#8b6f47' },
 
   // Planet detail
-  auraPlanetDetail: { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 12, padding: 12, marginTop: 8, borderLeftWidth: 3 },
-  auraPlanetDetailHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  auraPlanetDetailSymbol: { fontSize: 24, color: '#fff' },
-  auraPlanetDetailName: { fontSize: 14, fontWeight: '600', color: '#fff' },
-  auraPlanetDetailDomain: { fontSize: 11, color: '#a78bfa', textTransform: 'capitalize' },
-  auraPlanetDetailScore: { marginLeft: 'auto', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
-  auraPlanetDetailScoreText: { fontSize: 13, fontWeight: 'bold', color: '#fff' },
-  auraPlanetDetailInsight: { fontSize: 12, color: '#c4b5fd', marginTop: 8, lineHeight: 18 },
+  auraPlanetDetail: { backgroundColor: '#fff8f0', borderRadius: 14, padding: 14, marginTop: 10, borderLeftWidth: 3, borderColor: '#d4a574', borderWidth: 1, borderColor: '#e8d5c4' },
+  auraPlanetDetailHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  auraPlanetDetailSymbol: { fontSize: 26, color: '#8b6f47', fontWeight: '600' },
+  auraPlanetDetailName: { fontSize: 15, fontWeight: '800', color: '#6b5644', letterSpacing: 0.3 },
+  auraPlanetDetailDomain: { fontSize: 11, color: '#b8997a', textTransform: 'capitalize', fontWeight: '600', marginTop: 2 },
+  auraPlanetDetailScore: { marginLeft: 'auto', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 12, backgroundColor: '#f4e4d7', borderWidth: 1, borderColor: '#e8d5c4' },
+  auraPlanetDetailScoreText: { fontSize: 14, fontWeight: '900', color: '#8b6f47' },
+  auraPlanetDetailInsight: { fontSize: 13, color: '#6b5644', marginTop: 10, lineHeight: 20, fontWeight: '600' },
   auraPlanetDetailTags: { flexDirection: 'row', gap: 6, marginTop: 8, flexWrap: 'wrap' },
   auraKeywordTag: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
   auraKeywordText: { fontSize: 10, fontWeight: '500' },
 
   // Transit summary
-  auraTransitSummary: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(167, 139, 250, 0.15)', borderRadius: 10, padding: 10, marginTop: 12 },
-  auraTransitText: { flex: 1, fontSize: 11, color: '#c4b5fd', lineHeight: 16 },
+  auraTransitSummary: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#f4e4d7', borderRadius: 10, padding: 10, marginTop: 12, borderWidth: 1, borderColor: '#e8d5c4' },
+  auraTransitText: { flex: 1, fontSize: 11, color: '#6b5644', lineHeight: 16, fontWeight: '600' },
 
   // Dominant planets
-  auraDominantRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: 'rgba(167, 139, 250, 0.2)' },
+  auraDominantRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 14, paddingTop: 14, borderTopWidth: 1, borderTopColor: '#e8d5c4' },
   auraDominantSection: { flex: 1 },
-  auraDominantLabel: { fontSize: 11, color: '#9ca3af', marginBottom: 4 },
-  auraDominantList: { flexDirection: 'row', gap: 6 },
-  auraDominantPlanet: { fontSize: 12, color: '#22c55e', fontWeight: '500' },
+  auraDominantLabel: { fontSize: 11, color: '#8b6f47', marginBottom: 6, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.5 },
+  auraDominantList: { flexDirection: 'row', gap: 8 },
+  auraDominantPlanet: { fontSize: 13, color: '#7d9b7a', fontWeight: '800', letterSpacing: 0.2 },
 
-  // Transits Map - Premium Styles
-  transitsContainer: { marginTop: 16, borderRadius: 20, overflow: 'hidden', backgroundColor: '#0f0a1e' },
-  transitsHeader: { padding: 16, borderBottomWidth: 1, borderBottomColor: 'rgba(139, 92, 246, 0.2)' },
-  transitsHeaderContent: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  transitsHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  transitsHeaderIcon: { fontSize: 28 },
-  transitsHeaderTitle: { fontSize: 18, fontWeight: '700', color: '#fff' },
-  transitsHeaderSubtitle: { fontSize: 11, color: '#a78bfa', marginTop: 2 },
-  livePulseContainer: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(239, 68, 68, 0.2)', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12 },
-  livePulseOuter: { width: 12, height: 12, borderRadius: 6, backgroundColor: 'rgba(239, 68, 68, 0.3)', justifyContent: 'center', alignItems: 'center' },
-  livePulseInner: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#ef4444' },
-  livePulseText: { fontSize: 10, fontWeight: '800', color: '#ef4444', letterSpacing: 1 },
+  // Transits Map - Mystical Styles
+  transitsContainer: { marginTop: 20, marginHorizontal: 16, borderRadius: 20, overflow: 'hidden', backgroundColor: '#fef6ed', borderWidth: 1, borderColor: '#e8d5c4', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12 },
+  transitsHeader: { padding: 24, paddingBottom: 20, backgroundColor: '#fef6ed' },
+  transitsHeaderContent: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  transitsHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  transitsHeaderIcon: { fontSize: 30 },
+  transitsHeaderTitle: { fontSize: 21, fontWeight: '600', color: '#6b5644', letterSpacing: 0.3, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
+  transitsHeaderSubtitle: { fontSize: 12, color: '#8b6f47', marginTop: 5, fontWeight: '600' },
+  livePulseContainer: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#f4e4d7', paddingHorizontal: 14, paddingVertical: 7, borderRadius: 16, borderWidth: 1, borderColor: '#e8d5c4' },
+  livePulseOuter: { width: 11, height: 11, borderRadius: 6, backgroundColor: '#c69c6d', justifyContent: 'center', alignItems: 'center' },
+  livePulseInner: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#f4e4d7' },
+  livePulseText: { fontSize: 11, fontWeight: '800', color: '#6b5644', letterSpacing: 0.5 },
 
   // Moon Hero Section
-  moonHeroSection: { padding: 20 },
-  moonHeroHeader: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  moonHeroIconContainer: { position: 'relative' },
-  moonHeroIcon: { fontSize: 44 },
-  moonHeroGlow: { position: 'absolute', width: 50, height: 50, borderRadius: 25, backgroundColor: 'rgba(251, 191, 36, 0.15)', top: -3, left: -3 },
+  moonHeroSection: { padding: 26, backgroundColor: '#fff8f0' },
+  moonHeroHeader: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  moonHeroIconContainer: { position: 'relative', backgroundColor: '#fef3c7', width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center' },
+  moonHeroIcon: { fontSize: 36 },
+  moonHeroGlow: { position: 'absolute', width: 64, height: 64, borderRadius: 32, backgroundColor: '#fbbf24', opacity: 0.2, top: 0, left: 0 },
   moonHeroInfo: { flex: 1 },
-  moonHeroLabel: { fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1 },
-  moonHeroSign: { fontSize: 20, fontWeight: '700', color: '#fff', marginTop: 4 },
-  moonHeroPhase: { fontSize: 12, color: '#a78bfa', marginTop: 2 },
-  moonEnergyCard: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, alignItems: 'center' },
-  moonEnergyEmoji: { fontSize: 18 },
-  moonEnergyMood: { fontSize: 10, fontWeight: '600', marginTop: 2 },
+  moonHeroLabel: { fontSize: 11, color: '#8b6f47', textTransform: 'uppercase', letterSpacing: 1.2, fontWeight: '800', marginBottom: 8 },
+  moonHeroSign: { fontSize: 26, fontWeight: '700', color: '#6b5644', marginBottom: 5, letterSpacing: 0 },
+  moonHeroPhase: { fontSize: 13, color: '#8b6f47', fontWeight: '600' },
+  moonEnergyCard: { paddingHorizontal: 18, paddingVertical: 14, borderRadius: 18, alignItems: 'center', backgroundColor: '#f4e4d7', borderWidth: 1, borderColor: '#e8d5c4' },
+  moonEnergyEmoji: { fontSize: 24, marginBottom: 4 },
+  moonEnergyMood: { fontSize: 12, fontWeight: '800', textAlign: 'center', textTransform: 'capitalize' },
 
   // Countdown Timer
-  countdownContainer: { alignItems: 'center', marginTop: 24, paddingTop: 20, borderTopWidth: 1, borderTopColor: 'rgba(139, 92, 246, 0.15)' },
-  countdownLabel: { fontSize: 12, color: '#94a3b8', marginBottom: 12 },
-  countdownTimerRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  countdownContainer: { alignItems: 'center', marginTop: 30, paddingTop: 30, borderTopWidth: 1, borderTopColor: '#e8d5c4', backgroundColor: '#fff8f0', marginHorizontal: -26, paddingHorizontal: 26, paddingBottom: 26 },
+  countdownLabel: { fontSize: 13, color: '#8b6f47', marginBottom: 18, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1 },
+  countdownTimerRow: { flexDirection: 'row', alignItems: 'center', gap: 18 },
   countdownBox: { alignItems: 'center' },
-  countdownBoxGradient: { width: 70, height: 70, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
-  countdownValue: { fontSize: 32, fontWeight: '800', color: '#fff' },
-  countdownUnit: { fontSize: 10, color: '#94a3b8', marginTop: 6, textTransform: 'uppercase', letterSpacing: 1 },
-  countdownSeparator: { fontSize: 32, fontWeight: '800', color: '#6366f1', marginBottom: 20 },
-  nextSignRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 16, backgroundColor: 'rgba(139, 92, 246, 0.15)', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 },
-  nextSignText: { fontSize: 14, fontWeight: '600', color: '#a78bfa' },
+  countdownBoxGradient: { width: 84, height: 84, borderRadius: 20, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fef6ed', borderWidth: 1, borderColor: '#e8d5c4', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.08, shadowRadius: 8 },
+  countdownValue: { fontSize: 38, fontWeight: '800', color: '#8b6f47', letterSpacing: -1 },
+  countdownUnit: { fontSize: 11, color: '#8b6f47', marginTop: 10, textTransform: 'uppercase', letterSpacing: 1.2, fontWeight: '700' },
+  countdownSeparator: { fontSize: 38, fontWeight: '800', color: '#b8997a', marginBottom: 26 },
+  nextSignRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 22, backgroundColor: '#f4e4d7', paddingHorizontal: 22, paddingVertical: 14, borderRadius: 20, borderWidth: 1, borderColor: '#e8d5c4' },
+  nextSignText: { fontSize: 15, fontWeight: '700', color: '#6b5644', flex: 1, letterSpacing: 0.2 },
 
   // Alert Message
-  alertMessageBox: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: 'rgba(251, 191, 36, 0.12)', borderRadius: 12, padding: 12, marginTop: 16, borderWidth: 1, borderColor: 'rgba(251, 191, 36, 0.2)' },
-  alertMessageText: { flex: 1, fontSize: 12, color: '#fbbf24', lineHeight: 18 },
+  alertMessageBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 16, backgroundColor: '#fff8f0', padding: 20, paddingVertical: 22, marginTop: 26, marginHorizontal: -26, marginBottom: -26, borderRadius: 0, borderTopWidth: 1, borderTopColor: '#e8d5c4' },
+  alertMessageIconWrapper: { marginTop: 3, width: 26, height: 26, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f4e4d7', borderRadius: 13, borderWidth: 1, borderColor: '#e8d5c4' },
+  alertMessageText: { flex: 1, fontSize: 14, color: '#6b5644', lineHeight: 24, fontWeight: '600', letterSpacing: 0 },
 
   // Orbital View
-  orbitalSection: { padding: 20, paddingTop: 0 },
-  orbitalTitle: { fontSize: 14, fontWeight: '600', color: '#e2e8f0', marginBottom: 16, textAlign: 'center' },
+  orbitalSection: { padding: 30, paddingTop: 30, backgroundColor: '#fef6ed' },
+  orbitalTitle: { fontSize: 15, fontWeight: '700', color: '#6b5644', marginBottom: 26, textAlign: 'center', textTransform: 'uppercase', letterSpacing: 1.2 },
   orbitalContainer: { width: 170, height: 170, alignSelf: 'center', position: 'relative' },
   orbitalRingOuter: { position: 'absolute', width: 170, height: 170, borderRadius: 85, borderWidth: 1, borderColor: 'rgba(139, 92, 246, 0.2)' },
   orbitalRingMiddle: { position: 'absolute', width: 120, height: 120, borderRadius: 60, borderWidth: 1, borderColor: 'rgba(139, 92, 246, 0.15)', left: 25, top: 25 },
@@ -3493,51 +3580,51 @@ const styles = StyleSheet.create({
   earthEmoji: { fontSize: 16 },
 
   // Planet Cards
-  planetCardsSection: { paddingBottom: 16 },
-  planetCardsTitle: { fontSize: 14, fontWeight: '600', color: '#e2e8f0', marginBottom: 12, paddingHorizontal: 20 },
+  planetCardsSection: { paddingBottom: 26, paddingTop: 26, backgroundColor: '#fef6ed' },
+  planetCardsTitle: { fontSize: 15, fontWeight: '800', color: '#6b5644', marginBottom: 18, paddingHorizontal: 22, textTransform: 'uppercase', letterSpacing: 1.2 },
   planetCardsScroll: { paddingHorizontal: 16 },
-  planetCard: { alignItems: 'center', paddingHorizontal: 14, paddingVertical: 14, borderRadius: 16, marginRight: 12, borderWidth: 1, minWidth: 85 },
-  planetCardIconBg: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
-  planetCardSymbol: { fontSize: 20 },
-  planetCardName: { fontSize: 11, color: '#e2e8f0', fontWeight: '500', marginBottom: 6 },
-  planetCardSignRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  planetCardSign: { fontSize: 14, fontWeight: '700' },
-  planetCardSignName: { fontSize: 10, color: '#94a3b8' },
-  planetCardDegree: { fontSize: 9, color: '#64748b', marginTop: 4 },
+  planetCard: { alignItems: 'center', paddingHorizontal: 18, paddingVertical: 18, borderRadius: 20, marginRight: 16, minWidth: 100, backgroundColor: '#fff8f0', borderWidth: 1, borderColor: '#e8d5c4', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.08, shadowRadius: 8 },
+  planetCardIconBg: { width: 52, height: 52, borderRadius: 26, justifyContent: 'center', alignItems: 'center', marginBottom: 12, backgroundColor: '#f4e4d7', borderWidth: 1, borderColor: '#e8d5c4' },
+  planetCardSymbol: { fontSize: 26 },
+  planetCardName: { fontSize: 12, color: '#6b5644', fontWeight: '800', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.6 },
+  planetCardSignRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  planetCardSign: { fontSize: 16, fontWeight: '800' },
+  planetCardSignName: { fontSize: 11, color: '#6b5644', fontWeight: '700' },
+  planetCardDegree: { fontSize: 10, color: '#6b5644', marginTop: 6, fontWeight: '700' },
   retroIndicator: { backgroundColor: 'rgba(239, 68, 68, 0.2)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, marginTop: 6 },
-  retroIndicatorText: { fontSize: 9, color: '#fca5a5', fontWeight: '600' },
+  retroIndicatorText: { fontSize: 9, color: '#6b5644', fontWeight: '700' },
 
   // Retrograde Alert
   retroAlertSection: { padding: 16, paddingTop: 0 },
   retroAlertHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
   retroAlertIcon: { fontSize: 18 },
-  retroAlertTitle: { fontSize: 14, fontWeight: '700', color: '#fbbf24' },
+  retroAlertTitle: { fontSize: 14, fontWeight: '800', color: '#6b5644' },
   retroAlertCard: { borderRadius: 14, padding: 14, marginBottom: 10, borderLeftWidth: 4 },
   retroAlertCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   retroAlertSymbol: { fontSize: 22, color: '#fff' },
   retroAlertInfo: { flex: 1 },
-  retroAlertName: { fontSize: 14, fontWeight: '600', color: '#fff' },
+  retroAlertName: { fontSize: 14, fontWeight: '800', color: '#6b5644' },
   retroStatusPill: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10, marginTop: 4, alignSelf: 'flex-start' },
-  retroStatusText: { fontSize: 10, fontWeight: '600' },
+  retroStatusText: { fontSize: 10, fontWeight: '700', color: '#6b5644' },
   retroDaysLeft: { alignItems: 'center', backgroundColor: 'rgba(251, 191, 36, 0.15)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 },
-  retroDaysNumber: { fontSize: 18, fontWeight: '800', color: '#fbbf24' },
+  retroDaysNumber: { fontSize: 18, fontWeight: '900', color: '#6b5644' },
   retroDaysLabel: { fontSize: 9, color: '#94a3b8' },
-  retroAlertMessage: { fontSize: 11, color: '#94a3b8', marginTop: 10, lineHeight: 16 },
+  retroAlertMessage: { fontSize: 11, color: '#6b5644', marginTop: 10, lineHeight: 16, fontWeight: '700' },
 
   // Upcoming Section
   upcomingSection: { padding: 16, paddingTop: 0 },
-  upcomingSectionTitle: { fontSize: 14, fontWeight: '600', color: '#e2e8f0', marginBottom: 12 },
-  upcomingCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: 12, marginBottom: 10 },
-  upcomingIconBox: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
-  upcomingIcon: { fontSize: 20 },
+  upcomingSectionTitle: { fontSize: 14, fontWeight: '800', color: '#6b5644', marginBottom: 12 },
+  upcomingCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#fef6ed', borderRadius: 14, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: '#e8d5c4' },
+  upcomingIconBox: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff8f0', borderWidth: 1, borderColor: '#e8d5c4' },
+  upcomingIcon: { fontSize: 20, color: '#d4a574', fontWeight: '600' },
   upcomingDetails: { flex: 1 },
-  upcomingPlanet: { fontSize: 14, fontWeight: '600', color: '#fff' },
+  upcomingPlanet: { fontSize: 14, fontWeight: '800', color: '#6b5644' },
   upcomingArrowRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
-  upcomingFrom: { fontSize: 11, color: '#94a3b8' },
-  upcomingTo: { fontSize: 11, color: '#a78bfa', fontWeight: '500' },
-  upcomingTimeBox: { alignItems: 'center', backgroundColor: 'rgba(99, 102, 241, 0.2)', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12 },
-  upcomingTimeValue: { fontSize: 18, fontWeight: '800', color: '#818cf8' },
-  upcomingTimeUnit: { fontSize: 9, color: '#94a3b8', marginTop: 2 },
+  upcomingFrom: { fontSize: 11, color: '#6b5644', fontWeight: '700' },
+  upcomingTo: { fontSize: 11, color: '#6b5644', fontWeight: '800' },
+  upcomingTimeBox: { alignItems: 'center', backgroundColor: '#f3f4f6', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12 },
+  upcomingTimeValue: { fontSize: 18, fontWeight: '900', color: '#6b5644' },
+  upcomingTimeUnit: { fontSize: 9, color: '#6b5644', fontWeight: '700', marginTop: 2 },
 
   // Auspicious Footer
   auspiciousFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 14, borderTopWidth: 1, borderTopColor: 'rgba(139, 92, 246, 0.1)' },

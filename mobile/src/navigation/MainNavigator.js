@@ -1,6 +1,7 @@
 import React from 'react';
 import { Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { CommonActions } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../context/LanguageContext';
@@ -21,7 +22,7 @@ export default function MainNavigator() {
 
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
+      screenOptions={({ route, navigation }) => ({
         headerShown: false,
         tabBarActiveTintColor: '#f97316',
         tabBarInactiveTintColor: '#9ca3af',
@@ -73,31 +74,110 @@ export default function MainNavigator() {
         name="Dashboard"
         component={DashboardScreen}
         options={{ tabBarLabel: t('home') }}
+        listeners={({ navigation, route }) => ({
+          tabPress: (e) => {
+            const state = navigation.getState();
+            // If already on this tab, reset it
+            if (state.routes[state.index].name === route.name) {
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{ name: route.name }],
+                })
+              );
+            }
+          },
+        })}
       />
       <Tab.Screen
         name="AstroFeed"
         component={AstroFeedScreen}
         options={{ tabBarLabel: t('astroFeed') }}
+        listeners={({ navigation, route }) => ({
+          tabPress: (e) => {
+            const state = navigation.getState();
+            if (state.routes[state.index].name === route.name) {
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{ name: route.name }],
+                })
+              );
+            }
+          },
+        })}
       />
       <Tab.Screen
         name="Matching"
         component={MatchingScreen}
         options={{ tabBarLabel: t('matching') }}
+        listeners={({ navigation, route }) => ({
+          tabPress: (e) => {
+            const state = navigation.getState();
+            if (state.routes[state.index].name === route.name) {
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{ name: route.name }],
+                })
+              );
+            }
+          },
+        })}
       />
       <Tab.Screen
         name="UngalJothidan"
         component={UngalJothidanScreen}
         options={{ tabBarLabel: t('ungalJothidan') }}
+        listeners={({ navigation, route }) => ({
+          tabPress: (e) => {
+            const state = navigation.getState();
+            if (state.routes[state.index].name === route.name) {
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{ name: route.name }],
+                })
+              );
+            }
+          },
+        })}
       />
       <Tab.Screen
         name="Muhurtham"
         component={MuhurthamScreen}
         options={{ tabBarLabel: t('muhurtham') }}
+        listeners={({ navigation, route }) => ({
+          tabPress: (e) => {
+            const state = navigation.getState();
+            if (state.routes[state.index].name === route.name) {
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{ name: route.name }],
+                })
+              );
+            }
+          },
+        })}
       />
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
         options={{ tabBarLabel: t('profile') }}
+        listeners={({ navigation, route }) => ({
+          tabPress: (e) => {
+            const state = navigation.getState();
+            if (state.routes[state.index].name === route.name) {
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{ name: route.name }],
+                })
+              );
+            }
+          },
+        })}
       />
     </Tab.Navigator>
   );

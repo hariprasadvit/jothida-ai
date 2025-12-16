@@ -249,6 +249,14 @@ const LocationPickerModal = ({ visible, onClose, onSelect, selectedPlace, t }) =
               placeholderTextColor="#9ca3af"
               autoCapitalize="none"
             />
+            {isSearching ? (
+              <ActivityIndicator size="small" color="#f97316" />
+            ) : (
+              searchText.length > 0 && (
+                <TouchableOpacity onPress={() => setSearchText('')} activeOpacity={0.7}>
+                  <Ionicons name="close-circle" size={20} color="#9ca3af" />
+                </TouchableOpacity>
+              )
             {isSearching && <ActivityIndicator size="small" color="#f97316" />}
             {searchText.length > 0 && !isSearching && (
               <TouchableOpacity onPress={() => setSearchText('')}>
@@ -589,18 +597,20 @@ export default function RegisterScreen({ route }) {
                 >
                   {formData.gender === 'male' && (
                     <LinearGradient
-                      colors={['#3b82f6', '#2563eb']}
+                      colors={['#f97316', '#ea580c']}
                       style={styles.genderGradient}
                     />
                   )}
                   <View style={styles.genderContent}>
-                    <Text style={styles.genderIcon}>👨</Text>
+                    <Ionicons
+                      name="man"
+                      size={40}
+                      color={formData.gender === 'male' ? '#fff' : '#6b7280'}
+                      style={styles.genderIcon}
+                    />
                     <Text style={[styles.genderText, formData.gender === 'male' && styles.genderTextActive]}>
                       {t('male')}
                     </Text>
-                    {formData.gender === 'male' && (
-                      <Ionicons name="checkmark-circle" size={18} color="#fff" style={styles.genderCheck} />
-                    )}
                   </View>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -616,18 +626,20 @@ export default function RegisterScreen({ route }) {
                 >
                   {formData.gender === 'female' && (
                     <LinearGradient
-                      colors={['#ec4899', '#db2777']}
+                      colors={['#f97316', '#ea580c']}
                       style={styles.genderGradient}
                     />
                   )}
                   <View style={styles.genderContent}>
-                    <Text style={styles.genderIcon}>👩</Text>
+                    <Ionicons
+                      name="woman"
+                      size={40}
+                      color={formData.gender === 'female' ? '#fff' : '#6b7280'}
+                      style={styles.genderIcon}
+                    />
                     <Text style={[styles.genderText, formData.gender === 'female' && styles.genderTextActive]}>
                       {t('female')}
                     </Text>
-                    {formData.gender === 'female' && (
-                      <Ionicons name="checkmark-circle" size={18} color="#fff" style={styles.genderCheck} />
-                    )}
                   </View>
                 </TouchableOpacity>
               </View>
@@ -639,27 +651,30 @@ export default function RegisterScreen({ route }) {
                 <Ionicons name="calendar" size={16} color="#f97316" /> {t('birthDate')} *
               </Text>
               {Platform.OS === 'web' ? (
-                <input
-                  type="date"
-                  style={{
-                    width: '100%',
-                    padding: 16,
-                    fontSize: 16,
-                    border: '2px solid #fed7aa',
-                    borderRadius: 14,
-                    backgroundColor: '#fff',
-                    color: '#1f2937',
-                    fontWeight: '500',
-                  }}
-                  max={new Date().toISOString().split('T')[0]}
-                  min="1920-01-01"
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      setFormData({ ...formData, birthDate: new Date(e.target.value) });
-                      animateSuccess();
-                    }
-                  }}
-                />
+                <View style={styles.webInputWrapper}>
+                  <input
+                    type="date"
+                    style={{
+                      width: '100%',
+                      padding: 16,
+                      fontSize: 16,
+                      border: '2px solid #fed7aa',
+                      borderRadius: 14,
+                      backgroundColor: '#fff',
+                      color: '#1f2937',
+                      fontWeight: '500',
+                      boxSizing: 'border-box',
+                    }}
+                    max={new Date().toISOString().split('T')[0]}
+                    min="1920-01-01"
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        setFormData({ ...formData, birthDate: new Date(e.target.value) });
+                        animateSuccess();
+                      }
+                    }}
+                  />
+                </View>
               ) : (
                 <>
                   <TouchableOpacity
@@ -702,27 +717,30 @@ export default function RegisterScreen({ route }) {
                 <Ionicons name="time" size={16} color="#f97316" /> {t('birthTime')}
               </Text>
               {Platform.OS === 'web' ? (
-                <input
-                  type="time"
-                  style={{
-                    width: '100%',
-                    padding: 16,
-                    fontSize: 16,
-                    border: '2px solid #fed7aa',
-                    borderRadius: 14,
-                    backgroundColor: '#fff',
-                    color: '#1f2937',
-                    fontWeight: '500',
-                  }}
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      const [hours, minutes] = e.target.value.split(':');
-                      const date = new Date();
-                      date.setHours(parseInt(hours), parseInt(minutes));
-                      setFormData({ ...formData, birthTime: date });
-                    }
-                  }}
-                />
+                <View style={styles.webInputWrapper}>
+                  <input
+                    type="time"
+                    style={{
+                      width: '100%',
+                      padding: 16,
+                      fontSize: 16,
+                      border: '2px solid #fed7aa',
+                      borderRadius: 14,
+                      backgroundColor: '#fff',
+                      color: '#1f2937',
+                      fontWeight: '500',
+                      boxSizing: 'border-box',
+                    }}
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        const [hours, minutes] = e.target.value.split(':');
+                        const date = new Date();
+                        date.setHours(parseInt(hours), parseInt(minutes));
+                        setFormData({ ...formData, birthTime: date });
+                      }
+                    }}
+                  />
+                </View>
               ) : (
                 <>
                   <TouchableOpacity
@@ -1022,7 +1040,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   genderIcon: {
-    fontSize: 40,
     marginBottom: 8,
   },
   genderText: {
@@ -1036,8 +1053,12 @@ const styles = StyleSheet.create({
   },
   genderCheck: {
     position: 'absolute',
-    top: -28,
-    right: -10,
+    top: 2,
+    right: 2,
+  },
+  webInputWrapper: {
+    width: '100%',
+    overflow: 'hidden',
   },
   pickerButton: {
     flexDirection: 'row',

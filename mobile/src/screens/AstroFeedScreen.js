@@ -15,6 +15,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRoute } from '@react-navigation/native';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -307,11 +308,24 @@ const StoryCard = ({ story, isActive, onShare, language, userRasi }) => {
 };
 
 export default function AstroFeedScreen({ navigation }) {
+  const route = useRoute();
   const { userProfile } = useAuth();
   const { t, language } = useLanguage();
   const insets = useSafeAreaInsets();
   const [stories, setStories] = useState([]);
+
+  // Get initial story index from route params
+  const initialStoryParam = route.params?.initialStory;
+  const storyMap = {
+    'planet': 0,    // PLANET_INFLUENCE
+    'moon': 1,      // MOON_TRANSIT
+    'insight': 2,   // DAILY_INSIGHT
+    'star': 3,      // NAKSHATRA_EFFECT
+  };
+  const targetStoryIndex = initialStoryParam ? (storyMap[initialStoryParam] ?? 0) : 0;
+
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [initialNavigationDone, setInitialNavigationDone] = useState(false);
   const [loading, setLoading] = useState(true);
   const [dailyScore, setDailyScore] = useState(null);
   const [scoreLoaded, setScoreLoaded] = useState(false);
@@ -456,6 +470,24 @@ export default function AstroFeedScreen({ navigation }) {
       setLoading(false);
     }
   }, [generateStories, dailyScore, scoreLoaded]);
+
+  // Handle initial navigation to specific story
+  useEffect(() => {
+    if (stories.length > 0 && !initialNavigationDone && targetStoryIndex > 0) {
+      console.log('[AstroFeed] Navigating to story index:', targetStoryIndex);
+      setCurrentIndex(targetStoryIndex);
+
+      setTimeout(() => {
+        flatListRef.current?.scrollToIndex({
+          index: targetStoryIndex,
+          animated: false,
+        });
+        setInitialNavigationDone(true);
+      }, 300);
+    } else if (stories.length > 0 && !initialNavigationDone) {
+      setInitialNavigationDone(true);
+    }
+  }, [stories.length, targetStoryIndex, initialNavigationDone]);
 
   // Auto-advance timer
   useEffect(() => {
