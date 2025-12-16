@@ -1596,7 +1596,7 @@ const TimelineYearModal = ({ visible, onClose, data, language, t }) => {
   );
 };
 
-import { LotusCorner, OmWatermark } from '../components/DivinePatterns';
+import { InterlockCirclePattern, LotusCorner, OmWatermark } from '../components/DivinePatterns';
 
 export default function DashboardScreen({ navigation }) {
   const { userProfile } = useAuth();
@@ -2054,6 +2054,8 @@ export default function DashboardScreen({ navigation }) {
     <View style={styles.container}>
       {/* Warm auspicious gradient background */}
       <LinearGradient colors={['#faf7f2', '#f5ede5', '#fff8f0']} style={styles.gradient}>
+        {/* Subtle illustration like reference (kept low opacity for readability) */}
+        <InterlockCirclePattern color="#e8d5c4" opacity={0.12} ringSize={52} gap={22} strokeWidth={2} />
         <ScrollView
           contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#f97316']} tintColor="#f97316" />}
