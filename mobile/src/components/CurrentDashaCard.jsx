@@ -139,7 +139,7 @@ export default function CurrentDashaCard({
 
         {/* Info footer */}
         <View style={styles.infoFooter}>
-          <Ionicons name="information-circle" size={16} color="#8b5cf6" />
+          <Ionicons name="information-circle" size={16} color="#d4a574" />
           <Text style={styles.infoText}>
             {language === 'ta' 
               ? 'தசா உங்கள் வாழ்க்கை பயணத்தை வழிநடத்துகிறது'
@@ -153,7 +153,7 @@ export default function CurrentDashaCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#fef6ed',
     borderRadius: 20,
     padding: 20,
     marginHorizontal: 16,
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(139, 92, 246, 0.05)',
+    backgroundColor: 'rgba(249, 115, 22, 0.03)',
     transform: [{ skewX: '-20deg' }],
   },
   header: {
@@ -202,8 +202,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#6b5644',
+    fontWeight: '800',
+    color: '#0f172a',
     letterSpacing: 0.3,
   },
   dashaGrid: {
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
   dashaLabel: {
     fontSize: 11,
     fontWeight: '800',
-    color: '#8b6f47',
+    color: '#1f2937',
     letterSpacing: 0.8,
   },
   dashaValueBg: {
@@ -235,8 +235,8 @@ const styles = StyleSheet.create({
   },
   dashaValue: {
     fontSize: 16,
-    fontWeight: '800',
-    color: '#6b5644',
+    fontWeight: '900',
+    color: '#0f172a',
     letterSpacing: 0.3,
   },
   durationBadge: {
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
   durationText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#8b6f47',
+    color: '#1f2937',
   },
   infoFooter: {
     flexDirection: 'row',
@@ -268,8 +268,8 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: 12,
-    color: '#6b5644',
-    fontWeight: '600',
+    color: '#1f2937',
+    fontWeight: '700',
     lineHeight: 18,
   },
 });
