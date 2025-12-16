@@ -2550,7 +2550,7 @@ export default function DashboardScreen({ navigation }) {
               <View style={[styles.card, styles.dashaCard, { backgroundColor: '#fef6ed' }]}>
                 <View style={styles.cardHeader}>
                   <Ionicons name="sparkles" size={16} color="#d4a574" />
-                  <Text style={[styles.cardTitle, { color: '#0f172a', fontWeight: '800' }]}>{t('currentDasha')}</Text>
+                  <Text style={[styles.cardTitle, { color: '#6b5644', fontWeight: '800' }]}>{t('currentDasha')}</Text>
                 </View>
                 <View style={styles.dashaGrid}>
                   <View style={styles.dashaItem}>
