@@ -111,7 +111,7 @@ export default function CurrentDashaCard({
             </LinearGradient>
             {yearsRemaining && (
               <View style={styles.durationBadge}>
-                <Ionicons name="time" size={12} color="#8b5cf6" />
+                <Ionicons name="time" size={12} color="#d4a574" />
                 <Text style={styles.durationText}>
                   {yearsRemaining} {language === 'ta' ? 'ஆண்டுகள்' : 'years'}
                 </Text>
