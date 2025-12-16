@@ -2048,7 +2048,7 @@ export default function DashboardScreen({ navigation }) {
   return (
     <View style={styles.container}>
       {/* Warm auspicious gradient background */}
-      <LinearGradient colors={['#f0f4f8', '#e5e9f2', '#dfe7f5']} style={styles.gradient}>
+      <LinearGradient colors={['#faf7f2', '#f5ede5', '#fff8f0']} style={styles.gradient}>
         <ScrollView
           contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#f97316']} tintColor="#f97316" />}
@@ -3128,23 +3128,23 @@ export default function DashboardScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  gradient: { flex: 1, backgroundColor: '#e8ecf3' },
+  gradient: { flex: 1, backgroundColor: '#faf7f2' },
   scrollContent: { paddingHorizontal: 0 },
 
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#e8ecf3' },
-  loadingText: { marginTop: 16, color: '#5a6c8f', fontSize: 16, fontWeight: '600' },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#faf7f2' },
+  loadingText: { marginTop: 16, color: '#8b6f47', fontSize: 16, fontWeight: '600' },
   headerBar: { height: 0 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: 24, paddingBottom: 20, backgroundColor: '#e8ecf3', marginHorizontal: 16, marginTop: 16, borderRadius: 28, shadowColor: '#ffffff', shadowOffset: { width: -8, height: -8 }, shadowOpacity: 1, shadowRadius: 16, elevation: 8 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: 24, paddingBottom: 20, backgroundColor: '#fff8f0', marginHorizontal: 16, marginTop: 16, borderRadius: 20, borderWidth: 1, borderColor: '#e8d5c4', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 3 },
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   logoIcon: { width: 36, height: 36 },
-  appTitle: { fontSize: 24, fontWeight: '800', color: '#5a6c8f', letterSpacing: 1 },
+  appTitle: { fontSize: 24, fontWeight: '600', color: '#6b5644', letterSpacing: 0.5, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
   userInfo: { marginTop: 8 },
-  greeting: { fontSize: 16, color: '#7a8ba8', fontWeight: '600' },
-  rasiInfo: { fontSize: 14, color: '#9babc7', marginTop: 3, fontWeight: '600' },
+  greeting: { fontSize: 16, color: '#8b6f47', fontWeight: '500' },
+  rasiInfo: { fontSize: 14, color: '#c69c6d', marginTop: 3, fontWeight: '600' },
   timeContainer: { alignItems: 'flex-end' },
-  currentTime: { fontSize: 22, fontFamily: 'monospace', color: '#5a6c8f', fontWeight: '700', letterSpacing: 1.5 },
-  periodBadge: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 18, marginTop: 8, backgroundColor: '#e8ecf3', shadowColor: '#a3b9d9', shadowOffset: { width: 3, height: 3 }, shadowOpacity: 0.4, shadowRadius: 6 },
-  periodText: { fontSize: 11, fontWeight: '800', letterSpacing: 0.8 },
+  currentTime: { fontSize: 22, fontFamily: 'monospace', color: '#6b5644', fontWeight: '600', letterSpacing: 1 },
+  periodBadge: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 16, marginTop: 8, backgroundColor: '#f4e4d7', borderWidth: 1, borderColor: '#e8d5c4' },
+  periodText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.5, color: '#8b6f47' },
 
   // Date card
   dateCard: { backgroundColor: '#e8ecf3', marginHorizontal: 16, marginTop: 20, padding: 16, borderRadius: 24, alignItems: 'center', shadowColor: '#ffffff', shadowOffset: { width: -6, height: -6 }, shadowOpacity: 1, shadowRadius: 12, elevation: 0 },
