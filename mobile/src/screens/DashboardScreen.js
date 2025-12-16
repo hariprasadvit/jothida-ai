@@ -22,7 +22,6 @@ import { useLanguage } from '../context/LanguageContext';
 import { mobileAPI } from '../services/api';
 import { populateScoreCache } from '../services/scoringService';
 import notificationService from '../services/notificationService';
-import { InterlockCirclePattern, LotusCorner, OmWatermark } from '../components/DivinePatterns';
 
 const { width } = Dimensions.get('window');
 
@@ -2053,8 +2052,6 @@ export default function DashboardScreen({ navigation }) {
     <View style={styles.container}>
       {/* Warm auspicious gradient background */}
       <LinearGradient colors={['#faf7f2', '#f5ede5', '#fff8f0']} style={styles.gradient}>
-        {/* Subtle illustration like reference (kept low opacity for readability) */}
-        <InterlockCirclePattern color="#e8d5c4" opacity={0.08} ringSize={52} gap={22} strokeWidth={1.5} />
         <ScrollView
           contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#f97316']} tintColor="#f97316" />}
@@ -2067,7 +2064,6 @@ export default function DashboardScreen({ navigation }) {
               { opacity: headerFadeAnim, transform: [{ translateY: headerSlideAnim }] },
             ]}
           >
-            <OmWatermark color="#d4a574" opacity={0.04} size={200} style={{ position: 'absolute', right: -80, top: -60 }} />
             <View>
               <View style={styles.logoRow}>
                 <View style={styles.logoIcon}>
@@ -2489,7 +2485,6 @@ export default function DashboardScreen({ navigation }) {
           </AnimatedCard>
 
           {/* Today's Parigaram - Gamified Remedies */}
-          <DecorativeBorder />
           {planetAura?.challenged_planets?.length > 0 && (
             <AnimatedCard delay={450}>
               <TouchableOpacity
@@ -2497,12 +2492,9 @@ export default function DashboardScreen({ navigation }) {
                 onPress={() => navigation.getParent()?.navigate('Remedy')}
               >
                 <View style={[styles.card, styles.parigaramCard, { backgroundColor: '#fef6ed' }]}>
-                  <LotusCorner style={{ position: 'absolute', top: 0, right: 0, opacity: 0.8 }} color="#d4a574" size={52} />
-                  <LotusCorner style={{ position: 'absolute', bottom: 0, left: 0, opacity: 0.6, transform: [{ rotate: '180deg' }] }} color="#d4a574" size={52} />
-
                   <View style={styles.parigaramHeader}>
                     <View style={styles.parigaramIconBadge}>
-                      <DiyaIcon size={28} color="#d97706" />
+                      <Ionicons name="leaf" size={24} color="#92400e" />
                     </View>
                     <View style={styles.parigaramTitleSection}>
                       <Text style={styles.parigaramTitle}>{t('todayParigaram')}</Text>
@@ -2548,14 +2540,11 @@ export default function DashboardScreen({ navigation }) {
           )}
 
           {/* Current Dasha */}
-          <DecorativeBorder />
           {jathagam?.dasha?.mahadasha && (
             <AnimatedCard delay={500}>
               <View style={[styles.card, styles.dashaCard, { backgroundColor: '#fef6ed' }]}>
-                <LotusCorner style={{ position: 'absolute', top: 0, right: 0, opacity: 0.8 }} color="#d4a574" size={52} />
-
                 <View style={styles.cardHeader}>
-                  <DiyaIcon size={18} color="#d97706" />
+                  <Ionicons name="sparkles" size={16} color="#d4a574" />
                   <Text style={[styles.cardTitle, { color: '#6b5644', fontWeight: '800' }]}>{t('currentDasha')}</Text>
                 </View>
                 <View style={styles.dashaGrid}>
@@ -2651,14 +2640,11 @@ export default function DashboardScreen({ navigation }) {
           </AnimatedCard>
 
           {/* Aura Heatmap - Planet Strength Visualization */}
-          <DecorativeBorder />
           {planetAura && (
             <AnimatedCard delay={600}>
               <View style={[styles.card, styles.auraCard]}>
-                <LotusCorner style={{ position: 'absolute', top: 0, right: 0, opacity: 0.8 }} color="#d4a574" size={52} />
-
                 <View style={styles.cardHeader}>
-                  <DiyaIcon size={18} color="#d97706" />
+                  <Ionicons name="planet" size={16} color="#c69c6d" />
                   <Text style={styles.cardTitle}>
                     {t('planetAuraMap')}
                   </Text>
