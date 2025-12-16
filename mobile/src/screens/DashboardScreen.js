@@ -3576,7 +3576,7 @@ const styles = StyleSheet.create({
 
   // Planet Cards
   planetCardsSection: { paddingBottom: 26, paddingTop: 26, backgroundColor: '#fef6ed' },
-  planetCardsTitle: { fontSize: 15, fontWeight: '700', color: '#6b5644', marginBottom: 18, paddingHorizontal: 22, textTransform: 'uppercase', letterSpacing: 1.2 },
+  planetCardsTitle: { fontSize: 15, fontWeight: '800', color: '#0f172a', marginBottom: 18, paddingHorizontal: 22, textTransform: 'uppercase', letterSpacing: 1.2 },
   planetCardsScroll: { paddingHorizontal: 16 },
   planetCard: { alignItems: 'center', paddingHorizontal: 18, paddingVertical: 18, borderRadius: 20, marginRight: 16, minWidth: 100, backgroundColor: '#fff8f0', borderWidth: 1, borderColor: '#e8d5c4', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.08, shadowRadius: 8 },
   planetCardIconBg: { width: 52, height: 52, borderRadius: 26, justifyContent: 'center', alignItems: 'center', marginBottom: 12, backgroundColor: '#f4e4d7', borderWidth: 1, borderColor: '#e8d5c4' },
@@ -3584,8 +3584,8 @@ const styles = StyleSheet.create({
   planetCardName: { fontSize: 12, color: '#0f172a', fontWeight: '800', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.6 },
   planetCardSignRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   planetCardSign: { fontSize: 16, fontWeight: '800' },
-  planetCardSignName: { fontSize: 11, color: '#e0e7ff', fontWeight: '600' },
-  planetCardDegree: { fontSize: 10, color: '#c7d2fe', marginTop: 6, fontWeight: '500' },
+  planetCardSignName: { fontSize: 11, color: '#0f172a', fontWeight: '700' },
+  planetCardDegree: { fontSize: 10, color: '#0f172a', marginTop: 6, fontWeight: '700' },
   retroIndicator: { backgroundColor: 'rgba(239, 68, 68, 0.2)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, marginTop: 6 },
   retroIndicatorText: { fontSize: 9, color: '#fca5a5', fontWeight: '600' },
 
@@ -3593,16 +3593,16 @@ const styles = StyleSheet.create({
   retroAlertSection: { padding: 16, paddingTop: 0 },
   retroAlertHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
   retroAlertIcon: { fontSize: 18 },
-  retroAlertTitle: { fontSize: 14, fontWeight: '700', color: '#fbbf24' },
+  retroAlertTitle: { fontSize: 14, fontWeight: '800', color: '#0f172a' },
   retroAlertCard: { borderRadius: 14, padding: 14, marginBottom: 10, borderLeftWidth: 4 },
   retroAlertCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   retroAlertSymbol: { fontSize: 22, color: '#fff' },
   retroAlertInfo: { flex: 1 },
   retroAlertName: { fontSize: 14, fontWeight: '800', color: '#0f172a' },
   retroStatusPill: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10, marginTop: 4, alignSelf: 'flex-start' },
-  retroStatusText: { fontSize: 10, fontWeight: '600' },
+  retroStatusText: { fontSize: 10, fontWeight: '700', color: '#0f172a' },
   retroDaysLeft: { alignItems: 'center', backgroundColor: 'rgba(251, 191, 36, 0.15)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 },
-  retroDaysNumber: { fontSize: 18, fontWeight: '800', color: '#fbbf24' },
+  retroDaysNumber: { fontSize: 18, fontWeight: '900', color: '#0f172a' },
   retroDaysLabel: { fontSize: 9, color: '#94a3b8' },
   retroAlertMessage: { fontSize: 11, color: '#0f172a', marginTop: 10, lineHeight: 16, fontWeight: '700' },
 
@@ -3615,10 +3615,10 @@ const styles = StyleSheet.create({
   upcomingDetails: { flex: 1 },
   upcomingPlanet: { fontSize: 14, fontWeight: '800', color: '#0f172a' },
   upcomingArrowRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
-  upcomingFrom: { fontSize: 11, color: '#94a3b8' },
-  upcomingTo: { fontSize: 11, color: '#a78bfa', fontWeight: '500' },
+  upcomingFrom: { fontSize: 11, color: '#0f172a', fontWeight: '700' },
+  upcomingTo: { fontSize: 11, color: '#0f172a', fontWeight: '800' },
   upcomingTimeBox: { alignItems: 'center', backgroundColor: 'rgba(99, 102, 241, 0.2)', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12 },
-  upcomingTimeValue: { fontSize: 18, fontWeight: '800', color: '#818cf8' },
+  upcomingTimeValue: { fontSize: 18, fontWeight: '900', color: '#0f172a' },
   upcomingTimeUnit: { fontSize: 9, color: '#94a3b8', marginTop: 2 },
 
   // Auspicious Footer
