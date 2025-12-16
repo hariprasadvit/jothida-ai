@@ -281,8 +281,8 @@ const styles = StyleSheet.create({
   title: {
     flex: 1,
     fontSize: 18,
-    fontWeight: '700',
-    color: '#6b5644',
+    fontWeight: '800',
+    color: '#0f172a',
     letterSpacing: 0.3,
   },
   overallBadge: {
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
   overallScore: {
     fontSize: 16,
     fontWeight: '900',
-    color: '#78350f',
+    color: '#0f172a',
     letterSpacing: 0.3,
   },
   levelSection: {
@@ -331,13 +331,13 @@ const styles = StyleSheet.create({
   },
   statText: {
     fontSize: 16,
-    fontWeight: '800',
-    color: '#1f2937',
+    fontWeight: '900',
+    color: '#0f172a',
   },
   statLabel: {
     fontSize: 12,
-    color: '#6b7280',
-    fontWeight: '600',
+    color: '#1f2937',
+    fontWeight: '700',
   },
   statDivider: {
     width: 1,
@@ -378,13 +378,13 @@ const styles = StyleSheet.create({
   centerScore: {
     fontSize: 22,
     fontWeight: '900',
-    color: '#6b5644',
+    color: '#0f172a',
     letterSpacing: -0.5,
   },
   centerLabel: {
     fontSize: 10,
-    color: '#8b6f47',
-    fontWeight: '700',
+    color: '#1f2937',
+    fontWeight: '800',
     marginTop: -2,
   },
   planetOrb: {
@@ -407,12 +407,12 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   planetSymbol: {
-    fontSize: 22,
-    color: '#0f172a',
+    fontSize: 24,
+    color: '#000000',
     fontWeight: '900',
-    textShadowColor: 'rgba(255, 255, 255, 0.5)',
+    textShadowColor: 'rgba(255, 255, 255, 0.8)',
     textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+    textShadowRadius: 3,
   },
   scoreChip: {
     position: 'absolute',
@@ -427,10 +427,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   scoreChipText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '900',
-    color: '#1f2937',
-    textShadowColor: 'rgba(0, 0, 0, 0.1)',
+    color: '#000000',
+    textShadowColor: 'rgba(255, 255, 255, 0.3)',
     textShadowOffset: { width: 0, height: 0.5 },
     textShadowRadius: 1,
   },
@@ -498,8 +498,8 @@ const styles = StyleSheet.create({
   },
   summaryList: {
     fontSize: 15,
-    fontWeight: '800',
-    color: '#15803d',
+    fontWeight: '900',
+    color: '#0f172a',
     lineHeight: 24,
     paddingLeft: 24,
   },
@@ -517,7 +517,7 @@ const styles = StyleSheet.create({
   insightText: {
     flex: 1,
     fontSize: 14,
-    color: '#5a3a1a',
+    color: '#0f172a',
     lineHeight: 22,
     fontWeight: '700',
   },

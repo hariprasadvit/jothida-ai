@@ -145,7 +145,7 @@ export default function RemediesCard({ planets = [], onPress, language = 'en', t
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#fef6ed',
     borderRadius: 20,
     padding: 20,
     marginHorizontal: 16,
@@ -194,15 +194,15 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 19,
-    fontWeight: '700',
-    color: '#7c2d12',
+    fontWeight: '800',
+    color: '#0f172a',
     letterSpacing: 0.3,
   },
   subtitle: {
     fontSize: 13,
-    color: '#9a3412',
+    color: '#1f2937',
     marginTop: 3,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   arrowContainer: {
     padding: 4,
@@ -215,8 +215,8 @@ const styles = StyleSheet.create({
   },
   planetsLabel: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#92400e',
+    fontWeight: '700',
+    color: '#1f2937',
     marginBottom: 10,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -242,20 +242,21 @@ const styles = StyleSheet.create({
   },
   planetSymbol: {
     fontSize: 20,
-    color: '#9a3412',
+    color: '#0f172a',
+    fontWeight: '700',
   },
   planetName: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#7c2d12',
+    fontWeight: '800',
+    color: '#0f172a',
     letterSpacing: 0.2,
   },
   remedySection: {
-    backgroundColor: '#fef3c7',
+    backgroundColor: '#ffffff',
     borderRadius: 14,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#fde68a',
+    borderColor: '#e8d5c4',
   },
   remedyRow: {
     flexDirection: 'row',
@@ -276,8 +277,8 @@ const styles = StyleSheet.create({
   },
   remedyLabel: {
     fontSize: 12,
-    color: '#78350f',
-    fontWeight: '600',
+    color: '#0f172a',
+    fontWeight: '700',
     letterSpacing: 0.2,
   },
 });
