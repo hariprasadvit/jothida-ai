@@ -3249,8 +3249,8 @@ const styles = StyleSheet.create({
   yearScoreFill: { height: 4, borderRadius: 2 },
 
   quickActionsGrid: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 16 },
-  quickActionBtn: { flex: 1, alignItems: 'center', backgroundColor: '#e8ecf3', borderRadius: 20, padding: 20, marginHorizontal: 6, shadowColor: '#a3b9d9', shadowOffset: { width: 5, height: 5 }, shadowOpacity: 0.3, shadowRadius: 10 },
-  quickActionLabel: { fontSize: 11, color: '#5a6c8f', marginTop: 12, fontWeight: '800', letterSpacing: 0.6 },
+  quickActionBtn: { flex: 1, alignItems: 'center', backgroundColor: '#fef6ed', borderRadius: 18, padding: 20, marginHorizontal: 6, borderWidth: 1, borderColor: '#e8d5c4', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6 },
+  quickActionLabel: { fontSize: 11, color: '#6b5644', marginTop: 12, fontWeight: '700', letterSpacing: 0.4 },
 
   dashaCard: { backgroundColor: '#fef6ed', borderWidth: 1, borderColor: '#f4e4d7' },
   dashaGrid: { flexDirection: 'row', gap: 16 },
