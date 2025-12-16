@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     marginBottom: 8,
     textTransform: 'uppercase',
-    color: '#0f172a',
+    color: '#6b5644',
   },
   signRow: {
     marginBottom: 10,
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.3,
-    color: '#0f172a',
+    color: '#6b5644',
   },
   degreeRow: {
     flexDirection: 'row',
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '800',
     letterSpacing: 0.3,
-    color: '#0f172a',
+    color: '#6b5644',
   },
   nakshatraRow: {
     flexDirection: 'row',
@@ -539,7 +539,7 @@ const styles = StyleSheet.create({
   transitPlanet: {
     fontSize: 15,
     fontWeight: '900',
-    color: '#0f172a',
+    color: '#6b5644',
     letterSpacing: 0.4,
   },
   transitArrowRow: {
@@ -551,7 +551,7 @@ const styles = StyleSheet.create({
   transitSign: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#0f172a',
+    color: '#6b5644',
   },
   transitTimeBox: {
     alignItems: 'center',
@@ -565,7 +565,7 @@ const styles = StyleSheet.create({
   transitTimeValue: {
     fontSize: 20,
     fontWeight: '900',
-    color: '#0f172a',
+    color: '#6b5644',
     lineHeight: 22,
   },
   transitTimeLabel: {
