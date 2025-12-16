@@ -3482,7 +3482,7 @@ const styles = StyleSheet.create({
   auraDominantPlanet: { fontSize: 12, color: '#22c55e', fontWeight: '500' },
 
   // Transits Map - Premium Styles
-  transitsContainer: { marginTop: 16, borderRadius: 24, overflow: 'hidden', backgroundColor: '#1e1b4b', shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 20, elevation: 10 },
+  transitsContainer: { marginTop: 16, marginHorizontal: 16, borderRadius: 24, overflow: 'hidden', backgroundColor: '#1e1b4b', shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 20, elevation: 10 },
   transitsHeader: { padding: 20, paddingBottom: 16 },
   transitsHeaderContent: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   transitsHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 14 },
