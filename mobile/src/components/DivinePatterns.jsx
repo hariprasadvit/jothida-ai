@@ -26,7 +26,27 @@ export const KolamPattern = ({ color = "#d4a574", opacity = 0.35, style }) => {
   );
 };
 
-// 2. Lotus Corner Decoration (Sacred Lotus Petals)
+// 2. Scallop / Temple Arch Pattern (Subtle Illustration)
+export const ScallopPattern = ({ color = "#e8d5c4", opacity = 0.15, style }) => {
+  const patternId = useRef(`scallop-${Math.random().toString(36).slice(2)}`).current;
+
+  return (
+    <View style={[styles.absoluteFill, style, { opacity, zIndex: 0 }]} pointerEvents="none">
+      <Svg height="100%" width="100%">
+        <Defs>
+          <Pattern id={patternId} x="0" y="0" width="96" height="64" patternUnits="userSpaceOnUse">
+            <Circle cx="16" cy="16" r="20" fill="none" stroke={color} strokeWidth="2" opacity="0.55" />
+            <Circle cx="64" cy="16" r="20" fill="none" stroke={color} strokeWidth="2" opacity="0.55" />
+            <Circle cx="40" cy="48" r="20" fill="none" stroke={color} strokeWidth="2" opacity="0.35" />
+          </Pattern>
+        </Defs>
+        <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${patternId})`} />
+      </Svg>
+    </View>
+  );
+};
+
+// 3. Lotus Corner Decoration (Sacred Lotus Petals)
 export const LotusCorner = ({ color = "#d4a574", size = 60, style }) => (
   <View style={[style, { width: size, height: size, zIndex: 10 }]} pointerEvents="none">
     <Svg width="100%" height="100%" viewBox="0 0 100 100">
