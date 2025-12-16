@@ -3519,7 +3519,7 @@ const styles = StyleSheet.create({
   nextSignText: { fontSize: 15, fontWeight: '700', color: '#fff', flex: 1 },
 
   // Alert Message
-  alertMessageBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, backgroundColor: '#fffbeb', borderRadius: 16, padding: 16, marginTop: 20, marginHorizontal: -24, marginBottom: -24, borderLeftWidth: 4, borderLeftColor: '#fbbf24' },
+  alertMessageBox: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#fffbeb', borderRadius: 16, padding: 16, marginTop: 20, marginHorizontal: -24, marginBottom: -24, borderLeftWidth: 4, borderLeftColor: '#fbbf24' },
   alertMessageText: { flex: 1, fontSize: 13, color: '#92400e', lineHeight: 20, fontWeight: '500' },
 
   // Orbital View
