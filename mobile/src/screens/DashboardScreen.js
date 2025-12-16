@@ -3147,8 +3147,8 @@ const styles = StyleSheet.create({
   periodText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.5, color: '#8b6f47' },
 
   // Date card
-  dateCard: { backgroundColor: '#e8ecf3', marginHorizontal: 16, marginTop: 20, padding: 16, borderRadius: 24, alignItems: 'center', shadowColor: '#ffffff', shadowOffset: { width: -6, height: -6 }, shadowOpacity: 1, shadowRadius: 12, elevation: 0 },
-  dateText: { fontSize: 16, color: '#5a6c8f', fontWeight: '800', letterSpacing: 0.8 },
+  dateCard: { backgroundColor: '#fff8f0', marginHorizontal: 16, marginTop: 20, padding: 16, borderRadius: 16, alignItems: 'center', borderWidth: 1, borderColor: '#e8d5c4', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
+  dateText: { fontSize: 16, color: '#6b5644', fontWeight: '600', letterSpacing: 0.3 },
 
   // Story Preview Row (Zen style)
   storyPreviewRow: { paddingHorizontal: 16, paddingVertical: 20 },
@@ -3160,25 +3160,25 @@ const styles = StyleSheet.create({
   storyMoreCircle: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#e8ecf3', justifyContent: 'center', alignItems: 'center', shadowColor: '#ffffff', shadowOffset: { width: -4, height: -4 }, shadowOpacity: 1, shadowRadius: 8 },
   storyLabel: { fontSize: 11, color: '#7a8ba8', marginTop: 8, textAlign: 'center', fontWeight: '800', letterSpacing: 0.5 },
 
-  card: { backgroundColor: '#e8ecf3', borderRadius: 28, padding: 24, marginTop: 20, marginHorizontal: 16, shadowColor: '#ffffff', shadowOffset: { width: -8, height: -8 }, shadowOpacity: 1, shadowRadius: 16, elevation: 0 },
+  card: { backgroundColor: '#fff8f0', borderRadius: 20, padding: 24, marginTop: 20, marginHorizontal: 16, borderWidth: 1, borderColor: '#e8d5c4', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 2 },
   cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 18 },
-  cardTitle: { fontSize: 18, fontWeight: '800', color: '#5a6c8f', flex: 1, letterSpacing: 0.5 },
+  cardTitle: { fontSize: 19, fontWeight: '600', color: '#6b5644', flex: 1, letterSpacing: 0.3, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
   tapHintSmall: { fontSize: 10, color: '#9ca3af' },
   panchangamGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 14 },
-  panchangamItem: { flex: 1, minWidth: '45%', backgroundColor: '#e8ecf3', borderRadius: 20, padding: 18, shadowColor: '#a3b9d9', shadowOffset: { width: 4, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 },
-  panchangamLabel: { fontSize: 11, color: '#7a8ba8', marginBottom: 8, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1 },
-  panchangamValue: { fontSize: 15, fontWeight: '800', color: '#5a6c8f', letterSpacing: 0.3 },
+  panchangamItem: { flex: 1, minWidth: '45%', backgroundColor: '#fef6ed', borderRadius: 16, padding: 18, borderWidth: 1, borderColor: '#f4e4d7' },
+  panchangamLabel: { fontSize: 11, color: '#8b6f47', marginBottom: 8, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8 },
+  panchangamValue: { fontSize: 15, fontWeight: '700', color: '#6b5644', letterSpacing: 0 },
 
   // Radial Birth Chart Visualization
   radialChartContainer: { width: 220, height: 220, alignSelf: 'center', marginVertical: 24, position: 'relative', justifyContent: 'center', alignItems: 'center' },
-  radialOuterRing: { position: 'absolute', width: 210, height: 210, borderRadius: 105, borderWidth: 1.5, borderColor: '#c5d0e3', opacity: 0.6 },
-  radialMiddleRing: { position: 'absolute', width: 170, height: 170, borderRadius: 85, borderWidth: 1.5, borderColor: '#c5d0e3', opacity: 0.4 },
-  radialCenterCircle: { width: 120, height: 120, borderRadius: 60, backgroundColor: '#e8ecf3', justifyContent: 'center', alignItems: 'center', shadowColor: '#ffffff', shadowOffset: { width: -8, height: -8 }, shadowOpacity: 1, shadowRadius: 16, elevation: 0, borderWidth: 3, borderColor: '#f5f7fa' },
-  radialScoreNumber: { fontSize: 44, fontWeight: '900', color: '#6b7fa0', letterSpacing: -2 },
-  radialScoreLabel: { fontSize: 14, color: '#9babc7', fontWeight: '700', marginTop: -4 },
+  radialOuterRing: { position: 'absolute', width: 210, height: 210, borderRadius: 105, borderWidth: 1, borderColor: '#e8d5c4', opacity: 0.8 },
+  radialMiddleRing: { position: 'absolute', width: 170, height: 170, borderRadius: 85, borderWidth: 1, borderColor: '#e8d5c4', opacity: 0.5 },
+  radialCenterCircle: { width: 120, height: 120, borderRadius: 60, backgroundColor: '#fef6ed', justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#e8d5c4', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12 },
+  radialScoreNumber: { fontSize: 44, fontWeight: '700', color: '#8b6f47', letterSpacing: -1 },
+  radialScoreLabel: { fontSize: 14, color: '#b8997a', fontWeight: '600', marginTop: -4 },
   radialStatusBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12, marginTop: 6 },
-  radialStatusText: { fontSize: 10, fontWeight: '900', letterSpacing: 0.8, textTransform: 'uppercase' },
-  radialOrbitalDot: { position: 'absolute', width: 6, height: 6, borderRadius: 3, shadowColor: '#a3b9d9', shadowOffset: { width: 1, height: 1 }, shadowOpacity: 0.3, shadowRadius: 2 },
+  radialStatusText: { fontSize: 10, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' },
+  radialOrbitalDot: { position: 'absolute', width: 6, height: 6, borderRadius: 3, backgroundColor: '#d4a574' },
 
   scoreRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   scoreLabel: { fontSize: 13, color: '#7a8ba8', fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1 },
