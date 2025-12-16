@@ -2660,9 +2660,10 @@ export default function DashboardScreen({ navigation }) {
           {planetAura && (
             <AnimatedCard delay={600}>
               <View style={[styles.card, styles.auraCard]}>
-                <LotusCorner style={{ position: 'absolute', top: 0, right: 0 }} color="#d4a574" size={50} />
+                <LotusCorner style={{ position: 'absolute', top: 0, right: 0 }} color="#d4a574" size={65} />
+                <LotusCorner style={{ position: 'absolute', bottom: 0, left: 0, transform: [{ rotate: '180deg' }] }} color="#f97316" size={65} />
                 <View style={styles.cardHeader}>
-                  <Ionicons name="planet" size={16} color="#c69c6d" />
+                  <DiyaIcon size={18} color="#d97706" />
                   <Text style={styles.cardTitle}>
                     {t('planetAuraMap')}
                   </Text>
