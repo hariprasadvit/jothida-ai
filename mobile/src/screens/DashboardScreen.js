@@ -536,11 +536,6 @@ const rashiTickerStyles = StyleSheet.create({
     paddingHorizontal: 6,
     gap: 6,
   },
-  iconContainer: {
-    overflow: 'hidden',
-    backgroundColor: 'transparent',
-    position: 'relative',
-  },
   rashiName: {
     fontSize: 13,
     fontWeight: '600',
