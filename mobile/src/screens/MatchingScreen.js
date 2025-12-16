@@ -37,6 +37,21 @@ const rasis = [
   { english: 'Meena', tamil: 'மீனம்' },
 ];
 
+const WEB_DATE_TIME_INPUT_STYLE = {
+  padding: 12,
+  borderRadius: 12,
+  border: '1px solid #e8d5c4',
+  fontSize: 14,
+  width: '100%',
+  backgroundColor: '#fef6ed',
+  color: '#6b5644',
+  outline: 'none',
+  boxSizing: 'border-box',
+  height: 48,
+  lineHeight: '20px',
+  display: 'block',
+};
+
 // Animated Card Component
 const AnimatedCard = ({ children, delay = 0, style }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -520,16 +535,7 @@ export default function MatchingScreen() {
                   {Platform.OS === 'web' ? (
                     <input
                       type="date"
-                      style={{
-                        padding: 12,
-                        borderRadius: 12,
-                        border: '1px solid #e8d5c4',
-                        fontSize: 14,
-                        width: '100%',
-                        backgroundColor: '#fef6ed',
-                        color: '#6b5644',
-                        outline: 'none',
-                      }}
+                      style={WEB_DATE_TIME_INPUT_STYLE}
                       value={groomData.birthDate}
                       max={new Date().toISOString().split('T')[0]}
                       min="1920-01-01"
@@ -552,16 +558,7 @@ export default function MatchingScreen() {
                   {Platform.OS === 'web' ? (
                     <input
                       type="time"
-                      style={{
-                        padding: 12,
-                        borderRadius: 12,
-                        border: '1px solid #e8d5c4',
-                        fontSize: 14,
-                        width: '100%',
-                        backgroundColor: '#fef6ed',
-                        color: '#6b5644',
-                        outline: 'none',
-                      }}
+                      style={WEB_DATE_TIME_INPUT_STYLE}
                       value={groomData.birthTime}
                       onChange={(e) => setGroomData({ ...groomData, birthTime: e.target.value })}
                     />
@@ -650,16 +647,7 @@ export default function MatchingScreen() {
                   {Platform.OS === 'web' ? (
                     <input
                       type="date"
-                      style={{
-                        padding: 12,
-                        borderRadius: 12,
-                        border: '1px solid #e8d5c4',
-                        fontSize: 14,
-                        width: '100%',
-                        backgroundColor: '#fef6ed',
-                        color: '#6b5644',
-                        outline: 'none',
-                      }}
+                      style={WEB_DATE_TIME_INPUT_STYLE}
                       value={brideData.birthDate}
                       max={new Date().toISOString().split('T')[0]}
                       min="1920-01-01"
@@ -682,16 +670,7 @@ export default function MatchingScreen() {
                   {Platform.OS === 'web' ? (
                     <input
                       type="time"
-                      style={{
-                        padding: 12,
-                        borderRadius: 12,
-                        border: '1px solid #e8d5c4',
-                        fontSize: 14,
-                        width: '100%',
-                        backgroundColor: '#fef6ed',
-                        color: '#6b5644',
-                        outline: 'none',
-                      }}
+                      style={WEB_DATE_TIME_INPUT_STYLE}
                       value={brideData.birthTime}
                       onChange={(e) => setBrideData({ ...brideData, birthTime: e.target.value })}
                     />
@@ -1286,11 +1265,13 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
+    alignItems: 'flex-start',
     gap: 12,
     marginBottom: 12,
   },
   halfInput: {
     flex: 1,
+    minWidth: 0,
   },
   pickerContainer: {
     borderWidth: 1,
