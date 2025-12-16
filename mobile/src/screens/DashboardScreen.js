@@ -2830,16 +2830,11 @@ export default function DashboardScreen({ navigation }) {
           {transitsMap && (
             <AnimatedCard delay={650}>
               <View style={styles.transitsContainer}>
-                {/* Header with Glassmorphism */}
-                <LinearGradient
-                  colors={['#6366f1', '#8b5cf6']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.transitsHeader}
-                >
+                {/* Header with Warm Mystical Style */}
+                <View style={styles.transitsHeader}>
                   <View style={styles.transitsHeaderContent}>
                     <View style={styles.transitsHeaderLeft}>
-                      <Ionicons name="planet" size={24} color="#a5b4fc" />
+                      <Ionicons name="planet" size={24} color="#c69c6d" />
                       <View>
                         <Text style={styles.transitsHeaderTitle}>
                           {t('liveTransits')}
@@ -2856,7 +2851,7 @@ export default function DashboardScreen({ navigation }) {
                       <Text style={styles.livePulseText}>{t('live')}</Text>
                     </View>
                   </View>
-                </LinearGradient>
+                </View>
 
                 {/* Moon Transit - Hero Section */}
                 {transitsMap.moon_transit && (
@@ -2876,15 +2871,12 @@ export default function DashboardScreen({ navigation }) {
                         <Text style={styles.moonHeroPhase}>{translateMoonPhase(transitsMap.moon_transit.phase, t)}</Text>
                       </View>
                       {transitsMap.moon_transit.energy && (
-                        <LinearGradient
-                          colors={[transitsMap.moon_transit.energy.color + '40', transitsMap.moon_transit.energy.color + '20']}
-                          style={styles.moonEnergyCard}
-                        >
+                        <View style={styles.moonEnergyCard}>
                           <Text style={styles.moonEnergyEmoji}>{transitsMap.moon_transit.energy.icon}</Text>
-                          <Text style={[styles.moonEnergyMood, { color: transitsMap.moon_transit.energy.color }]}>
+                          <Text style={[styles.moonEnergyMood, { color: '#8b6f47' }]}>
                             {language === 'ta' ? transitsMap.moon_transit.energy.mood : (transitsMap.moon_transit.energy.mood_en || transitsMap.moon_transit.energy.mood)}
                           </Text>
-                        </LinearGradient>
+                        </View>
                       )}
                     </View>
 
@@ -2895,16 +2887,16 @@ export default function DashboardScreen({ navigation }) {
                       </Text>
                       <View style={styles.countdownTimerRow}>
                         <View style={styles.countdownBox}>
-                          <LinearGradient colors={['#6366f1', '#4f46e5']} style={styles.countdownBoxGradient}>
+                          <View style={styles.countdownBoxGradient}>
                             <Text style={styles.countdownValue}>{transitsMap.moon_transit.time_to_transit?.hours || 0}</Text>
-                          </LinearGradient>
+                          </View>
                           <Text style={styles.countdownUnit}>{t('hours')}</Text>
                         </View>
                         <Text style={styles.countdownSeparator}>:</Text>
                         <View style={styles.countdownBox}>
-                          <LinearGradient colors={['#6366f1', '#4f46e5']} style={styles.countdownBoxGradient}>
+                          <View style={styles.countdownBoxGradient}>
                             <Text style={styles.countdownValue}>{transitsMap.moon_transit.time_to_transit?.minutes || 0}</Text>
-                          </LinearGradient>
+                          </View>
                           <Text style={styles.countdownUnit}>{t('minutes')}</Text>
                         </View>
                       </View>
