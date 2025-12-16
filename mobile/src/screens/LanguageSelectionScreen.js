@@ -15,45 +15,6 @@ import { useLanguage, languageOptions } from '../context/LanguageContext';
 
 const { width, height } = Dimensions.get('window');
 
-// Mango Leaf Component - More detailed and realistic
-const MangoLeaf = ({ x, y, rotation = 0, scale = 1 }) => (
-  <G transform={`translate(${x}, ${y}) rotate(${rotation}) scale(${scale})`}>
-    {/* Leaf body with gradient effect */}
-    <Path
-      d="M0 0 Q6 -12 0 -32 Q-6 -12 0 0"
-      fill="#166534"
-      stroke="#15803d"
-      strokeWidth="0.3"
-    />
-    {/* Center vein */}
-    <Path
-      d="M0 -3 L0 -28"
-      stroke="#22c55e"
-      strokeWidth="0.6"
-    />
-    {/* Side veins */}
-    <Path d="M0 -8 L-3 -12" stroke="#22c55e" strokeWidth="0.3" />
-    <Path d="M0 -8 L3 -12" stroke="#22c55e" strokeWidth="0.3" />
-    <Path d="M0 -14 L-3.5 -18" stroke="#22c55e" strokeWidth="0.3" />
-    <Path d="M0 -14 L3.5 -18" stroke="#22c55e" strokeWidth="0.3" />
-    <Path d="M0 -20 L-2.5 -24" stroke="#22c55e" strokeWidth="0.3" />
-    <Path d="M0 -20 L2.5 -24" stroke="#22c55e" strokeWidth="0.3" />
-  </G>
-);
-
-// Small Leaf for filling gaps
-const SmallLeaf = ({ x, y, rotation = 0 }) => (
-  <G transform={`translate(${x}, ${y}) rotate(${rotation})`}>
-    <Path
-      d="M0 0 Q3 -8 0 -18 Q-3 -8 0 0"
-      fill="#15803d"
-      stroke="#166534"
-      strokeWidth="0.2"
-    />
-    <Path d="M0 -2 L0 -15" stroke="#22c55e" strokeWidth="0.4" />
-  </G>
-);
-
 // Marigold Flower Component - More petals for realistic look
 const MarigoldFlower = ({ cx, cy, size = 20, color = '#f97316' }) => (
   <G>
