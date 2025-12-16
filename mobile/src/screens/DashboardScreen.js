@@ -981,16 +981,13 @@ const generateAISummary = (data, score, t, language = 'en') => {
   // Build highlights from actual breakdown/factors
   if (factors.length > 0) {
     highlights = factors.slice(0, 3).map(f => {
-      const isPositive = f.impact > 0 || f.type === 'positive';
-      const icon = isPositive ? '✅' : '⚠️';
-      return `${icon} ${f.description || f.factor || f.name}`;
+      return `${f.description || f.factor || f.name}`;
     });
   } else if (Object.keys(breakdown).length > 0) {
     // Build from breakdown
     Object.entries(breakdown).slice(0, 3).forEach(([key, val]) => {
       const value = typeof val === 'object' ? val.value || val.score : val;
-      const isGood = value >= 60;
-      highlights.push(`${isGood ? '✅' : '⚠️'} ${key.replace(/_/g, ' ')}: ${value}%`);
+      highlights.push(`${key.replace(/_/g, ' ')}: ${value}%`);
     });
   }
 
@@ -999,54 +996,54 @@ const generateAISummary = (data, score, t, language = 'en') => {
     if (lang === 'ta') {
       if (area === 'love') {
         highlights = score >= 60
-          ? [`💕 ${houseInfo.ta.karaka} பலமாக உள்ளது`, `🤝 உறவுகள் வளரும்`, `💫 புரிதல் அதிகரிக்கும்`]
-          : [`⚠️ ${houseInfo.ta.karaka} பலவீனம்`, `🛡️ பொறுமை தேவை`, `🙏 தொடர்பில் கவனம்`];
+          ? [`${houseInfo.ta.karaka} பலமாக உள்ளது`, `உறவுகள் வளரும்`, `புரிதல் அதிகரிக்கும்`]
+          : [`${houseInfo.ta.karaka} பலவீனம்`, `பொறுமை தேவை`, `தொடர்பில் கவனம்`];
       } else if (area === 'career') {
         highlights = score >= 60
-          ? [`📈 ${houseInfo.ta.house} பலமாக`, `💼 வளர்ச்சி வாய்ப்புகள்`, `🏆 முயற்சி வெற்றி`]
-          : [`⚠️ வேலை சுமை அதிகம்`, `🛡️ மோதல்களைத் தவிர்க்கவும்`, `⏸️ பெரிய மாற்றங்கள் வேண்டாம்`];
+          ? [`${houseInfo.ta.house} பலமாக`, `வளர்ச்சி வாய்ப்புகள்`, `முயற்சி வெற்றி`]
+          : [`வேலை சுமை அதிகம்`, `மோதல்களைத் தவிர்க்கவும்`, `பெரிய மாற்றங்கள் வேண்டாம்`];
       } else if (area === 'education') {
         highlights = score >= 60
-          ? [`📚 கற்றல் எளிது`, `🧠 நினைவாற்றல் சிறப்பு`, `🎓 தேர்வு வெற்றி`]
-          : [`⚠️ கவனம் சிதறும்`, `📅 திட்டமிடல் அவசியம்`, `💪 கூடுதல் முயற்சி தேவை`];
+          ? [`கற்றல் எளிது`, `நினைவாற்றல் சிறப்பு`, `தேர்வு வெற்றி`]
+          : [`கவனம் சிதறும்`, `திட்டமிடல் அவசியம்`, `கூடுதல் முயற்சி தேவை`];
       } else if (area === 'family') {
         highlights = score >= 60
-          ? [`🏠 வீட்டில் மகிழ்ச்சி`, `👨‍👩‍👧‍👦 ஒற்றுமை`, `💝 அன்பு பெருகும்`]
-          : [`⚠️ கருத்து வேறுபாடுகள்`, `🕊️ சமரசம் தேவை`, `🙏 பொறுமை முக்கியம்`];
+          ? [`வீட்டில் மகிழ்ச்சி`, `ஒற்றுமை`, `அன்பு பெருகும்`]
+          : [`கருத்து வேறுபாடுகள்`, `சமரசம் தேவை`, `பொறுமை முக்கியம்`];
       } else if (area === 'health') {
         highlights = score >= 60
-          ? [`💪 ஆற்றல் அதிகம்`, `😊 மன அமைதி`, `🏃 உடற்பயிற்சி நல்லது`]
-          : [`⚠️ ஓய்வு எடுங்கள்`, `🏥 பரிசோதனை செய்யுங்கள்`, `🧘 மன அழுத்தம் குறைக்கவும்`];
+          ? [`ஆற்றல் அதிகம்`, `மன அமைதி`, `உடற்பயிற்சி நல்லது`]
+          : [`ஓய்வு எடுங்கள்`, `பரிசோதனை செய்யுங்கள்`, `மன அழுத்தம் குறைக்கவும்`];
       } else {
         highlights = score >= 60
-          ? [`✨ சாதகமான காலம்`, `📈 முன்னேற்றம்`, `🎯 இலக்குகள் அடையலாம்`]
-          : [`⚠️ கவனமாக இருங்கள்`, `⏸️ பெரிய முடிவுகள் வேண்டாம்`, `🙏 பொறுமை தேவை`];
+          ? [`சாதகமான காலம்`, `முன்னேற்றம்`, `இலக்குகள் அடையலாம்`]
+          : [`கவனமாக இருங்கள்`, `பெரிய முடிவுகள் வேண்டாம்`, `பொறுமை தேவை`];
       }
     } else {
       if (area === 'love') {
         highlights = score >= 60
-          ? [`💕 ${houseInfo.karaka} is strong in your chart`, `🤝 Relationships will flourish`, `💫 Understanding deepens`]
-          : [`⚠️ ${houseInfo.karaka} needs strengthening`, `🛡️ Patience required`, `🙏 Focus on communication`];
+          ? [`${houseInfo.karaka} is strong in your chart`, `Relationships will flourish`, `Understanding deepens`]
+          : [`${houseInfo.karaka} needs strengthening`, `Patience required`, `Focus on communication`];
       } else if (area === 'career') {
         highlights = score >= 60
-          ? [`📈 House ${houseInfo.house} is well-placed`, `💼 Growth opportunities ahead`, `🏆 Efforts will be recognized`]
-          : [`⚠️ Heavy workload expected`, `🛡️ Avoid workplace conflicts`, `⏸️ Delay major changes`];
+          ? [`House ${houseInfo.house} is well-placed`, `Growth opportunities ahead`, `Efforts will be recognized`]
+          : [`Heavy workload expected`, `Avoid workplace conflicts`, `Delay major changes`];
       } else if (area === 'education') {
         highlights = score >= 60
-          ? [`📚 Learning comes easy`, `🧠 Sharp memory and focus`, `🎓 Success in exams`]
-          : [`⚠️ Concentration may waver`, `📅 Study plan essential`, `💪 Extra effort needed`];
+          ? [`Learning comes easy`, `Sharp memory and focus`, `Success in exams`]
+          : [`Concentration may waver`, `Study plan essential`, `Extra effort needed`];
       } else if (area === 'family') {
         highlights = score >= 60
-          ? [`🏠 Harmony at home`, `👨‍👩‍👧‍👦 Family unity strong`, `💝 Love and bonding increase`]
-          : [`⚠️ Differences may arise`, `🕊️ Compromise needed`, `🙏 Patience is key`];
+          ? [`Harmony at home`, `Family unity strong`, `Love and bonding increase`]
+          : [`Differences may arise`, `Compromise needed`, `Patience is key`];
       } else if (area === 'health') {
         highlights = score >= 60
-          ? [`💪 Energy levels high`, `😊 Mental peace`, `🏃 Good time for fitness`]
-          : [`⚠️ Take adequate rest`, `🏥 Get checkups done`, `🧘 Reduce stress`];
+          ? [`Energy levels high`, `Mental peace`, `Good time for fitness`]
+          : [`Take adequate rest`, `Get checkups done`, `Reduce stress`];
       } else {
         highlights = score >= 60
-          ? [`✨ Favorable period`, `📈 Progress expected`, `🎯 Goals achievable`]
-          : [`⚠️ Be cautious`, `⏸️ Delay major decisions`, `🙏 Patience needed`];
+          ? [`Favorable period`, `Progress expected`, `Goals achievable`]
+          : [`Be cautious`, `Delay major decisions`, `Patience needed`];
       }
     }
   }
