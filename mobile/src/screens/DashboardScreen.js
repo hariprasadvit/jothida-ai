@@ -2051,8 +2051,6 @@ export default function DashboardScreen({ navigation }) {
     <View style={styles.container}>
       {/* Warm auspicious gradient background */}
       <LinearGradient colors={['#faf7f2', '#f5ede5', '#fff8f0']} style={styles.gradient}>
-        {/* Divine Background Pattern - Hindu Kolam/Rangoli */}
-        <KolamPattern color="#d4a574" opacity={0.45} style={{ zIndex: 0 }} />
         <ScrollView
           contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#f97316']} tintColor="#f97316" />}
@@ -2066,12 +2064,13 @@ export default function DashboardScreen({ navigation }) {
             style={styles.headerBar}
           />
 
-          {/* Traditional Hindu Decorative Border */}
-          <View style={{ marginTop: 8, marginBottom: 4, alignItems: 'center' }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <DiyaIcon size={24} color="#d97706" />
-              <DivineDivider />
-              <DiyaIcon size={24} color="#d97706" />
+          {/* Traditional Decorative Border */}
+          <View style={{ marginVertical: 8, paddingHorizontal: 16 }}>
+            <View style={{ height: 2, backgroundColor: '#f97316', borderRadius: 1 }} />
+            <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: -8 }}>
+              <View style={{ backgroundColor: '#faf7f2', paddingHorizontal: 12 }}>
+                <Text style={{ fontSize: 18, color: '#f97316' }}>🪔</Text>
+              </View>
             </View>
           </View>
 
@@ -2082,7 +2081,6 @@ export default function DashboardScreen({ navigation }) {
               { opacity: headerFadeAnim, transform: [{ translateY: headerSlideAnim }] },
             ]}
           >
-            <OmWatermark style={{ position: 'absolute', right: -10, top: -10 }} color="#f97316" size={160} />
             <View>
               <View style={styles.logoRow}>
                 <View style={styles.logoIcon}>
@@ -2512,11 +2510,12 @@ export default function DashboardScreen({ navigation }) {
                 onPress={() => navigation.getParent()?.navigate('Remedy')}
               >
                 <View style={[styles.card, styles.parigaramCard, { backgroundColor: '#fef6ed' }]}>
-                  <LotusCorner style={{ position: 'absolute', top: 0, right: 0 }} color="#f97316" size={60} />
-                  <LotusCorner style={{ position: 'absolute', bottom: 0, left: 0, transform: [{ rotate: '180deg' }] }} color="#d4a574" size={60} />
+                    <View style={{ position: 'absolute', top: 8, right: 8 }}>
+                    <Text style={{ fontSize: 20, opacity: 0.3 }}>🪷</Text>
+                  </View>
                   <View style={styles.parigaramHeader}>
                     <View style={styles.parigaramIconBadge}>
-                      <DiyaIcon size={28} color="#d97706" />
+                      <Text style={{ fontSize: 24 }}>🪔</Text>
                     </View>
                     <View style={styles.parigaramTitleSection}>
                       <Text style={styles.parigaramTitle}>{t('todayParigaram')}</Text>
@@ -2566,10 +2565,11 @@ export default function DashboardScreen({ navigation }) {
           {jathagam?.dasha?.mahadasha && (
             <AnimatedCard delay={500}>
               <View style={[styles.card, styles.dashaCard, { backgroundColor: '#fef6ed' }]}>
-                <LotusCorner style={{ position: 'absolute', top: 0, right: 0 }} color="#d4a574" size={65} />
-                <LotusCorner style={{ position: 'absolute', bottom: 0, left: 0, transform: [{ rotate: '180deg' }] }} color="#f97316" size={65} />
+                <View style={{ position: 'absolute', top: 8, right: 8 }}>
+                  <Text style={{ fontSize: 18, opacity: 0.3 }}>🪷</Text>
+                </View>
                 <View style={styles.cardHeader}>
-                  <DiyaIcon size={20} color="#d97706" />
+                  <Text style={{ fontSize: 16, marginRight: 4 }}>🪔</Text>
                   <Text style={[styles.cardTitle, { color: '#6b5644', fontWeight: '800' }]}>{t('currentDasha')}</Text>
                 </View>
                 <View style={styles.dashaGrid}>
@@ -2669,10 +2669,11 @@ export default function DashboardScreen({ navigation }) {
           {planetAura && (
             <AnimatedCard delay={600}>
               <View style={[styles.card, styles.auraCard]}>
-                <LotusCorner style={{ position: 'absolute', top: 0, right: 0 }} color="#d4a574" size={65} />
-                <LotusCorner style={{ position: 'absolute', bottom: 0, left: 0, transform: [{ rotate: '180deg' }] }} color="#f97316" size={65} />
+                <View style={{ position: 'absolute', top: 8, right: 8 }}>
+                  <Text style={{ fontSize: 18, opacity: 0.3 }}>🪷</Text>
+                </View>
                 <View style={styles.cardHeader}>
-                  <DiyaIcon size={18} color="#d97706" />
+                  <Text style={{ fontSize: 16, marginRight: 4 }}>🪔</Text>
                   <Text style={styles.cardTitle}>
                     {t('planetAuraMap')}
                   </Text>
