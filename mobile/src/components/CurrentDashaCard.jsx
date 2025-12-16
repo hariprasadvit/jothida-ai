@@ -84,10 +84,10 @@ export default function CurrentDashaCard({
         {/* Header with icon */}
         <View style={styles.header}>
           <LinearGradient
-            colors={['#faf5ff', '#f3e8ff']}
+            colors={['#fff8f0', '#fff7ed']}
             style={styles.iconBg}
           >
-            <Ionicons name="sparkles" size={24} color="#7c3aed" />
+            <Ionicons name="sparkles" size={24} color="#d4a574" />
           </LinearGradient>
           <Text style={styles.title}>
             {language === 'ta' ? 'நடப்பு தசா' : 'Current Dasha'}
