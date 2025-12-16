@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -20,31 +20,26 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
 import { mobileAuthAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { searchCities, POPULAR_CITIES, getLocationLabel } from '../data/cities';
 
-// Format date for display
-const formatDate = (date) => {
+// Format date for display (uses translation function)
+const formatDateDisplay = (date, getMonthName) => {
   if (!date) return '';
   const d = new Date(date);
   const day = d.getDate();
-  const month = d.getMonth() + 1;
   const year = d.getFullYear();
-
-  const tamilMonths = [
-    'ஜனவரி', 'பிப்ரவரி', 'மார்ச்', 'ஏப்ரல்', 'மே', 'ஜூன்',
-    'ஜூலை', 'ஆகஸ்ட்', 'செப்டம்பர்', 'அக்டோபர்', 'நவம்பர்', 'டிசம்பர்'
-  ];
-
-  return `${day} ${tamilMonths[d.getMonth()]} ${year}`;
+  const monthName = getMonthName(d.getMonth());
+  return `${day} ${monthName} ${year}`;
 };
 
-// Format time for display
-const formatTime = (date) => {
+// Format time for display (uses translation function)
+const formatTimeDisplay = (date, t) => {
   if (!date) return '';
   const d = new Date(date);
   const hours = d.getHours();
   const minutes = d.getMinutes();
-  const ampm = hours >= 12 ? 'மாலை' : 'காலை';
+  const ampm = hours >= 12 ? t('pm') : t('am');
   const displayHours = hours % 12 || 12;
   return `${displayHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
 };
@@ -77,9 +72,8 @@ const GlowCircle = ({ size = 140, color = '#f97316' }) => (
   </Svg>
 );
 
-// Location Picker Modal
 // Location Picker Modal with comprehensive city database
-const LocationPickerModal = ({ visible, onClose, onSelect, selectedPlace }) => {
+const LocationPickerModal = ({ visible, onClose, onSelect, selectedPlace, t }) => {
   const [searchText, setSearchText] = useState('');
   const [filteredPlaces, setFilteredPlaces] = useState(POPULAR_CITIES);
   const [showManualEntry, setShowManualEntry] = useState(false);
@@ -104,33 +98,6 @@ const LocationPickerModal = ({ visible, onClose, onSelect, selectedPlace }) => {
     return () => clearTimeout(timer);
   }, [searchText]);
 
-  const renderPlace = ({ item }) => (
-    <TouchableOpacity
-      style={[styles.placeItem, selectedPlace?.nameEn === item.nameEn && styles.placeItemSelected]}
-      onPress={() => {
-        onSelect(item);
-        onClose();
-      }}
-      activeOpacity={0.7}
-    >
-      <View style={[styles.placeIcon, selectedPlace?.nameEn === item.nameEn && styles.placeIconSelected]}>
-        <Ionicons
-          name="location"
-          size={20}
-          color={selectedPlace?.nameEn === item.nameEn ? '#fff' : '#f97316'}
-        />
-      </View>
-      <View style={styles.placeTextContainer}>
-        <Text style={[styles.placeName, selectedPlace?.nameEn === item.nameEn && styles.placeNameSelected]}>
-          {item.name}
-        </Text>
-        <Text style={styles.placeNameEn}>{item.nameEn}</Text>
-      </View>
-      {selectedPlace?.nameEn === item.nameEn && (
-        <Ionicons name="checkmark-circle" size={24} color="#f97316" />
-      )}
-    </TouchableOpacity>
-  );
   const handleManualSubmit = () => {
     if (!manualPlace.name || !manualPlace.lat || !manualPlace.lng) {
       return;
@@ -191,7 +158,7 @@ const LocationPickerModal = ({ visible, onClose, onSelect, selectedPlace }) => {
               <TouchableOpacity onPress={() => setShowManualEntry(false)} style={styles.backBtn}>
                 <Ionicons name="arrow-back" size={24} color="#6b7280" />
               </TouchableOpacity>
-              <Text style={styles.modalTitle}>இடத்தை உள்ளிடுக</Text>
+              <Text style={styles.modalTitle}>{t('enterLocation')}</Text>
               <TouchableOpacity onPress={onClose} style={styles.modalCloseBtn}>
                 <Ionicons name="close" size={24} color="#6b7280" />
               </TouchableOpacity>
@@ -199,39 +166,39 @@ const LocationPickerModal = ({ visible, onClose, onSelect, selectedPlace }) => {
 
             <View style={styles.manualFormContainer}>
               <Text style={styles.manualHint}>
-                உங்கள் கிராமம்/நகரம் பட்டியலில் இல்லையா? கீழே நேரடியாக உள்ளிடுங்கள்
+                {t('manualEntryHint')}
               </Text>
 
               <View style={styles.manualInputGroup}>
-                <Text style={styles.manualLabel}>இடத்தின் பெயர் *</Text>
+                <Text style={styles.manualLabel}>{t('placeName')} *</Text>
                 <TextInput
                   style={styles.manualInput}
                   value={manualPlace.name}
                   onChangeText={(text) => setManualPlace({ ...manualPlace, name: text })}
-                  placeholder="உதா: என் கிராமம்"
+                  placeholder={t('placeNameExample')}
                   placeholderTextColor="#9ca3af"
                 />
               </View>
 
               <View style={styles.coordsRow}>
                 <View style={[styles.manualInputGroup, { flex: 1, marginRight: 8 }]}>
-                  <Text style={styles.manualLabel}>அட்சரேகை (Latitude) *</Text>
+                  <Text style={styles.manualLabel}>{t('latitude')} *</Text>
                   <TextInput
                     style={styles.manualInput}
                     value={manualPlace.lat}
                     onChangeText={(text) => setManualPlace({ ...manualPlace, lat: text })}
-                    placeholder="உதா: 10.7905"
+                    placeholder={t('latitudeExample')}
                     placeholderTextColor="#9ca3af"
                     keyboardType="decimal-pad"
                   />
                 </View>
                 <View style={[styles.manualInputGroup, { flex: 1, marginLeft: 8 }]}>
-                  <Text style={styles.manualLabel}>தீர்க்கரேகை (Longitude) *</Text>
+                  <Text style={styles.manualLabel}>{t('longitude')} *</Text>
                   <TextInput
                     style={styles.manualInput}
                     value={manualPlace.lng}
                     onChangeText={(text) => setManualPlace({ ...manualPlace, lng: text })}
-                    placeholder="உதா: 78.7047"
+                    placeholder={t('longitudeExample')}
                     placeholderTextColor="#9ca3af"
                     keyboardType="decimal-pad"
                   />
@@ -239,7 +206,7 @@ const LocationPickerModal = ({ visible, onClose, onSelect, selectedPlace }) => {
               </View>
 
               <Text style={styles.coordsHint}>
-                Google Maps-ல் உங்கள் இடத்தை தேடி, coordinates-ஐ பெறலாம்
+                {t('coordsHint')}
               </Text>
 
               <TouchableOpacity
@@ -250,7 +217,7 @@ const LocationPickerModal = ({ visible, onClose, onSelect, selectedPlace }) => {
                 onPress={handleManualSubmit}
                 disabled={!manualPlace.name || !manualPlace.lat || !manualPlace.lng}
               >
-                <Text style={styles.manualSubmitText}>இடத்தை தேர்வு செய்</Text>
+                <Text style={styles.manualSubmitText}>{t('selectThisPlace')}</Text>
                 <Ionicons name="checkmark-circle" size={20} color="#fff" />
               </TouchableOpacity>
             </View>
@@ -265,7 +232,7 @@ const LocationPickerModal = ({ visible, onClose, onSelect, selectedPlace }) => {
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>பிறந்த இடம் தேர்வு</Text>
+            <Text style={styles.modalTitle}>{t('selectBirthPlace')}</Text>
             <TouchableOpacity onPress={onClose} style={styles.modalCloseBtn} activeOpacity={0.7}>
               <Ionicons name="close-circle" size={28} color="#6b7280" />
             </TouchableOpacity>
@@ -278,12 +245,10 @@ const LocationPickerModal = ({ visible, onClose, onSelect, selectedPlace }) => {
               style={styles.searchInput}
               value={searchText}
               onChangeText={setSearchText}
-              placeholder="நகரம், மாநிலம், நாடு தேடுங்கள்..."
+              placeholder={t('searchCityPlaceholder')}
               placeholderTextColor="#9ca3af"
               autoCapitalize="none"
             />
-            {searchText.length > 0 && (
-              <TouchableOpacity onPress={() => setSearchText('')} activeOpacity={0.7}>
             {isSearching && <ActivityIndicator size="small" color="#f97316" />}
             {searchText.length > 0 && !isSearching && (
               <TouchableOpacity onPress={() => setSearchText('')}>
@@ -294,12 +259,11 @@ const LocationPickerModal = ({ visible, onClose, onSelect, selectedPlace }) => {
 
           {/* Results Count */}
           <View style={styles.sectionHeader}>
-            <Ionicons name="star" size={16} color="#fbbf24" />
             <Ionicons name={searchText ? 'search' : 'star'} size={14} color="#f97316" />
             <Text style={styles.sectionTitle}>
               {searchText
-                ? `${filteredPlaces.length} இடங்கள் கிடைத்தன`
-                : 'பிரபலமான இடங்கள்'}
+                ? `${filteredPlaces.length} ${t('placesFound')}`
+                : t('popularPlaces')}
             </Text>
           </View>
 
@@ -316,8 +280,8 @@ const LocationPickerModal = ({ visible, onClose, onSelect, selectedPlace }) => {
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Ionicons name="location-outline" size={56} color="#d1d5db" />
-                <Text style={styles.emptyText}>இடம் கிடைக்கவில்லை</Text>
-                <Text style={styles.emptySubText}>கீழே உள்ள "வேறு இடம்" பொத்தானை அழுத்தவும்</Text>
+                <Text style={styles.emptyText}>{t('noPlaceFound')}</Text>
+                <Text style={styles.emptySubText}>{t('tapManualEntry')}</Text>
               </View>
             }
           />
@@ -328,7 +292,7 @@ const LocationPickerModal = ({ visible, onClose, onSelect, selectedPlace }) => {
             onPress={() => setShowManualEntry(true)}
           >
             <Ionicons name="create-outline" size={18} color="#f97316" />
-            <Text style={styles.manualEntryText}>வேறு இடம் / கிராமம் உள்ளிட</Text>
+            <Text style={styles.manualEntryText}>{t('otherPlace')}</Text>
             <Ionicons name="chevron-forward" size={18} color="#f97316" />
           </TouchableOpacity>
         </View>
@@ -337,8 +301,9 @@ const LocationPickerModal = ({ visible, onClose, onSelect, selectedPlace }) => {
   );
 };
 
-export default function RegisterScreen({ route, navigation }) {
+export default function RegisterScreen({ route }) {
   const { login } = useAuth();
+  const { t, getMonthName } = useLanguage();
   const { phoneNumber, otpCode } = route.params;
 
   const [loading, setLoading] = useState(false);
@@ -447,7 +412,7 @@ export default function RegisterScreen({ route, navigation }) {
 
   const handleRegister = async () => {
     if (!formData.name || !formData.gender || !formData.birthDate || !formData.birthPlace) {
-      setError('அனைத்து தேவையான விவரங்களையும் நிரப்பவும்');
+      setError(t('fillAllRequired'));
       animateError();
       return;
     }
@@ -494,7 +459,7 @@ export default function RegisterScreen({ route, navigation }) {
 
       await login(result.token, profile);
     } catch (err) {
-      setError(err.response?.data?.detail || 'பதிவு செய்வதில் பிழை');
+      setError(err.response?.data?.detail || t('registrationError'));
       animateError();
     } finally {
       setLoading(false);
@@ -558,10 +523,10 @@ export default function RegisterScreen({ route, navigation }) {
                 <Ionicons name="person-add" size={32} color="#fff" />
               </LinearGradient>
             </View>
-            <Text style={styles.headerTitle}>புதிய பதிவு</Text>
-            <Text style={styles.headerSubtitle}>உங்கள் ஜாதக விவரங்களை நிரப்பவும்</Text>
+            <Text style={styles.headerTitle}>{t('newRegistration')}</Text>
+            <Text style={styles.headerSubtitle}>{t('fillJathakamDetails')}</Text>
             <View style={styles.progressTextContainer}>
-              <Text style={styles.progressText}>{Math.round(completionPercentage())}% நிறைவு</Text>
+              <Text style={styles.progressText}>{Math.round(completionPercentage())}{t('percentComplete')}</Text>
             </View>
           </Animated.View>
 
@@ -580,7 +545,7 @@ export default function RegisterScreen({ route, navigation }) {
             {/* Name */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>
-                <Ionicons name="person" size={16} color="#f97316" /> பெயர் *
+                <Ionicons name="person" size={16} color="#f97316" /> {t('name')} *
               </Text>
               <View style={[
                 styles.inputWrapper,
@@ -596,7 +561,7 @@ export default function RegisterScreen({ route, navigation }) {
                   }}
                   onFocus={() => setFocusedField('name')}
                   onBlur={() => setFocusedField('')}
-                  placeholder="உங்கள் பெயர்"
+                  placeholder={t('yourName')}
                   placeholderTextColor="#9ca3af"
                 />
                 {formData.name && (
@@ -608,7 +573,7 @@ export default function RegisterScreen({ route, navigation }) {
             {/* Gender */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>
-                <Ionicons name="male-female" size={16} color="#f97316" /> பாலினம் *
+                <Ionicons name="male-female" size={16} color="#f97316" /> {t('gender')} *
               </Text>
               <View style={styles.genderContainer}>
                 <TouchableOpacity
@@ -631,7 +596,7 @@ export default function RegisterScreen({ route, navigation }) {
                   <View style={styles.genderContent}>
                     <Text style={styles.genderIcon}>👨</Text>
                     <Text style={[styles.genderText, formData.gender === 'male' && styles.genderTextActive]}>
-                      ஆண்
+                      {t('male')}
                     </Text>
                     {formData.gender === 'male' && (
                       <Ionicons name="checkmark-circle" size={18} color="#fff" style={styles.genderCheck} />
@@ -658,7 +623,7 @@ export default function RegisterScreen({ route, navigation }) {
                   <View style={styles.genderContent}>
                     <Text style={styles.genderIcon}>👩</Text>
                     <Text style={[styles.genderText, formData.gender === 'female' && styles.genderTextActive]}>
-                      பெண்
+                      {t('female')}
                     </Text>
                     {formData.gender === 'female' && (
                       <Ionicons name="checkmark-circle" size={18} color="#fff" style={styles.genderCheck} />
@@ -671,7 +636,7 @@ export default function RegisterScreen({ route, navigation }) {
             {/* Birth Date */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>
-                <Ionicons name="calendar" size={16} color="#f97316" /> பிறந்த தேதி *
+                <Ionicons name="calendar" size={16} color="#f97316" /> {t('birthDate')} *
               </Text>
               {Platform.OS === 'web' ? (
                 <input
@@ -709,7 +674,7 @@ export default function RegisterScreen({ route, navigation }) {
                       <Ionicons name="calendar-outline" size={22} color={formData.birthDate ? '#f97316' : '#6b7280'} />
                     </View>
                     <Text style={[styles.pickerButtonText, !formData.birthDate && styles.placeholderText]}>
-                      {formData.birthDate ? formatDate(formData.birthDate) : 'தேதியை தேர்வு செய்யவும்'}
+                      {formData.birthDate ? formatDateDisplay(formData.birthDate, getMonthName) : t('selectDatePlaceholder')}
                     </Text>
                     {formData.birthDate ? (
                       <Ionicons name="checkmark-circle" size={22} color="#16a34a" />
@@ -734,7 +699,7 @@ export default function RegisterScreen({ route, navigation }) {
             {/* Birth Time */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>
-                <Ionicons name="time" size={16} color="#f97316" /> பிறந்த நேரம்
+                <Ionicons name="time" size={16} color="#f97316" /> {t('birthTime')}
               </Text>
               {Platform.OS === 'web' ? (
                 <input
@@ -772,7 +737,7 @@ export default function RegisterScreen({ route, navigation }) {
                       <Ionicons name="time-outline" size={22} color={formData.birthTime ? '#f97316' : '#6b7280'} />
                     </View>
                     <Text style={[styles.pickerButtonText, !formData.birthTime && styles.placeholderText]}>
-                      {formData.birthTime ? formatTime(formData.birthTime) : 'நேரத்தை தேர்வு செய்யவும்'}
+                      {formData.birthTime ? formatTimeDisplay(formData.birthTime, t) : t('selectTimePlaceholder')}
                     </Text>
                     {formData.birthTime ? (
                       <Ionicons name="checkmark-circle" size={22} color="#16a34a" />
@@ -792,14 +757,14 @@ export default function RegisterScreen({ route, navigation }) {
                 </>
               )}
               <Text style={styles.hintText}>
-                💡 சரியான நேரம் தெரியவில்லை என்றால் காலி விடலாம்
+                {t('timeHint')}
               </Text>
             </View>
 
             {/* Birth Place */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>
-                <Ionicons name="location" size={16} color="#f97316" /> பிறந்த இடம் *
+                <Ionicons name="location" size={16} color="#f97316" /> {t('birthPlace')} *
               </Text>
               <TouchableOpacity
                 style={[
@@ -813,7 +778,7 @@ export default function RegisterScreen({ route, navigation }) {
                   <Ionicons name="location-outline" size={22} color={formData.birthPlace ? '#f97316' : '#6b7280'} />
                 </View>
                 <Text style={[styles.pickerButtonText, !formData.birthPlace && styles.placeholderText]}>
-                  {formData.birthPlace ? formData.birthPlace.name : 'இடத்தை தேர்வு செய்யவும்'}
+                  {formData.birthPlace ? formData.birthPlace.name : t('selectPlacePlaceholder')}
                 </Text>
                 {formData.birthPlace ? (
                   <Ionicons name="checkmark-circle" size={22} color="#16a34a" />
@@ -856,7 +821,7 @@ export default function RegisterScreen({ route, navigation }) {
                   ) : (
                     <>
                       <Ionicons name="rocket" size={22} color="#fff" />
-                      <Text style={styles.buttonText}>பதிவு செய்க</Text>
+                      <Text style={styles.buttonText}>{t('submitRegister')}</Text>
                       <Ionicons name="arrow-forward" size={22} color="#fff" />
                     </>
                   )}
@@ -875,6 +840,7 @@ export default function RegisterScreen({ route, navigation }) {
           setFormData({ ...formData, birthPlace: place });
           animateSuccess();
         }}
+        t={t}
         selectedPlace={formData.birthPlace}
       />
     </KeyboardAvoidingView>
