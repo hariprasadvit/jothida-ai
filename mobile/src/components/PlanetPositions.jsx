@@ -329,6 +329,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     marginBottom: 8,
     textTransform: 'uppercase',
+    color: '#0f172a',
   },
   signRow: {
     marginBottom: 10,
