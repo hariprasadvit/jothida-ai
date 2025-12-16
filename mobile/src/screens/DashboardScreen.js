@@ -3169,6 +3169,17 @@ const styles = StyleSheet.create({
   panchangamLabel: { fontSize: 11, color: '#7a8ba8', marginBottom: 8, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1 },
   panchangamValue: { fontSize: 15, fontWeight: '800', color: '#5a6c8f', letterSpacing: 0.3 },
 
+  // Radial Birth Chart Visualization
+  radialChartContainer: { width: 220, height: 220, alignSelf: 'center', marginVertical: 24, position: 'relative', justifyContent: 'center', alignItems: 'center' },
+  radialOuterRing: { position: 'absolute', width: 210, height: 210, borderRadius: 105, borderWidth: 1.5, borderColor: '#c5d0e3', opacity: 0.6 },
+  radialMiddleRing: { position: 'absolute', width: 170, height: 170, borderRadius: 85, borderWidth: 1.5, borderColor: '#c5d0e3', opacity: 0.4 },
+  radialCenterCircle: { width: 120, height: 120, borderRadius: 60, backgroundColor: '#e8ecf3', justifyContent: 'center', alignItems: 'center', shadowColor: '#ffffff', shadowOffset: { width: -8, height: -8 }, shadowOpacity: 1, shadowRadius: 16, elevation: 0, borderWidth: 3, borderColor: '#f5f7fa' },
+  radialScoreNumber: { fontSize: 44, fontWeight: '900', color: '#6b7fa0', letterSpacing: -2 },
+  radialScoreLabel: { fontSize: 14, color: '#9babc7', fontWeight: '700', marginTop: -4 },
+  radialStatusBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12, marginTop: 6 },
+  radialStatusText: { fontSize: 10, fontWeight: '900', letterSpacing: 0.8, textTransform: 'uppercase' },
+  radialOrbitalDot: { position: 'absolute', width: 6, height: 6, borderRadius: 3, shadowColor: '#a3b9d9', shadowOffset: { width: 1, height: 1 }, shadowOpacity: 0.3, shadowRadius: 2 },
+
   scoreRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   scoreLabel: { fontSize: 13, color: '#7a8ba8', fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1 },
   scoreValue: { flexDirection: 'row', alignItems: 'baseline', gap: 6, marginTop: 8 },
