@@ -314,19 +314,18 @@ export default function AstroFeedScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const [stories, setStories] = useState([]);
 
-  // Map initialStory param to story index
-  const getInitialStoryIndex = () => {
-    const storyMap = {
-      'planet': 0,    // PLANET_INFLUENCE
-      'moon': 1,      // MOON_TRANSIT
-      'insight': 2,   // DAILY_INSIGHT
-      'star': 3,      // NAKSHATRA_EFFECT
-    };
-    const initialStory = route.params?.initialStory;
-    return storyMap[initialStory] ?? 0;
+  // Get initial story index from route params
+  const initialStoryParam = route.params?.initialStory;
+  const storyMap = {
+    'planet': 0,    // PLANET_INFLUENCE
+    'moon': 1,      // MOON_TRANSIT
+    'insight': 2,   // DAILY_INSIGHT
+    'star': 3,      // NAKSHATRA_EFFECT
   };
+  const targetStoryIndex = initialStoryParam ? (storyMap[initialStoryParam] ?? 0) : 0;
 
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [initialNavigationDone, setInitialNavigationDone] = useState(false);
   const [loading, setLoading] = useState(true);
   const [dailyScore, setDailyScore] = useState(null);
   const [scoreLoaded, setScoreLoaded] = useState(false);
@@ -469,22 +468,26 @@ export default function AstroFeedScreen({ navigation }) {
       const loadedStories = generateStories(dailyScore);
       setStories(loadedStories);
       setLoading(false);
-
-      // Set initial story if specified
-      const initialIndex = getInitialStoryIndex();
-      setCurrentIndex(initialIndex);
-
-      // Scroll to initial story after a short delay
-      if (initialIndex > 0) {
-        setTimeout(() => {
-          flatListRef.current?.scrollToIndex({
-            index: initialIndex,
-            animated: false,
-          });
-        }, 200);
-      }
     }
   }, [generateStories, dailyScore, scoreLoaded]);
+
+  // Handle initial navigation to specific story
+  useEffect(() => {
+    if (stories.length > 0 && !initialNavigationDone && targetStoryIndex > 0) {
+      console.log('[AstroFeed] Navigating to story index:', targetStoryIndex);
+      setCurrentIndex(targetStoryIndex);
+
+      setTimeout(() => {
+        flatListRef.current?.scrollToIndex({
+          index: targetStoryIndex,
+          animated: false,
+        });
+        setInitialNavigationDone(true);
+      }, 300);
+    } else if (stories.length > 0 && !initialNavigationDone) {
+      setInitialNavigationDone(true);
+    }
+  }, [stories.length, targetStoryIndex, initialNavigationDone]);
 
   // Auto-advance timer
   useEffect(() => {
