@@ -2073,7 +2073,7 @@ export default function DashboardScreen({ navigation }) {
               { opacity: headerFadeAnim, transform: [{ translateY: headerSlideAnim }] },
             ]}
           >
-            <OmWatermark style={{ position: 'absolute', right: -20, top: -20 }} color="#f97316" size={140} />
+            <OmWatermark style={{ position: 'absolute', right: -10, top: -10 }} color="#f97316" size={160} />
             <View>
               <View style={styles.logoRow}>
                 <View style={styles.logoIcon}>
