@@ -531,7 +531,7 @@ const rashiTickerStyles = StyleSheet.create({
   },
   tickerWrapper: {
     overflow: 'hidden',
-    backgroundColor: '#fff',
+    backgroundColor: '#fff8f0',
     paddingVertical: 12,
   },
   tickerContent: {
@@ -2067,13 +2067,8 @@ export default function DashboardScreen({ navigation }) {
               { opacity: headerFadeAnim, transform: [{ translateY: headerSlideAnim }] },
             ]}
           >
-            <ScallopPattern color="#e8d5c4" opacity={0.16} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
-            <OmWatermark
-              color="#d4a574"
-              opacity={0.09}
-              size={210}
-              style={{ position: 'absolute', right: -60, bottom: -70 }}
-            />
+            <ScallopPattern color="#e8d5c4" opacity={0.12} circleSize={52} borderWidth={2} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+            <OmWatermark color="#d4a574" opacity={0.05} size={220} style={{ position: 'absolute', right: -70, bottom: -90 }} />
             <View>
               <View style={styles.logoRow}>
                 <View style={styles.logoIcon}>
