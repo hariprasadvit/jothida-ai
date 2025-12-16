@@ -73,31 +73,61 @@ export default function MainNavigator() {
         name="Dashboard"
         component={DashboardScreen}
         options={{ tabBarLabel: t('home') }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            navigation.navigate('Dashboard');
+          },
+        })}
       />
       <Tab.Screen
         name="AstroFeed"
         component={AstroFeedScreen}
         options={{ tabBarLabel: t('astroFeed') }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            navigation.navigate('AstroFeed');
+          },
+        })}
       />
       <Tab.Screen
         name="Matching"
         component={MatchingScreen}
         options={{ tabBarLabel: t('matching') }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            navigation.navigate('Matching');
+          },
+        })}
       />
       <Tab.Screen
         name="UngalJothidan"
         component={UngalJothidanScreen}
         options={{ tabBarLabel: t('ungalJothidan') }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            navigation.navigate('UngalJothidan');
+          },
+        })}
       />
       <Tab.Screen
         name="Muhurtham"
         component={MuhurthamScreen}
         options={{ tabBarLabel: t('muhurtham') }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            navigation.navigate('Muhurtham');
+          },
+        })}
       />
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
         options={{ tabBarLabel: t('profile') }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            navigation.navigate('Profile');
+          },
+        })}
       />
     </Tab.Navigator>
   );
