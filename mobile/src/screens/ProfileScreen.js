@@ -12,16 +12,20 @@ import {
   Animated,
   Easing,
   Modal,
+  TextInput,
+  FlatList,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage, languageOptions } from '../context/LanguageContext';
 import { mobileAPI, reportAPI } from '../services/api';
 import { generateComprehensivePDFHTML } from '../services/reportGenerator';
+import { searchCities, POPULAR_CITIES } from '../data/cities';
 import * as FileSystem from 'expo-file-system';
 
 // Tamil to translation key mappings for ProfileScreen
@@ -473,6 +477,1318 @@ const AnimatedDownloadButton = ({ onPress, loading, t }) => {
   );
 };
 
+// Edit Birth Details Modal Component
+const EditBirthDetailsModal = ({ visible, onClose, onSave, currentProfile, t, getMonthName }) => {
+  const [editData, setEditData] = useState({
+    birthDate: currentProfile?.birthDate || '',
+    birthTime: currentProfile?.birthTime || '',
+    birthPlace: currentProfile?.birthPlace || '',
+  });
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [filteredPlaces, setFilteredPlaces] = useState(POPULAR_CITIES);
+  const [selectedPlace, setSelectedPlace] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  // Initialize edit data when modal opens
+  useEffect(() => {
+    if (visible && currentProfile) {
+      setEditData({
+        birthDate: currentProfile.birthDate || '',
+        birthTime: currentProfile.birthTime || '',
+        birthPlace: currentProfile.birthPlace || '',
+      });
+      setSelectedPlace(null);
+    }
+  }, [visible, currentProfile]);
+
+  // Search cities
+  useEffect(() => {
+    if (showLocationPicker) {
+      const timer = setTimeout(() => {
+        if (searchText.trim()) {
+          const results = searchCities(searchText);
+          setFilteredPlaces(results);
+        } else {
+          setFilteredPlaces(POPULAR_CITIES);
+        }
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [searchText, showLocationPicker]);
+
+  const formatDateForDisplay = (dateStr) => {
+    if (!dateStr) return t('selectDatePlaceholder');
+    try {
+      const [year, month, day] = dateStr.split('-');
+      const monthName = getMonthName(parseInt(month) - 1);
+      return `${parseInt(day)} ${monthName} ${year}`;
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const formatTimeForDisplay = (timeStr) => {
+    if (!timeStr) return t('selectTimePlaceholder');
+    try {
+      const [hours, minutes] = timeStr.split(':');
+      const h = parseInt(hours);
+      const ampm = h >= 12 ? t('pm') : t('am');
+      const displayHours = h % 12 || 12;
+      return `${displayHours}:${minutes} ${ampm}`;
+    } catch {
+      return timeStr;
+    }
+  };
+
+  const handleDateChange = (event, selectedDate) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const day = String(selectedDate.getDate()).padStart(2, '0');
+      setEditData({ ...editData, birthDate: `${year}-${month}-${day}` });
+    }
+  };
+
+  const handleTimeChange = (event, selectedTime) => {
+    setShowTimePicker(false);
+    if (selectedTime) {
+      const hours = String(selectedTime.getHours()).padStart(2, '0');
+      const minutes = String(selectedTime.getMinutes()).padStart(2, '0');
+      setEditData({ ...editData, birthTime: `${hours}:${minutes}` });
+    }
+  };
+
+  const handlePlaceSelect = (place) => {
+    setSelectedPlace(place);
+    setEditData({ ...editData, birthPlace: place.nameEn });
+    setShowLocationPicker(false);
+    setSearchText('');
+  };
+
+  const handleSave = async () => {
+    if (!editData.birthDate || !editData.birthTime || !editData.birthPlace) {
+      Alert.alert(t('error'), t('fillAllRequired'));
+      return;
+    }
+    setSaving(true);
+    try {
+      await onSave(editData);
+      onClose();
+    } catch (error) {
+      Alert.alert(t('error'), t('updateError') || 'Failed to update');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const getDateValue = () => {
+    if (editData.birthDate) {
+      const [year, month, day] = editData.birthDate.split('-');
+      return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    }
+    return new Date();
+  };
+
+  const getTimeValue = () => {
+    if (editData.birthTime) {
+      const [hours, minutes] = editData.birthTime.split(':');
+      const date = new Date();
+      date.setHours(parseInt(hours), parseInt(minutes));
+      return date;
+    }
+    return new Date();
+  };
+
+  // Location picker sub-modal
+  if (showLocationPicker) {
+    return (
+      <Modal visible={visible} animationType="slide" transparent>
+        <View style={editModalStyles.overlay}>
+          <View style={editModalStyles.content}>
+            <View style={editModalStyles.header}>
+              <TouchableOpacity onPress={() => setShowLocationPicker(false)}>
+                <Ionicons name="arrow-back" size={24} color="#6b7280" />
+              </TouchableOpacity>
+              <Text style={editModalStyles.title}>{t('selectBirthPlace')}</Text>
+              <View style={{ width: 24 }} />
+            </View>
+
+            <View style={editModalStyles.searchContainer}>
+              <Ionicons name="search" size={20} color="#f97316" />
+              <TextInput
+                style={editModalStyles.searchInput}
+                value={searchText}
+                onChangeText={setSearchText}
+                placeholder={t('searchCityPlaceholder')}
+                placeholderTextColor="#9ca3af"
+                autoCapitalize="none"
+              />
+              {searchText.length > 0 && (
+                <TouchableOpacity onPress={() => setSearchText('')}>
+                  <Ionicons name="close-circle" size={20} color="#9ca3af" />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            <FlatList
+              data={filteredPlaces}
+              keyExtractor={(item, index) => `${item.nameEn}-${index}`}
+              style={editModalStyles.placesList}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={editModalStyles.placeItem}
+                  onPress={() => handlePlaceSelect(item)}
+                >
+                  <View style={editModalStyles.placeInfo}>
+                    <Text style={editModalStyles.placeName}>{item.name}</Text>
+                    <Text style={editModalStyles.placeNameEn}>{item.nameEn}, {item.state || item.country}</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
+                </TouchableOpacity>
+              )}
+              ListEmptyComponent={
+                <View style={editModalStyles.emptyContainer}>
+                  <Ionicons name="location-outline" size={48} color="#d1d5db" />
+                  <Text style={editModalStyles.emptyText}>{t('noPlaceFound')}</Text>
+                </View>
+              }
+            />
+          </View>
+        </View>
+      </Modal>
+    );
+  }
+
+  return (
+    <Modal visible={visible} animationType="slide" transparent>
+      <View style={editModalStyles.overlay}>
+        <View style={editModalStyles.content}>
+          <View style={editModalStyles.header}>
+            <TouchableOpacity onPress={onClose}>
+              <Ionicons name="close" size={24} color="#6b7280" />
+            </TouchableOpacity>
+            <Text style={editModalStyles.title}>{t('editBirthDetails')}</Text>
+            <View style={{ width: 24 }} />
+          </View>
+
+          <ScrollView style={editModalStyles.form}>
+            {/* Birth Date */}
+            <View style={editModalStyles.inputGroup}>
+              <Text style={editModalStyles.label}>
+                <Ionicons name="calendar" size={16} color="#f97316" /> {t('birthDate')}
+              </Text>
+              {Platform.OS === 'web' ? (
+                <input
+                  type="date"
+                  value={editData.birthDate}
+                  onChange={(e) => setEditData({ ...editData, birthDate: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: 14,
+                    fontSize: 16,
+                    borderRadius: 12,
+                    border: '1px solid #fed7aa',
+                    backgroundColor: '#fff7ed',
+                  }}
+                />
+              ) : (
+                <>
+                  <TouchableOpacity
+                    style={editModalStyles.pickerButton}
+                    onPress={() => setShowDatePicker(true)}
+                  >
+                    <Ionicons name="calendar-outline" size={20} color="#f97316" />
+                    <Text style={editModalStyles.pickerText}>{formatDateForDisplay(editData.birthDate)}</Text>
+                    <Ionicons name="chevron-down" size={20} color="#6b7280" />
+                  </TouchableOpacity>
+                  {showDatePicker && (
+                    <DateTimePicker
+                      value={getDateValue()}
+                      mode="date"
+                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                      onChange={handleDateChange}
+                    />
+                  )}
+                </>
+              )}
+            </View>
+
+            {/* Birth Time */}
+            <View style={editModalStyles.inputGroup}>
+              <Text style={editModalStyles.label}>
+                <Ionicons name="time" size={16} color="#f97316" /> {t('birthTime')}
+              </Text>
+              {Platform.OS === 'web' ? (
+                <input
+                  type="time"
+                  value={editData.birthTime}
+                  onChange={(e) => setEditData({ ...editData, birthTime: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: 14,
+                    fontSize: 16,
+                    borderRadius: 12,
+                    border: '1px solid #fed7aa',
+                    backgroundColor: '#fff7ed',
+                  }}
+                />
+              ) : (
+                <>
+                  <TouchableOpacity
+                    style={editModalStyles.pickerButton}
+                    onPress={() => setShowTimePicker(true)}
+                  >
+                    <Ionicons name="time-outline" size={20} color="#f97316" />
+                    <Text style={editModalStyles.pickerText}>{formatTimeForDisplay(editData.birthTime)}</Text>
+                    <Ionicons name="chevron-down" size={20} color="#6b7280" />
+                  </TouchableOpacity>
+                  {showTimePicker && (
+                    <DateTimePicker
+                      value={getTimeValue()}
+                      mode="time"
+                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                      onChange={handleTimeChange}
+                      is24Hour={false}
+                    />
+                  )}
+                </>
+              )}
+            </View>
+
+            {/* Birth Place */}
+            <View style={editModalStyles.inputGroup}>
+              <Text style={editModalStyles.label}>
+                <Ionicons name="location" size={16} color="#f97316" /> {t('birthPlace')}
+              </Text>
+              <TouchableOpacity
+                style={editModalStyles.pickerButton}
+                onPress={() => setShowLocationPicker(true)}
+              >
+                <Ionicons name="location-outline" size={20} color="#f97316" />
+                <Text style={editModalStyles.pickerText}>
+                  {selectedPlace ? selectedPlace.name : editData.birthPlace || t('selectPlacePlaceholder')}
+                </Text>
+                <Ionicons name="chevron-down" size={20} color="#6b7280" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Info Note */}
+            <View style={editModalStyles.infoNote}>
+              <Ionicons name="information-circle" size={20} color="#3b82f6" />
+              <Text style={editModalStyles.infoText}>{t('birthDetailsChangeNote') || 'Changing birth details will recalculate your chart and all predictions.'}</Text>
+            </View>
+          </ScrollView>
+
+          {/* Action Buttons */}
+          <View style={editModalStyles.actions}>
+            <TouchableOpacity style={editModalStyles.cancelBtn} onPress={onClose}>
+              <Text style={editModalStyles.cancelText}>{t('cancel')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[editModalStyles.saveBtn, saving && editModalStyles.saveBtnDisabled]}
+              onPress={handleSave}
+              disabled={saving}
+            >
+              {saving ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <>
+                  <Ionicons name="checkmark" size={20} color="#fff" />
+                  <Text style={editModalStyles.saveText}>{t('save')}</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
+// Styles for Edit Modal
+const editModalStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  content: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '90%',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#fed7aa',
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1f2937',
+  },
+  form: {
+    padding: 16,
+  },
+  inputGroup: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  pickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff7ed',
+    borderWidth: 1,
+    borderColor: '#fed7aa',
+    borderRadius: 12,
+    padding: 14,
+    gap: 10,
+  },
+  pickerText: {
+    flex: 1,
+    fontSize: 15,
+    color: '#1f2937',
+  },
+  infoNote: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#eff6ff',
+    borderRadius: 12,
+    padding: 12,
+    gap: 10,
+    marginTop: 10,
+  },
+  infoText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#1d4ed8',
+    lineHeight: 18,
+  },
+  actions: {
+    flexDirection: 'row',
+    padding: 16,
+    gap: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f3f4f6',
+  },
+  cancelBtn: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    alignItems: 'center',
+  },
+  cancelText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#6b7280',
+  },
+  saveBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    padding: 14,
+    borderRadius: 12,
+    backgroundColor: '#f97316',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  saveBtnDisabled: {
+    opacity: 0.6,
+  },
+  saveText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff7ed',
+    borderRadius: 12,
+    padding: 12,
+    margin: 16,
+    gap: 10,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: '#1f2937',
+  },
+  placesList: {
+    maxHeight: 400,
+  },
+  placeItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+  },
+  placeInfo: {
+    flex: 1,
+  },
+  placeName: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#1f2937',
+  },
+  placeNameEn: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 2,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    padding: 40,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#9ca3af',
+    marginTop: 12,
+  },
+});
+
+// Profile Switcher Modal Component
+const ProfileSwitcherModal = ({ visible, onClose, profiles, selectedId, onSwitch, onAddNew, onDelete, t }) => {
+  const handleDelete = (profile) => {
+    if (profiles.length === 1) {
+      Alert.alert(t('error'), t('cannotDeleteOnlyProfile') || 'Cannot delete the only profile');
+      return;
+    }
+
+    Alert.alert(
+      t('deleteProfile') || 'Delete Profile',
+      `${t('deleteProfileConfirm') || 'Are you sure you want to delete'} "${profile.name}"?`,
+      [
+        { text: t('cancel'), style: 'cancel' },
+        {
+          text: t('delete') || 'Delete',
+          style: 'destructive',
+          onPress: () => onDelete(profile.id),
+        },
+      ]
+    );
+  };
+
+  return (
+    <Modal visible={visible} animationType="slide" transparent>
+      <View style={profileSwitcherStyles.overlay}>
+        <View style={profileSwitcherStyles.content}>
+          <View style={profileSwitcherStyles.header}>
+            <Text style={profileSwitcherStyles.title}>{t('selectProfile') || 'Select Profile'}</Text>
+            <TouchableOpacity onPress={onClose}>
+              <Ionicons name="close" size={24} color="#6b7280" />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={profileSwitcherStyles.profileList}>
+            {profiles.map((profile) => (
+              <TouchableOpacity
+                key={profile.id}
+                style={[
+                  profileSwitcherStyles.profileItem,
+                  selectedId === profile.id && profileSwitcherStyles.profileItemSelected
+                ]}
+                onPress={() => {
+                  onSwitch(profile.id);
+                  onClose();
+                }}
+              >
+                <View style={profileSwitcherStyles.profileAvatar}>
+                  <Text style={profileSwitcherStyles.profileAvatarText}>
+                    {profile.name?.charAt(0) || '?'}
+                  </Text>
+                  {profile.isPrimary && (
+                    <View style={profileSwitcherStyles.primaryBadge}>
+                      <Ionicons name="star" size={10} color="#fff" />
+                    </View>
+                  )}
+                </View>
+                <View style={profileSwitcherStyles.profileInfo}>
+                  <Text style={profileSwitcherStyles.profileName}>{profile.name}</Text>
+                  <Text style={profileSwitcherStyles.profileDetails}>
+                    {profile.rasi || '-'} • {profile.nakshatra || '-'}
+                  </Text>
+                  {profile.birthDate && (
+                    <Text style={profileSwitcherStyles.profileBirthDate}>{profile.birthDate}</Text>
+                  )}
+                </View>
+                <View style={profileSwitcherStyles.profileActions}>
+                  {selectedId === profile.id && (
+                    <Ionicons name="checkmark-circle" size={24} color="#16a34a" />
+                  )}
+                  {!profile.isPrimary && profiles.length > 1 && (
+                    <TouchableOpacity
+                      style={profileSwitcherStyles.deleteBtn}
+                      onPress={() => handleDelete(profile)}
+                    >
+                      <Ionicons name="trash-outline" size={18} color="#ef4444" />
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          <TouchableOpacity
+            style={profileSwitcherStyles.addBtn}
+            onPress={() => {
+              onClose();
+              onAddNew();
+            }}
+          >
+            <Ionicons name="add-circle" size={24} color="#f97316" />
+            <Text style={profileSwitcherStyles.addBtnText}>{t('addNewProfile') || 'Add New Profile'}</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
+// Profile Switcher Styles
+const profileSwitcherStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  content: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '80%',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#fed7aa',
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1f2937',
+  },
+  profileList: {
+    maxHeight: 400,
+  },
+  profileItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+  },
+  profileItemSelected: {
+    backgroundColor: '#fff7ed',
+  },
+  profileAvatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#f97316',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  profileAvatarText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  primaryBadge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    backgroundColor: '#eab308',
+    borderRadius: 8,
+    width: 16,
+    height: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  profileInfo: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  profileName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1f2937',
+  },
+  profileDetails: {
+    fontSize: 12,
+    color: '#f97316',
+    marginTop: 2,
+  },
+  profileBirthDate: {
+    fontSize: 11,
+    color: '#6b7280',
+    marginTop: 2,
+  },
+  profileActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  deleteBtn: {
+    padding: 8,
+  },
+  addBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#f3f4f6',
+    gap: 8,
+  },
+  addBtnText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#f97316',
+  },
+});
+
+// Add Profile Modal Component
+const AddProfileModal = ({ visible, onClose, onSave, t, getMonthName, loading }) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    gender: '',
+    birthDate: null,
+    birthTime: null,
+    birthPlace: null,
+    relationship: '',
+  });
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [filteredPlaces, setFilteredPlaces] = useState(POPULAR_CITIES);
+
+  // Reset form when modal opens
+  useEffect(() => {
+    if (visible) {
+      setFormData({
+        name: '',
+        gender: '',
+        birthDate: null,
+        birthTime: null,
+        birthPlace: null,
+        relationship: '',
+      });
+    }
+  }, [visible]);
+
+  // Search cities
+  useEffect(() => {
+    if (showLocationPicker) {
+      const timer = setTimeout(() => {
+        if (searchText.trim()) {
+          const results = searchCities(searchText);
+          setFilteredPlaces(results);
+        } else {
+          setFilteredPlaces(POPULAR_CITIES);
+        }
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [searchText, showLocationPicker]);
+
+  const formatDateForDisplay = (date) => {
+    if (!date) return t('selectDatePlaceholder');
+    const d = new Date(date);
+    const day = d.getDate();
+    const month = getMonthName(d.getMonth());
+    const year = d.getFullYear();
+    return `${day} ${month} ${year}`;
+  };
+
+  const formatTimeForDisplay = (date) => {
+    if (!date) return t('selectTimePlaceholder');
+    const d = new Date(date);
+    const hours = d.getHours();
+    const minutes = d.getMinutes();
+    const ampm = hours >= 12 ? t('pm') : t('am');
+    const displayHours = hours % 12 || 12;
+    return `${displayHours}:${String(minutes).padStart(2, '0')} ${ampm}`;
+  };
+
+  const handleDateChange = (event, selectedDate) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      setFormData({ ...formData, birthDate: selectedDate });
+    }
+  };
+
+  const handleTimeChange = (event, selectedTime) => {
+    setShowTimePicker(false);
+    if (selectedTime) {
+      setFormData({ ...formData, birthTime: selectedTime });
+    }
+  };
+
+  const handlePlaceSelect = (place) => {
+    setFormData({ ...formData, birthPlace: place });
+    setShowLocationPicker(false);
+    setSearchText('');
+  };
+
+  const formatDateForAPI = (date) => {
+    if (!date) return '';
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const formatTimeForAPI = (date) => {
+    if (!date) return '';
+    const d = new Date(date);
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
+
+  const handleSave = () => {
+    if (!formData.name || !formData.birthDate || !formData.birthPlace) {
+      Alert.alert(t('error'), t('fillAllRequired'));
+      return;
+    }
+
+    const profileData = {
+      name: formData.name,
+      gender: formData.gender,
+      birthDate: formatDateForAPI(formData.birthDate),
+      birthTime: formData.birthTime ? formatTimeForAPI(formData.birthTime) : '',
+      birthPlace: formData.birthPlace.nameEn,
+      relationship: formData.relationship,
+    };
+
+    onSave(profileData);
+  };
+
+  const relationships = [
+    { key: 'spouse', label: t('spouse') || 'Spouse' },
+    { key: 'child', label: t('child') || 'Child' },
+    { key: 'parent', label: t('parent') || 'Parent' },
+    { key: 'sibling', label: t('sibling') || 'Sibling' },
+    { key: 'friend', label: t('friend') || 'Friend' },
+    { key: 'other', label: t('other') || 'Other' },
+  ];
+
+  // Location picker sub-modal
+  if (showLocationPicker) {
+    return (
+      <Modal visible={visible} animationType="slide" transparent>
+        <View style={addProfileStyles.overlay}>
+          <View style={addProfileStyles.content}>
+            <View style={addProfileStyles.header}>
+              <TouchableOpacity onPress={() => setShowLocationPicker(false)}>
+                <Ionicons name="arrow-back" size={24} color="#6b7280" />
+              </TouchableOpacity>
+              <Text style={addProfileStyles.title}>{t('selectBirthPlace')}</Text>
+              <View style={{ width: 24 }} />
+            </View>
+
+            <View style={addProfileStyles.searchContainer}>
+              <Ionicons name="search" size={20} color="#f97316" />
+              <TextInput
+                style={addProfileStyles.searchInput}
+                value={searchText}
+                onChangeText={setSearchText}
+                placeholder={t('searchCityPlaceholder')}
+                placeholderTextColor="#9ca3af"
+                autoCapitalize="none"
+              />
+              {searchText.length > 0 && (
+                <TouchableOpacity onPress={() => setSearchText('')}>
+                  <Ionicons name="close-circle" size={20} color="#9ca3af" />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            <FlatList
+              data={filteredPlaces}
+              keyExtractor={(item, index) => `${item.nameEn}-${index}`}
+              style={addProfileStyles.placesList}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={addProfileStyles.placeItem}
+                  onPress={() => handlePlaceSelect(item)}
+                >
+                  <View style={addProfileStyles.placeInfo}>
+                    <Text style={addProfileStyles.placeName}>{item.name}</Text>
+                    <Text style={addProfileStyles.placeNameEn}>{item.nameEn}, {item.state || item.country}</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
+                </TouchableOpacity>
+              )}
+              ListEmptyComponent={
+                <View style={addProfileStyles.emptyContainer}>
+                  <Ionicons name="location-outline" size={48} color="#d1d5db" />
+                  <Text style={addProfileStyles.emptyText}>{t('noPlaceFound')}</Text>
+                </View>
+              }
+            />
+          </View>
+        </View>
+      </Modal>
+    );
+  }
+
+  return (
+    <Modal visible={visible} animationType="slide" transparent>
+      <View style={addProfileStyles.overlay}>
+        <View style={addProfileStyles.content}>
+          <View style={addProfileStyles.header}>
+            <TouchableOpacity onPress={onClose}>
+              <Ionicons name="close" size={24} color="#6b7280" />
+            </TouchableOpacity>
+            <Text style={addProfileStyles.title}>{t('addNewProfile') || 'Add New Profile'}</Text>
+            <View style={{ width: 24 }} />
+          </View>
+
+          <ScrollView style={addProfileStyles.form}>
+            {/* Name */}
+            <View style={addProfileStyles.inputGroup}>
+              <Text style={addProfileStyles.label}>
+                <Ionicons name="person" size={16} color="#f97316" /> {t('name')} *
+              </Text>
+              <TextInput
+                style={addProfileStyles.input}
+                value={formData.name}
+                onChangeText={(text) => setFormData({ ...formData, name: text })}
+                placeholder={t('yourName')}
+                placeholderTextColor="#9ca3af"
+              />
+            </View>
+
+            {/* Relationship */}
+            <View style={addProfileStyles.inputGroup}>
+              <Text style={addProfileStyles.label}>
+                <Ionicons name="people" size={16} color="#f97316" /> {t('relationship') || 'Relationship'}
+              </Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={addProfileStyles.relationshipContainer}>
+                  {relationships.map((rel) => (
+                    <TouchableOpacity
+                      key={rel.key}
+                      style={[
+                        addProfileStyles.relationshipBtn,
+                        formData.relationship === rel.key && addProfileStyles.relationshipBtnActive
+                      ]}
+                      onPress={() => setFormData({ ...formData, relationship: rel.key })}
+                    >
+                      <Text style={[
+                        addProfileStyles.relationshipText,
+                        formData.relationship === rel.key && addProfileStyles.relationshipTextActive
+                      ]}>
+                        {rel.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
+            </View>
+
+            {/* Gender */}
+            <View style={addProfileStyles.inputGroup}>
+              <Text style={addProfileStyles.label}>
+                <Ionicons name="male-female" size={16} color="#f97316" /> {t('gender')}
+              </Text>
+              <View style={addProfileStyles.genderContainer}>
+                <TouchableOpacity
+                  style={[
+                    addProfileStyles.genderBtn,
+                    formData.gender === 'male' && addProfileStyles.genderBtnMale
+                  ]}
+                  onPress={() => setFormData({ ...formData, gender: 'male' })}
+                >
+                  <Text style={addProfileStyles.genderIcon}>👨</Text>
+                  <Text style={[
+                    addProfileStyles.genderText,
+                    formData.gender === 'male' && addProfileStyles.genderTextActive
+                  ]}>
+                    {t('male')}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    addProfileStyles.genderBtn,
+                    formData.gender === 'female' && addProfileStyles.genderBtnFemale
+                  ]}
+                  onPress={() => setFormData({ ...formData, gender: 'female' })}
+                >
+                  <Text style={addProfileStyles.genderIcon}>👩</Text>
+                  <Text style={[
+                    addProfileStyles.genderText,
+                    formData.gender === 'female' && addProfileStyles.genderTextActive
+                  ]}>
+                    {t('female')}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Birth Date */}
+            <View style={addProfileStyles.inputGroup}>
+              <Text style={addProfileStyles.label}>
+                <Ionicons name="calendar" size={16} color="#f97316" /> {t('birthDate')} *
+              </Text>
+              {Platform.OS === 'web' ? (
+                <input
+                  type="date"
+                  onChange={(e) => setFormData({ ...formData, birthDate: new Date(e.target.value) })}
+                  style={{
+                    width: '100%',
+                    padding: 14,
+                    fontSize: 16,
+                    borderRadius: 12,
+                    border: '1px solid #fed7aa',
+                    backgroundColor: '#fff7ed',
+                  }}
+                />
+              ) : (
+                <>
+                  <TouchableOpacity
+                    style={addProfileStyles.pickerButton}
+                    onPress={() => setShowDatePicker(true)}
+                  >
+                    <Ionicons name="calendar-outline" size={20} color="#f97316" />
+                    <Text style={addProfileStyles.pickerText}>{formatDateForDisplay(formData.birthDate)}</Text>
+                    <Ionicons name="chevron-down" size={20} color="#6b7280" />
+                  </TouchableOpacity>
+                  {showDatePicker && (
+                    <DateTimePicker
+                      value={formData.birthDate || new Date()}
+                      mode="date"
+                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                      onChange={handleDateChange}
+                    />
+                  )}
+                </>
+              )}
+            </View>
+
+            {/* Birth Time */}
+            <View style={addProfileStyles.inputGroup}>
+              <Text style={addProfileStyles.label}>
+                <Ionicons name="time" size={16} color="#f97316" /> {t('birthTime')}
+              </Text>
+              {Platform.OS === 'web' ? (
+                <input
+                  type="time"
+                  onChange={(e) => {
+                    const [hours, minutes] = e.target.value.split(':');
+                    const date = new Date();
+                    date.setHours(parseInt(hours), parseInt(minutes));
+                    setFormData({ ...formData, birthTime: date });
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: 14,
+                    fontSize: 16,
+                    borderRadius: 12,
+                    border: '1px solid #fed7aa',
+                    backgroundColor: '#fff7ed',
+                  }}
+                />
+              ) : (
+                <>
+                  <TouchableOpacity
+                    style={addProfileStyles.pickerButton}
+                    onPress={() => setShowTimePicker(true)}
+                  >
+                    <Ionicons name="time-outline" size={20} color="#f97316" />
+                    <Text style={addProfileStyles.pickerText}>{formatTimeForDisplay(formData.birthTime)}</Text>
+                    <Ionicons name="chevron-down" size={20} color="#6b7280" />
+                  </TouchableOpacity>
+                  {showTimePicker && (
+                    <DateTimePicker
+                      value={formData.birthTime || new Date()}
+                      mode="time"
+                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                      onChange={handleTimeChange}
+                      is24Hour={false}
+                    />
+                  )}
+                </>
+              )}
+            </View>
+
+            {/* Birth Place */}
+            <View style={addProfileStyles.inputGroup}>
+              <Text style={addProfileStyles.label}>
+                <Ionicons name="location" size={16} color="#f97316" /> {t('birthPlace')} *
+              </Text>
+              <TouchableOpacity
+                style={addProfileStyles.pickerButton}
+                onPress={() => setShowLocationPicker(true)}
+              >
+                <Ionicons name="location-outline" size={20} color="#f97316" />
+                <Text style={addProfileStyles.pickerText}>
+                  {formData.birthPlace ? formData.birthPlace.name : t('selectPlacePlaceholder')}
+                </Text>
+                <Ionicons name="chevron-down" size={20} color="#6b7280" />
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+
+          {/* Action Buttons */}
+          <View style={addProfileStyles.actions}>
+            <TouchableOpacity style={addProfileStyles.cancelBtn} onPress={onClose}>
+              <Text style={addProfileStyles.cancelText}>{t('cancel')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[addProfileStyles.saveBtn, loading && addProfileStyles.saveBtnDisabled]}
+              onPress={handleSave}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <>
+                  <Ionicons name="checkmark" size={20} color="#fff" />
+                  <Text style={addProfileStyles.saveText}>{t('save')}</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
+// Add Profile Modal Styles
+const addProfileStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  content: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '90%',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#fed7aa',
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1f2937',
+  },
+  form: {
+    padding: 16,
+  },
+  inputGroup: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: '#fff7ed',
+    borderWidth: 1,
+    borderColor: '#fed7aa',
+    borderRadius: 12,
+    padding: 14,
+    fontSize: 15,
+    color: '#1f2937',
+  },
+  relationshipContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  relationshipBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#f3f4f6',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  relationshipBtnActive: {
+    backgroundColor: '#fff7ed',
+    borderColor: '#f97316',
+  },
+  relationshipText: {
+    fontSize: 13,
+    color: '#6b7280',
+  },
+  relationshipTextActive: {
+    color: '#f97316',
+    fontWeight: '600',
+  },
+  genderContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  genderBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: '#f3f4f6',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    gap: 8,
+  },
+  genderBtnMale: {
+    backgroundColor: '#eff6ff',
+    borderColor: '#3b82f6',
+  },
+  genderBtnFemale: {
+    backgroundColor: '#fdf2f8',
+    borderColor: '#ec4899',
+  },
+  genderIcon: {
+    fontSize: 20,
+  },
+  genderText: {
+    fontSize: 14,
+    color: '#6b7280',
+  },
+  genderTextActive: {
+    fontWeight: '600',
+    color: '#1f2937',
+  },
+  pickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff7ed',
+    borderWidth: 1,
+    borderColor: '#fed7aa',
+    borderRadius: 12,
+    padding: 14,
+    gap: 10,
+  },
+  pickerText: {
+    flex: 1,
+    fontSize: 15,
+    color: '#1f2937',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff7ed',
+    borderRadius: 12,
+    padding: 12,
+    margin: 16,
+    gap: 10,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: '#1f2937',
+  },
+  placesList: {
+    maxHeight: 400,
+  },
+  placeItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+  },
+  placeInfo: {
+    flex: 1,
+  },
+  placeName: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#1f2937',
+  },
+  placeNameEn: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 2,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    padding: 40,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#9ca3af',
+    marginTop: 12,
+  },
+  actions: {
+    flexDirection: 'row',
+    padding: 16,
+    gap: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f3f4f6',
+  },
+  cancelBtn: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    alignItems: 'center',
+  },
+  cancelText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#6b7280',
+  },
+  saveBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    padding: 14,
+    borderRadius: 12,
+    backgroundColor: '#f97316',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  saveBtnDisabled: {
+    opacity: 0.6,
+  },
+  saveText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#fff',
+  },
+});
+
 const { width } = Dimensions.get('window');
 const CHART_SIZE = (width - 64) / 2; // Two charts side by side
 
@@ -684,13 +2000,17 @@ function PanchagamCard({ chartData }) {
 }
 
 export default function ProfileScreen({ navigation }) {
-  const { userProfile, logout } = useAuth();
-  const { language, changeLanguage, t } = useLanguage();
+  const { userProfile, logout, updateProfile, allProfiles, switchProfile, addProfile, deleteProfile, selectedProfileId } = useAuth();
+  const { language, changeLanguage, t, getMonthName } = useLanguage();
   const [chartData, setChartData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('chart');
   const [showLanguageModal, setShowLanguageModal] = useState(false);
+  const [showEditBirthModal, setShowEditBirthModal] = useState(false);
+  const [showProfileSwitcher, setShowProfileSwitcher] = useState(false);
+  const [showAddProfileModal, setShowAddProfileModal] = useState(false);
+  const [addProfileLoading, setAddProfileLoading] = useState(false);
   const insets = useSafeAreaInsets();
   const bottomPadding = Platform.OS === 'android' ? Math.max(insets.bottom, 80) : insets.bottom + 80;
 
@@ -725,6 +2045,118 @@ export default function ProfileScreen({ navigation }) {
       console.error('Failed to fetch chart data:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Handle birth details update
+  const handleBirthDetailsUpdate = async (newBirthDetails) => {
+    // Update the profile with new birth details
+    const updatedProfile = {
+      ...userProfile,
+      birthDate: newBirthDetails.birthDate,
+      birthTime: newBirthDetails.birthTime,
+      birthPlace: newBirthDetails.birthPlace,
+      // Clear old rasi/nakshatra since they'll be recalculated
+      rasi: null,
+      nakshatra: null,
+    };
+
+    await updateProfile(updatedProfile);
+
+    // Fetch new chart data with updated birth details
+    setLoading(true);
+    try {
+      const data = await mobileAPI.getJathagam({
+        name: userProfile.name,
+        birthDate: newBirthDetails.birthDate,
+        birthTime: newBirthDetails.birthTime,
+        birthPlace: newBirthDetails.birthPlace,
+      });
+      setChartData(data);
+
+      // Update profile with new rasi/nakshatra from chart data
+      if (data?.moon_sign) {
+        const finalProfile = {
+          ...updatedProfile,
+          rasi: data.moon_sign.rasi_tamil || data.moon_sign.rasi,
+          nakshatra: data.moon_sign.nakshatra,
+        };
+        await updateProfile(finalProfile);
+      }
+
+      Alert.alert(t('success') || 'Success', t('birthDetailsUpdated') || 'Birth details updated successfully!');
+    } catch (err) {
+      console.error('Failed to fetch new chart data:', err);
+      Alert.alert(t('error'), t('chartCalculationError') || 'Failed to calculate new chart');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle adding new profile
+  const handleAddProfile = async (profileData) => {
+    setAddProfileLoading(true);
+    try {
+      // Add the new profile
+      const newProfile = await addProfile(profileData);
+
+      // Fetch chart data for the new profile
+      const data = await mobileAPI.getJathagam({
+        name: profileData.name,
+        birthDate: profileData.birthDate,
+        birthTime: profileData.birthTime,
+        birthPlace: profileData.birthPlace,
+      });
+
+      // Update the profile with rasi/nakshatra from chart data
+      if (data?.moon_sign) {
+        const updatedProfileData = {
+          ...profileData,
+          rasi: data.moon_sign.rasi_tamil || data.moon_sign.rasi,
+          nakshatra: data.moon_sign.nakshatra,
+        };
+        // The profile is already added, we need to update it
+        // Switch to the new profile first
+        await switchProfile(newProfile.id);
+      }
+
+      setShowAddProfileModal(false);
+      Alert.alert(
+        t('success') || 'Success',
+        t('profileAddedSuccess') || 'Profile added successfully!'
+      );
+
+      // Switch to the new profile
+      await switchProfile(newProfile.id);
+    } catch (err) {
+      console.error('Failed to add profile:', err);
+      Alert.alert(t('error'), t('profileAddError') || 'Failed to add profile');
+    } finally {
+      setAddProfileLoading(false);
+    }
+  };
+
+  // Handle profile switch
+  const handleProfileSwitch = async (profileId) => {
+    try {
+      await switchProfile(profileId);
+      setShowProfileSwitcher(false);
+    } catch (err) {
+      console.error('Failed to switch profile:', err);
+    }
+  };
+
+  // Handle profile delete
+  const handleDeleteProfile = async (profileId) => {
+    try {
+      await deleteProfile(profileId);
+      Alert.alert(
+        t('success') || 'Success',
+        t('profileDeletedSuccess') || 'Profile deleted successfully!'
+      );
+    } catch (err) {
+      console.error('Failed to delete profile:', err);
+      Alert.alert(t('error'), err.message || t('profileDeleteError') || 'Failed to delete profile');
     }
   };
 
@@ -810,7 +2242,7 @@ export default function ProfileScreen({ navigation }) {
       console.error('PDF generation error:', err);
       // Fallback to local HTML generation if backend fails
       try {
-        const html = generateComprehensivePDFHTML(userProfile, chartData);
+        const html = generateComprehensivePDFHTML(userProfile, chartData, language);
         const { uri } = await Print.printToFileAsync({
           html,
           base64: false,
@@ -1122,9 +2554,25 @@ export default function ProfileScreen({ navigation }) {
           {/* User Info Card */}
           <AnimatedCard delay={0} style={styles.card}>
             <View style={styles.userInfoRow}>
-              <AnimatedAvatar initial={userProfile.name?.charAt(0) || 'அ'} />
+              <TouchableOpacity onPress={() => setShowProfileSwitcher(true)} activeOpacity={0.8}>
+                <AnimatedAvatar initial={userProfile.name?.charAt(0) || 'அ'} />
+                {allProfiles.length > 1 && (
+                  <View style={styles.profileCountBadge}>
+                    <Text style={styles.profileCountText}>{allProfiles.length}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
               <View style={styles.userDetails}>
-                <Text style={styles.userName}>{userProfile.name}</Text>
+                <View style={styles.userNameRow}>
+                  <Text style={styles.userName}>{userProfile.name}</Text>
+                  {userProfile.relationship && (
+                    <View style={styles.relationshipBadge}>
+                      <Text style={styles.relationshipText}>
+                        {t(userProfile.relationship) || userProfile.relationship}
+                      </Text>
+                    </View>
+                  )}
+                </View>
                 <Text style={styles.userPhone}>{userProfile.phone}</Text>
                 <View style={styles.rasiRow}>
                   {userProfile.rasi && (
@@ -1138,6 +2586,13 @@ export default function ProfileScreen({ navigation }) {
                   )}
                 </View>
               </View>
+              <TouchableOpacity
+                style={styles.switchProfileBtn}
+                onPress={() => setShowProfileSwitcher(true)}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="people" size={20} color="#f97316" />
+              </TouchableOpacity>
             </View>
           </AnimatedCard>
 
@@ -1146,6 +2601,14 @@ export default function ProfileScreen({ navigation }) {
             <View style={styles.cardHeader}>
               <Ionicons name="sunny" size={16} color="#ea580c" />
               <Text style={styles.cardTitle}>{t('birthDetails')}</Text>
+              <TouchableOpacity
+                style={styles.editBtn}
+                onPress={() => setShowEditBirthModal(true)}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="create-outline" size={18} color="#f97316" />
+                <Text style={styles.editBtnText}>{t('edit') || 'Edit'}</Text>
+              </TouchableOpacity>
             </View>
             <View style={styles.birthDetailsGrid}>
               <View style={styles.birthDetailItem}>
@@ -1396,6 +2859,41 @@ export default function ProfileScreen({ navigation }) {
           </View>
         </View>
       </Modal>
+
+      {/* Edit Birth Details Modal */}
+      <EditBirthDetailsModal
+        visible={showEditBirthModal}
+        onClose={() => setShowEditBirthModal(false)}
+        onSave={handleBirthDetailsUpdate}
+        currentProfile={userProfile}
+        t={t}
+        getMonthName={getMonthName}
+      />
+
+      {/* Profile Switcher Modal */}
+      <ProfileSwitcherModal
+        visible={showProfileSwitcher}
+        onClose={() => setShowProfileSwitcher(false)}
+        profiles={allProfiles}
+        selectedId={selectedProfileId}
+        onSwitch={handleProfileSwitch}
+        onAddNew={() => {
+          setShowProfileSwitcher(false);
+          setShowAddProfileModal(true);
+        }}
+        onDelete={handleDeleteProfile}
+        t={t}
+      />
+
+      {/* Add Profile Modal */}
+      <AddProfileModal
+        visible={showAddProfileModal}
+        onClose={() => setShowAddProfileModal(false)}
+        onSave={handleAddProfile}
+        t={t}
+        getMonthName={getMonthName}
+        loading={addProfileLoading}
+      />
     </View>
   );
 }
@@ -1453,6 +2951,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#374151',
+    flex: 1,
+  },
+  editBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff7ed',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#fed7aa',
+    gap: 4,
+  },
+  editBtnText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#f97316',
   },
   userInfoRow: {
     flexDirection: 'row',
@@ -1475,10 +2990,51 @@ const styles = StyleSheet.create({
   userDetails: {
     flex: 1,
   },
+  userNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   userName: {
     fontSize: 18,
     fontWeight: '600',
     color: '#1f2937',
+  },
+  relationshipBadge: {
+    backgroundColor: '#dbeafe',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  relationshipText: {
+    fontSize: 10,
+    color: '#1d4ed8',
+    fontWeight: '500',
+  },
+  profileCountBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: '#ef4444',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  profileCountText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  switchProfileBtn: {
+    padding: 8,
+    backgroundColor: '#fff7ed',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#fed7aa',
   },
   userPhone: {
     fontSize: 12,
