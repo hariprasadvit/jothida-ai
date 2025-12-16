@@ -2502,7 +2502,11 @@ export default function DashboardScreen({ navigation }) {
           </AnimatedCard>
 
           {/* Today's Parigaram - Gamified Remedies */}
-          <DivineDivider />
+          <View style={{ marginVertical: 8, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{ flex: 1, height: 1, backgroundColor: '#f97316', opacity: 0.3 }} />
+            <Text style={{ marginHorizontal: 8, fontSize: 14, color: '#f97316' }}>✦</Text>
+            <View style={{ flex: 1, height: 1, backgroundColor: '#f97316', opacity: 0.3 }} />
+          </View>
           {planetAura?.challenged_planets?.length > 0 && (
             <AnimatedCard delay={450}>
               <TouchableOpacity
@@ -2561,7 +2565,11 @@ export default function DashboardScreen({ navigation }) {
           )}
 
           {/* Current Dasha */}
-          <DivineDivider />
+          <View style={{ marginVertical: 8, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{ flex: 1, height: 1, backgroundColor: '#f97316', opacity: 0.3 }} />
+            <Text style={{ marginHorizontal: 8, fontSize: 14, color: '#f97316' }}>✦</Text>
+            <View style={{ flex: 1, height: 1, backgroundColor: '#f97316', opacity: 0.3 }} />
+          </View>
           {jathagam?.dasha?.mahadasha && (
             <AnimatedCard delay={500}>
               <View style={[styles.card, styles.dashaCard, { backgroundColor: '#fef6ed' }]}>
@@ -2665,7 +2673,11 @@ export default function DashboardScreen({ navigation }) {
           </AnimatedCard>
 
           {/* Aura Heatmap - Planet Strength Visualization */}
-          <DivineDivider />
+          <View style={{ marginVertical: 8, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{ flex: 1, height: 1, backgroundColor: '#f97316', opacity: 0.3 }} />
+            <Text style={{ marginHorizontal: 8, fontSize: 14, color: '#f97316' }}>✦</Text>
+            <View style={{ flex: 1, height: 1, backgroundColor: '#f97316', opacity: 0.3 }} />
+          </View>
           {planetAura && (
             <AnimatedCard delay={600}>
               <View style={[styles.card, styles.auraCard]}>
@@ -2946,7 +2958,9 @@ export default function DashboardScreen({ navigation }) {
                     <View style={styles.orbitalRingInner} />
 
                     {/* Planet Positions */}
-                    <DivineDivider color="#e8d5c4" />
+                    <View style={{ marginVertical: 8, flexDirection: 'row', alignItems: 'center' }}>
+                      <View style={{ flex: 1, height: 1, backgroundColor: '#f97316', opacity: 0.2 }} />
+                    </View>
                     {transitsMap.sky_positions?.map((planet) => {
                       const angleRad = ((planet.angle - 90) * Math.PI) / 180;
                       const radius = planet.radius_factor * 75;
