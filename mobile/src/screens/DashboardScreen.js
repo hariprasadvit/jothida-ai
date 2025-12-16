@@ -414,16 +414,14 @@ const RashiPalanTicker = ({ transits, language, t, userRashi, onRashiPress }) =>
                 <View style={rashiTickerStyles.iconContainer}>
                   <Image
                     source={{ uri: ZODIAC_SPRITE_URL }}
-                    style={[
-                      rashiTickerStyles.spriteIcon,
-                      {
-                        transform: [
-                          { translateX: -(rashi.spriteCol * 28) },
-                          { translateY: -(rashi.spriteRow * 28) },
-                        ],
-                      },
-                    ]}
-                    resizeMode="cover"
+                    style={{
+                      position: 'absolute',
+                      width: 120,
+                      height: 90,
+                      left: -(rashi.spriteCol * 30),
+                      top: -(rashi.spriteRow * 30),
+                    }}
+                    resizeMode="stretch"
                   />
                 </View>
                 <Text style={[
@@ -511,15 +509,12 @@ const rashiTickerStyles = StyleSheet.create({
     gap: 6,
   },
   iconContainer: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     overflow: 'hidden',
-    backgroundColor: '#fff',
-  },
-  spriteIcon: {
-    width: 112,
-    height: 84,
+    backgroundColor: 'transparent',
+    position: 'relative',
   },
   rashiName: {
     fontSize: 13,
