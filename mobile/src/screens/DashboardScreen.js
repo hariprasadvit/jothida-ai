@@ -2237,24 +2237,52 @@ export default function DashboardScreen({ navigation }) {
 
           {/* Today's Score */}
           <AnimatedCard delay={200} style={styles.card}>
-            <View style={styles.scoreRow}>
-              <View>
-                <Text style={styles.scoreLabel}>{t('todayScore')}</Text>
-                <View style={styles.scoreValue}>
-                  <Text style={styles.scoreNumber}>{overallScore}</Text>
-                  <Text style={styles.scoreMax}>/100</Text>
-                  <View style={[styles.scoreBadge, { backgroundColor: overallScore >= 70 ? '#dcfce7' : '#fef3c7' }]}>
-                    <Ionicons name="trending-up" size={14} color={overallScore >= 70 ? '#16a34a' : '#d97706'} />
-                    <Text style={[styles.scoreBadgeText, { color: overallScore >= 70 ? '#16a34a' : '#d97706' }]}>
+            <Text style={styles.cardTitle}>{t('todayScore')}</Text>
+
+            {/* Radial Birth Chart Visualization */}
+            <View style={styles.radialChartContainer}>
+              {/* Outer decorative ring */}
+              <View style={styles.radialOuterRing} />
+              <View style={styles.radialMiddleRing} />
+
+              {/* Center score circle */}
+              <TouchableOpacity onPress={handleOverallScorePress} activeOpacity={0.8}>
+                <View style={styles.radialCenterCircle}>
+                  <Text style={styles.radialScoreNumber}>{overallScore}</Text>
+                  <Text style={styles.radialScoreLabel}>/100</Text>
+                  <View style={[styles.radialStatusBadge, { backgroundColor: overallScore >= 70 ? '#b8dfd0' : '#d4bfeb' }]}>
+                    <Text style={[styles.radialStatusText, { color: overallScore >= 70 ? '#4a7c68' : '#7a5c9e' }]}>
                       {overallScore >= 70 ? t('good') : t('average')}
                     </Text>
                   </View>
                 </View>
-              </View>
-              <AnimatedScoreCircle score={overallScore} onPress={handleOverallScorePress} tapText={t('tap')} />
+              </TouchableOpacity>
+
+              {/* Orbital indicators - 12 positions like zodiac wheel */}
+              {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((angle, i) => {
+                const radian = (angle * Math.PI) / 180;
+                const radius = 105;
+                const x = Math.cos(radian) * radius;
+                const y = Math.sin(radian) * radius;
+                const opacity = (i % 3 === 0) ? 1 : 0.4;
+                return (
+                  <View
+                    key={i}
+                    style={[
+                      styles.radialOrbitalDot,
+                      {
+                        left: 110 + x - 3,
+                        top: 110 + y - 3,
+                        opacity,
+                        backgroundColor: i % 3 === 0 ? '#9babc7' : '#c5d0e3',
+                      },
+                    ]}
+                  />
+                );
+              })}
             </View>
 
-            <LinearGradient colors={['#fff7ed', '#fef3c7']} style={styles.insightBox}>
+            <View style={styles.insightBox}>
               <PulsingSparkle />
               <Text style={styles.insightText}>
                 {jathagam?.dasha?.mahadasha
@@ -2262,7 +2290,7 @@ export default function DashboardScreen({ navigation }) {
                   : t('defaultInsight')
                 }
               </Text>
-            </LinearGradient>
+            </View>
           </AnimatedCard>
 
           {/* Life Areas */}
