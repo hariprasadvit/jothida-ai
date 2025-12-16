@@ -26,7 +26,36 @@ export const KolamPattern = ({ color = "#d4a574", opacity = 0.35, style }) => {
   );
 };
 
-// 2. Scallop / Temple Arch Pattern (Subtle Illustration)
+// 2. Interlocking Circle Pattern (Subtle Illustration - matches reference)
+export const InterlockCirclePattern = ({
+  color = "#e8d5c4",
+  opacity = 0.08,
+  ringSize = 52,
+  gap = 22,
+  strokeWidth = 1.5,
+  style,
+}) => {
+  const patternId = useRef(`interlock-${Math.random().toString(36).slice(2)}`).current;
+  const tile = ringSize + gap;
+
+  return (
+    <View pointerEvents="none" style={[styles.absoluteFill, style, { opacity }]}>
+      <Svg width="100%" height="100%">
+        <Defs>
+          <Pattern id={patternId} x="0" y="0" width={tile} height={tile} patternUnits="userSpaceOnUse">
+            <Circle cx={ringSize / 2} cy={ringSize / 2} r={ringSize / 2} fill="none" stroke={color} strokeWidth={strokeWidth} opacity={0.55} />
+            <Circle cx={ringSize / 2 + tile / 2} cy={ringSize / 2} r={ringSize / 2} fill="none" stroke={color} strokeWidth={strokeWidth} opacity={0.45} />
+            <Circle cx={ringSize / 2} cy={ringSize / 2 + tile / 2} r={ringSize / 2} fill="none" stroke={color} strokeWidth={strokeWidth} opacity={0.45} />
+            <Circle cx={ringSize / 2 + tile / 2} cy={ringSize / 2 + tile / 2} r={ringSize / 2} fill="none" stroke={color} strokeWidth={strokeWidth} opacity={0.35} />
+          </Pattern>
+        </Defs>
+        <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${patternId})`} />
+      </Svg>
+    </View>
+  );
+};
+
+// 3. Scallop / Temple Arch Pattern (Subtle Illustration)
 // View-based (not SVG) to ensure it renders reliably on native + web.
 export const ScallopPattern = ({
   color = "#e8d5c4",
