@@ -586,9 +586,11 @@ export default function OnboardingScreen({ navigation }) {
   };
 
   const completeOnboarding = async () => {
+    console.log('Completing onboarding, navigation object:', navigation);
     try {
       await setStorageItem('onboardingComplete', 'true');
-      
+      console.log('Onboarding status saved');
+
       Animated.sequence([
         Animated.timing(fadeAnim, {
           toValue: 0,
@@ -596,11 +598,18 @@ export default function OnboardingScreen({ navigation }) {
           useNativeDriver: true,
         }),
       ]).start(() => {
-        navigation.replace('Login');
+        console.log('Animation complete, navigating to Login');
+        if (navigation && navigation.replace) {
+          navigation.replace('Login');
+        } else {
+          console.error('Navigation object not available or missing replace method');
+        }
       });
     } catch (error) {
       console.error('Error saving onboarding status:', error);
-      navigation.replace('Login');
+      if (navigation && navigation.replace) {
+        navigation.replace('Login');
+      }
     }
   };
 
