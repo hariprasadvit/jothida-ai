@@ -15,45 +15,6 @@ import { useLanguage, languageOptions } from '../context/LanguageContext';
 
 const { width, height } = Dimensions.get('window');
 
-// Mango Leaf Component - More detailed and realistic
-const MangoLeaf = ({ x, y, rotation = 0, scale = 1 }) => (
-  <G transform={`translate(${x}, ${y}) rotate(${rotation}) scale(${scale})`}>
-    {/* Leaf body with gradient effect */}
-    <Path
-      d="M0 0 Q6 -12 0 -32 Q-6 -12 0 0"
-      fill="#166534"
-      stroke="#15803d"
-      strokeWidth="0.3"
-    />
-    {/* Center vein */}
-    <Path
-      d="M0 -3 L0 -28"
-      stroke="#22c55e"
-      strokeWidth="0.6"
-    />
-    {/* Side veins */}
-    <Path d="M0 -8 L-3 -12" stroke="#22c55e" strokeWidth="0.3" />
-    <Path d="M0 -8 L3 -12" stroke="#22c55e" strokeWidth="0.3" />
-    <Path d="M0 -14 L-3.5 -18" stroke="#22c55e" strokeWidth="0.3" />
-    <Path d="M0 -14 L3.5 -18" stroke="#22c55e" strokeWidth="0.3" />
-    <Path d="M0 -20 L-2.5 -24" stroke="#22c55e" strokeWidth="0.3" />
-    <Path d="M0 -20 L2.5 -24" stroke="#22c55e" strokeWidth="0.3" />
-  </G>
-);
-
-// Small Leaf for filling gaps
-const SmallLeaf = ({ x, y, rotation = 0 }) => (
-  <G transform={`translate(${x}, ${y}) rotate(${rotation})`}>
-    <Path
-      d="M0 0 Q3 -8 0 -18 Q-3 -8 0 0"
-      fill="#15803d"
-      stroke="#166534"
-      strokeWidth="0.2"
-    />
-    <Path d="M0 -2 L0 -15" stroke="#22c55e" strokeWidth="0.4" />
-  </G>
-);
-
 // Marigold Flower Component - More petals for realistic look
 const MarigoldFlower = ({ cx, cy, size = 20, color = '#f97316' }) => (
   <G>
@@ -126,10 +87,10 @@ const RoseFlower = ({ cx, cy, size = 16 }) => (
   </G>
 );
 
-// Toran (Mango Leaf Decoration) - Denser with multiple rows
+// Toran (Flower Decoration) - Multiple rows of flowers
 const Toran = ({ toranWidth }) => {
-  const leafCount = Math.floor(toranWidth / 10); // More leaves
-  const smallLeafCount = Math.floor(toranWidth / 12);
+  const flowerCount = Math.floor(toranWidth / 25); // Flowers instead of leaves
+  const smallFlowerCount = Math.floor(toranWidth / 30);
   return (
     <Svg width={toranWidth} height={85} viewBox={`0 0 ${toranWidth} 85`}>
       {/* Rope/String */}
@@ -146,61 +107,70 @@ const Toran = ({ toranWidth }) => {
         fill="none"
       />
 
-      {/* Back row of small leaves */}
-      {[...Array(smallLeafCount)].map((_, i) => {
-        const x = (i / smallLeafCount) * toranWidth + 6;
-        const curveY = 12 + Math.sin((i / smallLeafCount) * Math.PI) * 5;
-        const rotation = -15 + (i % 4) * 10;
+      {/* Back row of small flowers */}
+      {[...Array(smallFlowerCount)].map((_, i) => {
+        const x = (i / smallFlowerCount) * toranWidth + 15;
+        const curveY = 12 + Math.sin((i / smallFlowerCount) * Math.PI) * 5;
         return (
-          <SmallLeaf
+          <MarigoldFlower
             key={`small-${i}`}
-            x={x}
-            y={curveY + 22}
-            rotation={rotation}
+            cx={x}
+            cy={curveY + 25}
+            size={10}
+            color={i % 2 === 0 ? '#fbbf24' : '#fde047'}
           />
         );
       })}
 
-      {/* Main row of mango leaves */}
-      {[...Array(leafCount)].map((_, i) => {
-        const x = (i / leafCount) * toranWidth + 5;
-        const curveY = 12 + Math.sin((i / leafCount) * Math.PI) * 6;
-        const rotation = -12 + (i % 5) * 6;
+      {/* Main row of marigold flowers */}
+      {[...Array(flowerCount)].map((_, i) => {
+        const x = (i / flowerCount) * toranWidth + 12;
+        const curveY = 12 + Math.sin((i / flowerCount) * Math.PI) * 6;
         return (
-          <MangoLeaf
+          <MarigoldFlower
             key={`main-${i}`}
-            x={x}
-            y={curveY + 35}
-            rotation={rotation}
-            scale={0.75}
+            cx={x}
+            cy={curveY + 40}
+            size={18}
+            color={i % 3 === 0 ? '#f97316' : i % 3 === 1 ? '#fb923c' : '#fbbf24'}
           />
         );
       })}
 
-      {/* Front row alternating */}
-      {[...Array(Math.floor(leafCount / 2))].map((_, i) => {
-        const x = (i / (leafCount / 2)) * toranWidth + 10;
-        const curveY = 12 + Math.sin((i / (leafCount / 2)) * Math.PI) * 6;
+      {/* Front row alternating with roses */}
+      {[...Array(Math.floor(flowerCount * 0.7))].map((_, i) => {
+        const x = (i / (flowerCount * 0.7)) * toranWidth + 20;
+        const curveY = 12 + Math.sin((i / (flowerCount * 0.7)) * Math.PI) * 6;
+        if (i % 3 === 0) {
+          return (
+            <RoseFlower
+              key={`front-${i}`}
+              cx={x}
+              cy={curveY + 55}
+              size={14}
+            />
+          );
+        }
         return (
-          <MangoLeaf
+          <MarigoldFlower
             key={`front-${i}`}
-            x={x}
-            y={curveY + 42}
-            rotation={(i % 2 === 0 ? -8 : 8)}
-            scale={0.6}
+            cx={x}
+            cy={curveY + 55}
+            size={15}
+            color={i % 2 === 0 ? '#f97316' : '#fdba74'}
           />
         );
       })}
 
-      {/* Decorative flowers on toran */}
-      {[...Array(5)].map((_, i) => {
-        const x = 40 + (i * (toranWidth - 80) / 4);
+      {/* Top accent flowers */}
+      {[...Array(6)].map((_, i) => {
+        const x = 30 + (i * (toranWidth - 60) / 5);
         return (
           <MarigoldFlower
             key={`toran-flower-${i}`}
             cx={x}
             cy={15}
-            size={12}
+            size={13}
             color={i % 2 === 0 ? '#f97316' : '#fbbf24'}
           />
         );
@@ -209,54 +179,58 @@ const Toran = ({ toranWidth }) => {
   );
 };
 
-// Hanging Marigold String - Denser with mixed flowers
+// Hanging Marigold String - Dense flower garland
 const HangingMarigold = ({ length }) => {
-  const flowerCount = Math.floor(length / 18); // More flowers
+  const flowerCount = Math.floor(length / 16); // More flowers, closer together
   return (
-    <Svg width={45} height={length} viewBox={`0 0 45 ${length}`}>
+    <Svg width={50} height={length} viewBox={`0 0 50 ${length}`}>
       {/* Dual strings for realistic look */}
-      <Path d={`M18 0 L18 ${length}`} stroke="#84cc16" strokeWidth="2" />
-      <Path d={`M27 0 L27 ${length}`} stroke="#84cc16" strokeWidth="2" />
-      <Path d={`M22 0 L22 ${length}`} stroke="#65a30d" strokeWidth="1" />
+      <Path d={`M20 0 L20 ${length}`} stroke="#84cc16" strokeWidth="2.5" />
+      <Path d={`M30 0 L30 ${length}`} stroke="#84cc16" strokeWidth="2.5" />
+      <Path d={`M25 0 L25 ${length}`} stroke="#65a30d" strokeWidth="1.5" />
 
-      {/* Small connecting leaves */}
-      {[...Array(Math.floor(flowerCount * 1.5))].map((_, i) => (
-        <G key={`leaf-${i}`}>
-          <Path
-            d={`M22 ${8 + i * 12} Q18 ${12 + i * 12} 16 ${8 + i * 12}`}
-            stroke="#22c55e"
-            strokeWidth="1"
-            fill="none"
+      {/* Small decorative petals between flowers */}
+      {[...Array(Math.floor(flowerCount * 2))].map((_, i) => (
+        <G key={`petal-${i}`}>
+          <Ellipse
+            cx={18}
+            cy={5 + i * 8}
+            rx={3}
+            ry={5}
+            fill="#fbbf24"
+            opacity="0.6"
           />
-          <Path
-            d={`M22 ${8 + i * 12} Q26 ${12 + i * 12} 28 ${8 + i * 12}`}
-            stroke="#22c55e"
-            strokeWidth="1"
-            fill="none"
+          <Ellipse
+            cx={32}
+            cy={5 + i * 8}
+            rx={3}
+            ry={5}
+            fill="#fb923c"
+            opacity="0.6"
           />
         </G>
       ))}
 
-      {/* Alternating marigold and rose flowers */}
+      {/* Dense alternating marigold and rose flowers */}
       {[...Array(flowerCount)].map((_, i) => {
-        const yPos = 10 + i * 18;
-        if (i % 3 === 2) {
+        const yPos = 8 + i * 16;
+        if (i % 4 === 3) {
           return (
             <RoseFlower
               key={`flower-${i}`}
-              cx={22}
+              cx={25}
               cy={yPos}
-              size={14}
+              size={15}
             />
           );
         }
         return (
           <MarigoldFlower
             key={`flower-${i}`}
-            cx={22}
+            cx={25}
             cy={yPos}
-            size={16}
-            color={i % 2 === 0 ? '#f97316' : '#fbbf24'}
+            size={17}
+            color={i % 3 === 0 ? '#f97316' : i % 3 === 1 ? '#fbbf24' : '#fb923c'}
           />
         );
       })}
@@ -622,13 +596,15 @@ const styles = StyleSheet.create({
   },
   languageOptions: {
     width: '100%',
-    gap: 12,
+    maxWidth: 500,
+    gap: 14,
   },
   languageButton: {
     borderRadius: 16,
     overflow: 'hidden',
     borderWidth: 2,
     borderColor: '#fed7aa',
+    minWidth: '100%',
   },
   languageButtonSelected: {
     borderColor: '#f97316',
@@ -636,8 +612,8 @@ const styles = StyleSheet.create({
   languageButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
+    paddingVertical: 18,
+    paddingHorizontal: 28,
   },
   languageName: {
     fontSize: 22,
