@@ -266,7 +266,7 @@ const translateEventLabel = (event, language, t) => {
 // ============== RASHI PALAN DATA & COMPONENT ==============
 
 // Zodiac sprite image URL
-const ZODIAC_SPRITE_URL = 'https://cdn.builder.io/api/v1/image/assets%2Feb321189c4b84461803d094998b7a875%2F76cbc95c6f4b42b6ad4a9f5ea6f304da?format=webp&width=800';
+const ZODIAC_SPRITE_URL = 'https://cdn.builder.io/api/v1/image/assets%2Feb321189c4b84461803d094998b7a875%2F39cb8d9bc03a4c5e838dd65500c02316?format=webp&width=800';
 
 // 12 Zodiac signs with sprite positions (4 columns x 3 rows)
 const RASHI_DATA = [
