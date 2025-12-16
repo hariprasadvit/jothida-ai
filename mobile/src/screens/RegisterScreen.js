@@ -1062,6 +1062,10 @@ const styles = StyleSheet.create({
     top: 2,
     right: 2,
   },
+  webInputWrapper: {
+    width: '100%',
+    overflow: 'hidden',
+  },
   pickerButton: {
     flexDirection: 'row',
     alignItems: 'center',
