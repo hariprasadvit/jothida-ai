@@ -12,7 +12,7 @@ import {
   Easing,
   Modal,
   Dimensions,
-  Image,
+  ImageBackground,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -409,23 +409,31 @@ const RashiPalanTicker = ({ transits, language, t, userRashi, onRashiPress }) =>
               userRashi.toLowerCase().includes(rashi.key.substring(0, 4))
             );
 
-            const spriteSize = 32;
-            const spriteWidth = spriteSize * 4;
-            const spriteHeight = spriteSize * 3;
+            const iconSize = 32;
+            const totalCols = 4;
+            const totalRows = 3;
+
+            // Calculate the position as percentage
+            const xPercent = (rashi.spriteCol / (totalCols - 1)) * 100;
+            const yPercent = (rashi.spriteRow / (totalRows - 1)) * 100;
 
             return (
               <View key={`${rashi.key}-${index}`} style={rashiTickerStyles.rashiItem}>
-                <View style={[rashiTickerStyles.iconContainer, { width: spriteSize, height: spriteSize, borderRadius: spriteSize / 2 }]}>
-                  <Image
+                <View style={[rashiTickerStyles.iconContainer, { width: iconSize, height: iconSize, borderRadius: iconSize / 2 }]}>
+                  <ImageBackground
                     source={{ uri: ZODIAC_SPRITE_URL }}
                     style={{
-                      position: 'absolute',
-                      width: spriteWidth,
-                      height: spriteHeight,
-                      left: -(rashi.spriteCol * spriteSize),
-                      top: -(rashi.spriteRow * spriteSize),
+                      width: '100%',
+                      height: '100%',
                     }}
-                    resizeMode="cover"
+                    imageStyle={{
+                      resizeMode: 'cover',
+                      transform: [
+                        { scale: totalCols },
+                        { translateX: -(rashi.spriteCol * iconSize) },
+                        { translateY: -(rashi.spriteRow * iconSize) },
+                      ],
+                    }}
                   />
                 </View>
                 <Text style={[
