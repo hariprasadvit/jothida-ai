@@ -201,6 +201,29 @@ async def download_user_report(
     )
 
 
+@router.get("/debug")
+async def debug_report_engine():
+    """Debug endpoint to check V7 engine availability"""
+    from app.services.pdf_report_v6 import TIME_ADAPTIVE_AVAILABLE, FUTURE_PROJECTION_AVAILABLE
+    try:
+        from app.services.time_adaptive_engine import TimeAdaptiveEngine, TimeMode
+        v7_import_ok = True
+        v7_version = getattr(TimeAdaptiveEngine, 'ENGINE_VERSION', 'unknown')
+        time_modes = [m.name for m in TimeMode] if TimeMode else []
+    except Exception as e:
+        v7_import_ok = False
+        v7_version = str(e)
+        time_modes = []
+
+    return {
+        "TIME_ADAPTIVE_AVAILABLE": TIME_ADAPTIVE_AVAILABLE,
+        "FUTURE_PROJECTION_AVAILABLE": FUTURE_PROJECTION_AVAILABLE,
+        "v7_import_ok": v7_import_ok,
+        "v7_version": v7_version,
+        "time_modes": time_modes
+    }
+
+
 @router.get("/preview")
 async def preview_report_info():
     """
@@ -208,7 +231,7 @@ async def preview_report_info():
     """
     return {
         "report_name": "Comprehensive Jathagam Report",
-        "pages": "60+ pages",
+        "pages": "44 pages (V6.2 + V7.0)",
         "sections": [
             "Cover Page with Birth Details",
             "Table of Contents",
