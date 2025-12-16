@@ -218,54 +218,58 @@ const Toran = ({ toranWidth }) => {
   );
 };
 
-// Hanging Marigold String - Denser with mixed flowers
+// Hanging Marigold String - Dense flower garland
 const HangingMarigold = ({ length }) => {
-  const flowerCount = Math.floor(length / 18); // More flowers
+  const flowerCount = Math.floor(length / 16); // More flowers, closer together
   return (
-    <Svg width={45} height={length} viewBox={`0 0 45 ${length}`}>
+    <Svg width={50} height={length} viewBox={`0 0 50 ${length}`}>
       {/* Dual strings for realistic look */}
-      <Path d={`M18 0 L18 ${length}`} stroke="#84cc16" strokeWidth="2" />
-      <Path d={`M27 0 L27 ${length}`} stroke="#84cc16" strokeWidth="2" />
-      <Path d={`M22 0 L22 ${length}`} stroke="#65a30d" strokeWidth="1" />
+      <Path d={`M20 0 L20 ${length}`} stroke="#84cc16" strokeWidth="2.5" />
+      <Path d={`M30 0 L30 ${length}`} stroke="#84cc16" strokeWidth="2.5" />
+      <Path d={`M25 0 L25 ${length}`} stroke="#65a30d" strokeWidth="1.5" />
 
-      {/* Small connecting leaves */}
-      {[...Array(Math.floor(flowerCount * 1.5))].map((_, i) => (
-        <G key={`leaf-${i}`}>
-          <Path
-            d={`M22 ${8 + i * 12} Q18 ${12 + i * 12} 16 ${8 + i * 12}`}
-            stroke="#22c55e"
-            strokeWidth="1"
-            fill="none"
+      {/* Small decorative petals between flowers */}
+      {[...Array(Math.floor(flowerCount * 2))].map((_, i) => (
+        <G key={`petal-${i}`}>
+          <Ellipse
+            cx={18}
+            cy={5 + i * 8}
+            rx={3}
+            ry={5}
+            fill="#fbbf24"
+            opacity="0.6"
           />
-          <Path
-            d={`M22 ${8 + i * 12} Q26 ${12 + i * 12} 28 ${8 + i * 12}`}
-            stroke="#22c55e"
-            strokeWidth="1"
-            fill="none"
+          <Ellipse
+            cx={32}
+            cy={5 + i * 8}
+            rx={3}
+            ry={5}
+            fill="#fb923c"
+            opacity="0.6"
           />
         </G>
       ))}
 
-      {/* Alternating marigold and rose flowers */}
+      {/* Dense alternating marigold and rose flowers */}
       {[...Array(flowerCount)].map((_, i) => {
-        const yPos = 10 + i * 18;
-        if (i % 3 === 2) {
+        const yPos = 8 + i * 16;
+        if (i % 4 === 3) {
           return (
             <RoseFlower
               key={`flower-${i}`}
-              cx={22}
+              cx={25}
               cy={yPos}
-              size={14}
+              size={15}
             />
           );
         }
         return (
           <MarigoldFlower
             key={`flower-${i}`}
-            cx={22}
+            cx={25}
             cy={yPos}
-            size={16}
-            color={i % 2 === 0 ? '#f97316' : '#fbbf24'}
+            size={17}
+            color={i % 3 === 0 ? '#f97316' : i % 3 === 1 ? '#fbbf24' : '#fb923c'}
           />
         );
       })}
@@ -631,13 +635,15 @@ const styles = StyleSheet.create({
   },
   languageOptions: {
     width: '100%',
-    gap: 12,
+    maxWidth: 500,
+    gap: 14,
   },
   languageButton: {
     borderRadius: 16,
     overflow: 'hidden',
     borderWidth: 2,
     borderColor: '#fed7aa',
+    minWidth: '100%',
   },
   languageButtonSelected: {
     borderColor: '#f97316',
@@ -645,8 +651,8 @@ const styles = StyleSheet.create({
   languageButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
+    paddingVertical: 18,
+    paddingHorizontal: 28,
   },
   languageName: {
     fontSize: 22,
