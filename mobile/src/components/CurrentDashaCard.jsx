@@ -126,7 +126,7 @@ export default function CurrentDashaCard({
                 {language === 'ta' ? 'அந்தர தசா' : 'ANTAR DASHA'}
               </Text>
               <LinearGradient
-                colors={['#ede9fe', '#ddd6fe']}
+                colors={['#fff8f0', '#fff7ed']}
                 style={styles.dashaValueBg}
               >
                 <Text style={styles.dashaValue}>
