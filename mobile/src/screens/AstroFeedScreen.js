@@ -654,15 +654,42 @@ export default function AstroFeedScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      {/* Bottom Actions */}
+      {/* Quick Story Icons (same order as Dashboard) */}
+      <View style={[styles.quickNavRow, { top: insets.top + 72 }]}>
+        {[
+          { key: 'planet', index: 0, label: t('planet'), icon: 'sunny', colors: ['#f97316', '#ef4444', '#ec4899'] },
+          { key: 'moon', index: 1, label: t('moon'), icon: 'moon', colors: ['#8b5cf6', '#6366f1', '#3b82f6'] },
+          { key: 'insight', index: 2, label: t('insight'), icon: 'sparkles', colors: ['#22c55e', '#16a34a', '#15803d'] },
+          { key: 'star', index: 3, label: t('star'), icon: 'star', colors: ['#f59e0b', '#d97706', '#b45309'] },
+          { key: 'more', index: 4, label: t('more'), icon: 'add', colors: ['#f97316', '#f59e0b', '#fb923c'] },
+        ].map((item) => {
+          const isActive = currentIndex === item.index;
+          return (
+            <TouchableOpacity
+              key={item.key}
+              style={[styles.quickNavItem, isActive && styles.quickNavItemActive]}
+              activeOpacity={0.8}
+              onPress={() => {
+                setCurrentIndex(item.index);
+                flatListRef.current?.scrollToIndex({ index: item.index, animated: true });
+              }}
+            >
+              <LinearGradient colors={item.colors} style={styles.quickNavBorder}>
+                <View style={styles.quickNavInner}>
+                  <Ionicons name={item.icon} size={18} color={item.key === 'moon' ? '#a78bfa' : item.key === 'insight' ? '#22c55e' : item.key === 'star' ? '#f59e0b' : '#f59e0b'} />
+                </View>
+              </LinearGradient>
+              <Text style={styles.quickNavLabel}>{item.label}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      {/* Swipe hint */}
       <View style={[styles.bottomBar, { bottom: insets.bottom + 18 }]}>
         <Text style={styles.swipeHint}>
           {language === 'en' ? 'Swipe left/right' : language === 'kn' ? 'ಎಡ/ಬಲಕ್ಕೆ ಸ್ವೈಪ್ ಮಾಡಿ' : 'இடது/வலது ஸ்வைப் செய்யுங்கள்'}
         </Text>
-        <TouchableOpacity style={styles.primaryAction} onPress={() => navigation.navigate('Chat')} activeOpacity={0.9}>
-          <Ionicons name="chatbubble-ellipses" size={18} color="#fff" />
-          <Text style={styles.primaryActionText}>{language === 'en' ? 'Ask AI' : language === 'kn' ? 'AI ಕೇಳಿ' : 'AI கேள்'}</Text>
-        </TouchableOpacity>
       </View>
 
       {/* Story Counter */}
@@ -1404,20 +1431,42 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     marginBottom: 10,
   },
-  primaryAction: {
+  quickNavRow: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#f97316',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#ea580c',
+    justifyContent: 'center',
+    gap: 14,
+    zIndex: 20,
   },
-  primaryActionText: {
-    color: '#fff',
-    fontWeight: '900',
-    letterSpacing: 0.3,
+  quickNavItem: {
+    alignItems: 'center',
+    width: 56,
+  },
+  quickNavItemActive: {
+    transform: [{ scale: 1.03 }],
+  },
+  quickNavBorder: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    padding: 2,
+  },
+  quickNavInner: {
+    flex: 1,
+    borderRadius: 22,
+    backgroundColor: '#fff8f0',
+    borderWidth: 1,
+    borderColor: '#e8d5c4',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  quickNavLabel: {
+    marginTop: 6,
+    fontSize: 10,
+    color: '#6b5644',
+    fontWeight: '800',
+    textAlign: 'center',
   },
 });
