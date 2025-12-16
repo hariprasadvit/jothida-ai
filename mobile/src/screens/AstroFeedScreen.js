@@ -469,6 +469,17 @@ export default function AstroFeedScreen({ navigation }) {
       const loadedStories = generateStories(dailyScore);
       setStories(loadedStories);
       setLoading(false);
+
+      // Scroll to initial story if specified
+      const initialIndex = getInitialStoryIndex();
+      if (initialIndex > 0 && flatListRef.current) {
+        setTimeout(() => {
+          flatListRef.current?.scrollToIndex({
+            index: initialIndex,
+            animated: false,
+          });
+        }, 100);
+      }
     }
   }, [generateStories, dailyScore, scoreLoaded]);
 
