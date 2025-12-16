@@ -22,6 +22,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { mobileAPI } from '../services/api';
 import { populateScoreCache } from '../services/scoringService';
 import notificationService from '../services/notificationService';
+import { InterlockCirclePattern, LotusCorner, OmWatermark } from '../components/DivinePatterns';
 
 const { width } = Dimensions.get('window');
 
@@ -1596,8 +1597,6 @@ const TimelineYearModal = ({ visible, onClose, data, language, t }) => {
   );
 };
 
-import { InterlockCirclePattern, LotusCorner, OmWatermark } from '../components/DivinePatterns';
-
 export default function DashboardScreen({ navigation }) {
   const { userProfile } = useAuth();
   const { t, formatDate, language } = useLanguage();
@@ -2055,7 +2054,7 @@ export default function DashboardScreen({ navigation }) {
       {/* Warm auspicious gradient background */}
       <LinearGradient colors={['#faf7f2', '#f5ede5', '#fff8f0']} style={styles.gradient}>
         {/* Subtle illustration like reference (kept low opacity for readability) */}
-        <InterlockCirclePattern color="#e8d5c4" opacity={0.12} ringSize={52} gap={22} strokeWidth={2} />
+        <InterlockCirclePattern color="#e8d5c4" opacity={0.08} ringSize={52} gap={22} strokeWidth={1.5} />
         <ScrollView
           contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#f97316']} tintColor="#f97316" />}
