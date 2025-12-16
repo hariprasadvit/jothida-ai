@@ -2059,24 +2059,6 @@ export default function DashboardScreen({ navigation }) {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#f97316']} tintColor="#f97316" />}
           showsVerticalScrollIndicator={false}
         >
-          {/* Top accent bar */}
-          <LinearGradient
-            colors={['#f97316', '#ea580c', '#f97316']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.headerBar}
-          />
-
-          {/* Traditional top ornament (non-emoji, consistent with cards) */}
-          <View style={styles.topOrnament}>
-            <View style={styles.topOrnamentLine} />
-            <View style={styles.topOrnamentIcon}>
-              <DiyaIcon size={18} color="#d97706" />
-            </View>
-            <View style={styles.topOrnamentLine} />
-          </View>
-
-
           {/* Header */}
           <Animated.View
             style={[
@@ -3143,10 +3125,7 @@ const styles = StyleSheet.create({
 
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#faf7f2' },
   loadingText: { marginTop: 16, color: '#8b6f47', fontSize: 16, fontWeight: '600' },
-  headerBar: { height: 3, marginHorizontal: 16, marginTop: 10, borderRadius: 2 },
-  topOrnament: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 10, marginBottom: 4, marginHorizontal: 16 },
-  topOrnamentLine: { flex: 1, height: 1, backgroundColor: '#e8d5c4' },
-  topOrnamentIcon: { paddingHorizontal: 10, backgroundColor: '#faf7f2' },
+  headerBar: { height: 0 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: 24, paddingBottom: 20, backgroundColor: '#fff8f0', marginHorizontal: 16, marginTop: 16, borderRadius: 20, borderWidth: 1, borderColor: '#e8d5c4', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 3 },
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   logoIcon: { width: 36, height: 36 },
