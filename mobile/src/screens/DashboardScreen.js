@@ -2652,14 +2652,14 @@ export default function DashboardScreen({ navigation }) {
           {/* Aura Heatmap - Planet Strength Visualization */}
           {planetAura && (
             <AnimatedCard delay={600}>
-              <LinearGradient colors={['#1e1b4b', '#312e81']} style={[styles.card, styles.auraCard]}>
+              <View style={[styles.card, styles.auraCard]}>
                 <View style={styles.cardHeader}>
-                  <Ionicons name="planet" size={16} color="#a78bfa" />
-                  <Text style={[styles.cardTitle, { color: '#fff' }]}>
+                  <Ionicons name="planet" size={16} color="#c69c6d" />
+                  <Text style={styles.cardTitle}>
                     {t('planetAuraMap')}
                   </Text>
-                  <View style={[styles.auraBadge, { backgroundColor: planetAura.overall?.aura_color + '30' }]}>
-                    <Text style={[styles.auraBadgeText, { color: planetAura.overall?.aura_color }]}>
+                  <View style={styles.auraBadge}>
+                    <Text style={[styles.auraBadgeText, { color: '#8b6f47' }]}>
                       {planetAura.overall?.aura_score}%
                     </Text>
                   </View>
@@ -2817,7 +2817,7 @@ export default function DashboardScreen({ navigation }) {
                     </View>
                   )}
                 </View>
-              </LinearGradient>
+              </View>
             </AnimatedCard>
           )}
 
