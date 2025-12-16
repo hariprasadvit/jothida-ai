@@ -2048,7 +2048,7 @@ export default function DashboardScreen({ navigation }) {
   return (
     <View style={styles.container}>
       {/* Warm auspicious gradient background */}
-      <LinearGradient colors={['#fffbeb', '#fef3c7', '#fff7ed']} style={styles.gradient}>
+      <LinearGradient colors={['#f0f4f8', '#e5e9f2', '#dfe7f5']} style={styles.gradient}>
         <ScrollView
           contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#f97316']} tintColor="#f97316" />}
@@ -3100,13 +3100,13 @@ export default function DashboardScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  gradient: { flex: 1 },
+  gradient: { flex: 1, backgroundColor: '#e8ecf3' },
   scrollContent: { paddingHorizontal: 0 },
 
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fef3c7' },
-  loadingText: { marginTop: 16, color: '#92400e', fontSize: 16, fontWeight: '500' },
-  headerBar: { height: 4, marginHorizontal: -16, shadowColor: '#f97316', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 4 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: 20, paddingBottom: 16, backgroundColor: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(10px)', borderBottomWidth: 1, borderBottomColor: 'rgba(252, 211, 77, 0.3)', marginHorizontal: -16, paddingHorizontal: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 6 },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#e8ecf3' },
+  loadingText: { marginTop: 16, color: '#5a6c8f', fontSize: 16, fontWeight: '600' },
+  headerBar: { height: 0 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: 24, paddingBottom: 20, backgroundColor: '#e8ecf3', marginHorizontal: 16, marginTop: 16, borderRadius: 28, shadowColor: '#a3b9d9', shadowOffset: { width: -6, height: -6 }, shadowOpacity: 0.8, shadowRadius: 12, elevation: 0, borderWidth: 1, borderColor: '#f5f7fa' },
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   logoIcon: { width: 32, height: 32, shadowColor: '#f97316', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 3 },
   appTitle: { fontSize: 22, fontWeight: '900', color: '#9a3412', letterSpacing: 0.5 },
