@@ -257,11 +257,6 @@ const LocationPickerModal = ({ visible, onClose, onSelect, selectedPlace, t }) =
                   <Ionicons name="close-circle" size={20} color="#9ca3af" />
                 </TouchableOpacity>
               )
-            {isSearching && <ActivityIndicator size="small" color="#f97316" />}
-            {searchText.length > 0 && !isSearching && (
-              <TouchableOpacity onPress={() => setSearchText('')}>
-                <Ionicons name="close-circle" size={20} color="#9ca3af" />
-              </TouchableOpacity>
             )}
           </View>
 
