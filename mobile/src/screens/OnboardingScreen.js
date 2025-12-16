@@ -8,6 +8,7 @@ import {
   Animated,
   FlatList,
   Platform,
+  Easing,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -26,6 +27,169 @@ const setStorageItem = async (key, value) => {
 };
 
 const { width, height } = Dimensions.get('window');
+
+// Floating Particle Component
+const FloatingParticle = ({ delay = 0, duration = 3000, x, color = '#fbbf24' }) => {
+  const translateY = useRef(new Animated.Value(0)).current;
+  const opacity = useRef(new Animated.Value(0)).current;
+  const scale = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const animate = () => {
+      Animated.loop(
+        Animated.parallel([
+          Animated.sequence([
+            Animated.timing(opacity, {
+              toValue: 1,
+              duration: 800,
+              delay,
+              useNativeDriver: true,
+            }),
+            Animated.timing(opacity, {
+              toValue: 0,
+              duration: 800,
+              delay: duration - 1600,
+              useNativeDriver: true,
+            }),
+          ]),
+          Animated.timing(translateY, {
+            toValue: -height * 0.8,
+            duration,
+            delay,
+            easing: Easing.linear,
+            useNativeDriver: true,
+          }),
+          Animated.sequence([
+            Animated.timing(scale, {
+              toValue: 1,
+              duration: 400,
+              delay,
+              useNativeDriver: true,
+            }),
+            Animated.timing(scale, {
+              toValue: 0.5,
+              duration: 400,
+              delay: duration - 800,
+              useNativeDriver: true,
+            }),
+          ]),
+        ])
+      ).start();
+    };
+    animate();
+  }, []);
+
+  return (
+    <Animated.View
+      style={[
+        styles.particle,
+        {
+          left: x,
+          opacity,
+          transform: [{ translateY }, { scale }],
+        },
+      ]}
+    >
+      <View style={[styles.particleDot, { backgroundColor: color }]} />
+    </Animated.View>
+  );
+};
+
+// Shimmer Effect Component
+const ShimmerEffect = ({ colors = ['transparent', 'rgba(255,255,255,0.3)', 'transparent'] }) => {
+  const shimmerAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.timing(shimmerAnim, {
+        toValue: 1,
+        duration: 2000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    ).start();
+  }, []);
+
+  const translateX = shimmerAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-width, width],
+  });
+
+  return (
+    <Animated.View
+      style={[
+        styles.shimmerContainer,
+        { transform: [{ translateX }] },
+      ]}
+    >
+      <LinearGradient
+        colors={colors}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.shimmerGradient}
+      />
+    </Animated.View>
+  );
+};
+
+// Pulsing Glow Component
+const PulsingGlow = ({ size = 140, color = '#f97316' }) => {
+  const pulseAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 2000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 0,
+          duration: 2000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
+
+  const scale = pulseAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 1.15],
+  });
+
+  const opacity = pulseAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.3, 0.6],
+  });
+
+  return (
+    <Animated.View
+      style={[
+        styles.pulsingGlow,
+        {
+          width: size,
+          height: size,
+          opacity,
+          transform: [{ scale }],
+        },
+      ]}
+    >
+      <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <Defs>
+          <RadialGradient id="glowGradient" cx="50%" cy="50%" r="50%">
+            <Stop offset="0%" stopColor={color} stopOpacity="0.8" />
+            <Stop offset="50%" stopColor={color} stopOpacity="0.4" />
+            <Stop offset="100%" stopColor={color} stopOpacity="0" />
+          </RadialGradient>
+        </Defs>
+        <Circle cx={size / 2} cy={size / 2} r={size / 2} fill="url(#glowGradient)" />
+      </Svg>
+    </Animated.View>
+  );
+};
 
 // Onboarding content by language
 const getOnboardingData = (language) => {
@@ -194,54 +358,88 @@ const getOnboardingData = (language) => {
 
 const OnboardingItem = ({ item, index, scrollX }) => {
   const inputRange = [(index - 1) * width, index * width, (index + 1) * width];
+  const iconPulse = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(iconPulse, {
+          toValue: 1.05,
+          duration: 1500,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(iconPulse, {
+          toValue: 1,
+          duration: 1500,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
 
   const scale = scrollX.interpolate({
     inputRange,
-    outputRange: [0.8, 1, 0.8],
+    outputRange: [0.85, 1, 0.85],
     extrapolate: 'clamp',
   });
 
   const opacity = scrollX.interpolate({
     inputRange,
-    outputRange: [0.4, 1, 0.4],
+    outputRange: [0.5, 1, 0.5],
     extrapolate: 'clamp',
   });
 
   const translateY = scrollX.interpolate({
     inputRange,
-    outputRange: [50, 0, 50],
+    outputRange: [60, 0, 60],
     extrapolate: 'clamp',
   });
 
   const iconRotate = scrollX.interpolate({
     inputRange,
-    outputRange: ['45deg', '0deg', '-45deg'],
+    outputRange: ['30deg', '0deg', '-30deg'],
     extrapolate: 'clamp',
   });
 
   return (
     <View style={styles.slide}>
       <Animated.View style={[styles.content, { opacity, transform: [{ scale }, { translateY }] }]}>
-        {/* Icon Container */}
-        <Animated.View style={[styles.iconContainer, { transform: [{ rotate: iconRotate }] }]}>
-          <LinearGradient colors={item.gradient} style={styles.iconGradient}>
-            <Ionicons name={item.icon} size={60} color="#fff" />
-          </LinearGradient>
-          <View style={styles.iconSecondary}>
-            <Ionicons name={item.iconSecondary} size={24} color={item.gradient[0]} />
-          </View>
-        </Animated.View>
+        {/* Icon Container with Glow */}
+        <View style={styles.iconWrapper}>
+          <PulsingGlow size={180} color={item.gradient[0]} />
+          <Animated.View 
+            style={[
+              styles.iconContainer, 
+              { 
+                transform: [
+                  { rotate: iconRotate },
+                  { scale: iconPulse }
+                ] 
+              }
+            ]}
+          >
+            <LinearGradient colors={item.gradient} style={styles.iconGradient}>
+              <ShimmerEffect />
+              <Ionicons name={item.icon} size={70} color="#fff" />
+            </LinearGradient>
+            <View style={styles.iconSecondary}>
+              <Ionicons name={item.iconSecondary} size={28} color={item.gradient[0]} />
+            </View>
+          </Animated.View>
+        </View>
 
         {/* Text Content */}
         <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.subtitle}>{item.subtitle}</Text>
+        <Text style={[styles.subtitle, { color: item.gradient[0] }]}>{item.subtitle}</Text>
         <Text style={styles.description}>{item.description}</Text>
 
         {/* Features */}
         <View style={styles.featuresContainer}>
           {item.features.map((feature, i) => (
             <View key={i} style={[styles.featureBadge, { borderColor: item.gradient[0] }]}>
-              <Ionicons name="checkmark-circle" size={14} color={item.gradient[0]} />
+              <Ionicons name="checkmark-circle" size={16} color={item.gradient[0]} />
               <Text style={[styles.featureText, { color: item.gradient[0] }]}>{feature}</Text>
             </View>
           ))}
@@ -259,13 +457,13 @@ const Paginator = ({ data, scrollX }) => {
 
         const dotWidth = scrollX.interpolate({
           inputRange,
-          outputRange: [8, 24, 8],
+          outputRange: [10, 32, 10],
           extrapolate: 'clamp',
         });
 
         const opacity = scrollX.interpolate({
           inputRange,
-          outputRange: [0.3, 1, 0.3],
+          outputRange: [0.4, 1, 0.4],
           extrapolate: 'clamp',
         });
 
@@ -274,9 +472,19 @@ const Paginator = ({ data, scrollX }) => {
             key={index}
             style={[
               styles.dot,
-              { width: dotWidth, opacity, backgroundColor: item.gradient[0] },
+              { 
+                width: dotWidth, 
+                opacity,
+              },
             ]}
-          />
+          >
+            <LinearGradient
+              colors={item.gradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.dotGradient}
+            />
+          </Animated.View>
         );
       })}
     </View>
@@ -285,8 +493,6 @@ const Paginator = ({ data, scrollX }) => {
 
 export default function OnboardingScreen({ navigation }) {
   const { language, isLoading } = useLanguage();
-
-  // Memoize the onboarding data based on language
   const onboardingData = React.useMemo(() => getOnboardingData(language), [language]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -294,19 +500,27 @@ export default function OnboardingScreen({ navigation }) {
   const flatListRef = useRef(null);
   const insets = useSafeAreaInsets();
 
-  // Animated values for buttons
   const buttonScale = useRef(new Animated.Value(1)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideUpAnim = useRef(new Animated.Value(30)).current;
 
   useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 800,
-      useNativeDriver: true,
-    }).start();
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 1000,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideUpAnim, {
+        toValue: 0,
+        friction: 8,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+    ]).start();
   }, []);
 
-  // If language is still loading, wait
   if (isLoading) {
     return (
       <View style={styles.container}>
@@ -328,8 +542,24 @@ export default function OnboardingScreen({ navigation }) {
   const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
 
   const handleNext = () => {
+    Animated.sequence([
+      Animated.timing(buttonScale, {
+        toValue: 0.9,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.spring(buttonScale, {
+        toValue: 1,
+        friction: 4,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
     if (currentIndex < onboardingData.length - 1) {
-      flatListRef.current?.scrollToIndex({ index: currentIndex + 1 });
+      flatListRef.current?.scrollToIndex({ 
+        index: currentIndex + 1,
+        animated: true 
+      });
     } else {
       completeOnboarding();
     }
@@ -342,7 +572,16 @@ export default function OnboardingScreen({ navigation }) {
   const completeOnboarding = async () => {
     try {
       await setStorageItem('onboardingComplete', 'true');
-      navigation.replace('Login');
+      
+      Animated.sequence([
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        navigation.replace('Login');
+      });
     } catch (error) {
       console.error('Error saving onboarding status:', error);
       navigation.replace('Login');
@@ -351,7 +590,8 @@ export default function OnboardingScreen({ navigation }) {
 
   const handlePressIn = () => {
     Animated.spring(buttonScale, {
-      toValue: 0.95,
+      toValue: 0.96,
+      friction: 4,
       useNativeDriver: true,
     }).start();
   };
@@ -367,7 +607,6 @@ export default function OnboardingScreen({ navigation }) {
   const isLastSlide = currentIndex === onboardingData.length - 1;
   const currentItem = onboardingData[currentIndex];
 
-  // Button text based on language
   const skipText = language === 'en' ? 'Skip' : language === 'kn' ? 'ಬಿಡಿ' : 'தவிர்';
   const nextText = language === 'en' ? 'Next' : language === 'kn' ? 'ಮುಂದೆ' : 'அடுத்து';
   const startText = language === 'en' ? 'Get Started' : language === 'kn' ? 'ಪ್ರಾರಂಭಿಸಿ' : 'தொடங்கு';
@@ -375,14 +614,34 @@ export default function OnboardingScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#fff7ed', '#ffffff', '#fff7ed']}
+        colors={['#fff7ed', '#fef3c7', '#fed7aa']}
         style={styles.gradient}
       >
+        {/* Floating Particles */}
+        {[...Array(8)].map((_, i) => (
+          <FloatingParticle
+            key={i}
+            delay={i * 400}
+            duration={3000 + i * 200}
+            x={Math.random() * width}
+            color={i % 2 === 0 ? '#fbbf24' : '#f97316'}
+          />
+        ))}
+
         {/* Header */}
-        <Animated.View style={[styles.header, { opacity: fadeAnim, paddingTop: insets.top + 10 }]}>
+        <Animated.View 
+          style={[
+            styles.header, 
+            { 
+              opacity: fadeAnim, 
+              paddingTop: insets.top + 10,
+              transform: [{ translateY: slideUpAnim }]
+            }
+          ]}
+        >
           <View style={styles.logoContainer}>
             <View style={styles.logoIcon}>
-              <Svg width={24} height={24} viewBox="0 0 100 100">
+              <Svg width={28} height={28} viewBox="0 0 100 100">
                 <Path
                   d="M50 5 L55 40 L90 30 L60 50 L90 70 L55 60 L50 95 L45 60 L10 70 L40 50 L10 30 L45 40 Z"
                   fill="#f97316"
@@ -393,7 +652,11 @@ export default function OnboardingScreen({ navigation }) {
             <Text style={styles.logoText}>jothida.ai</Text>
           </View>
           {!isLastSlide && (
-            <TouchableOpacity onPress={handleSkip} style={styles.skipBtn}>
+            <TouchableOpacity 
+              onPress={handleSkip} 
+              style={styles.skipBtn}
+              activeOpacity={0.7}
+            >
               <Text style={styles.skipText}>{skipText}</Text>
               <Ionicons name="chevron-forward" size={16} color="#6b7280" />
             </TouchableOpacity>
@@ -402,10 +665,10 @@ export default function OnboardingScreen({ navigation }) {
 
         {/* Slides */}
         <FlatList
-          key={language} // Force re-render when language changes
+          key={language}
           ref={flatListRef}
           data={onboardingData}
-          extraData={language} // Re-render when language changes
+          extraData={language}
           renderItem={({ item, index }) => (
             <OnboardingItem item={item} index={index} scrollX={scrollX} />
           )}
@@ -420,11 +683,21 @@ export default function OnboardingScreen({ navigation }) {
           )}
           onViewableItemsChanged={viewableItemsChanged}
           viewabilityConfig={viewConfig}
-          scrollEventThrottle={32}
+          scrollEventThrottle={16}
+          decelerationRate="fast"
         />
 
         {/* Footer */}
-        <View style={[styles.footer, { paddingBottom: insets.bottom + 20 }]}>
+        <Animated.View 
+          style={[
+            styles.footer, 
+            { 
+              paddingBottom: insets.bottom + 20,
+              opacity: fadeAnim,
+              transform: [{ translateY: slideUpAnim }]
+            }
+          ]}
+        >
           <Paginator data={onboardingData} scrollX={scrollX} />
 
           <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
@@ -432,7 +705,8 @@ export default function OnboardingScreen({ navigation }) {
               onPress={handleNext}
               onPressIn={handlePressIn}
               onPressOut={handlePressOut}
-              activeOpacity={0.9}
+              activeOpacity={0.95}
+              style={styles.buttonWrapper}
             >
               <LinearGradient
                 colors={currentItem.gradient}
@@ -440,18 +714,19 @@ export default function OnboardingScreen({ navigation }) {
                 end={{ x: 1, y: 0 }}
                 style={styles.nextBtn}
               >
+                <ShimmerEffect colors={['transparent', 'rgba(255,255,255,0.4)', 'transparent']} />
                 <Text style={styles.nextBtnText}>
                   {isLastSlide ? startText : nextText}
                 </Text>
                 <Ionicons
                   name={isLastSlide ? 'rocket' : 'arrow-forward'}
-                  size={20}
+                  size={22}
                   color="#fff"
                 />
               </LinearGradient>
             </TouchableOpacity>
           </Animated.View>
-        </View>
+        </Animated.View>
       </LinearGradient>
     </View>
   );
@@ -464,6 +739,35 @@ const styles = StyleSheet.create({
   gradient: {
     flex: 1,
   },
+  particle: {
+    position: 'absolute',
+    bottom: 0,
+  },
+  particleDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    shadowColor: '#f97316',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  shimmerContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    overflow: 'hidden',
+  },
+  shimmerGradient: {
+    width: width * 0.5,
+    height: '100%',
+  },
+  pulsingGlow: {
+    position: 'absolute',
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -474,28 +778,35 @@ const styles = StyleSheet.create({
   logoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
   logoIcon: {
-    width: 24,
-    height: 24,
+    width: 28,
+    height: 28,
   },
   logoText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#9a3412',
+    letterSpacing: 0.5,
   },
   skipBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    backgroundColor: '#f3f4f6',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   skipText: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#6b7280',
+    fontWeight: '600',
     marginRight: 4,
   },
   slide: {
@@ -508,115 +819,139 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
   },
+  iconWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 35,
+  },
   iconContainer: {
-    marginBottom: 30,
     position: 'relative',
   },
   iconGradient: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: 140,
+    height: 140,
+    borderRadius: 70,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 15,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.35,
+    shadowRadius: 24,
+    elevation: 18,
+    overflow: 'hidden',
   },
   iconSecondary: {
     position: 'absolute',
-    bottom: -5,
-    right: -5,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    bottom: -8,
+    right: -8,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 6,
+    borderWidth: 3,
+    borderColor: '#fef3c7',
   },
   title: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: 'bold',
     color: '#1f2937',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
+    letterSpacing: 0.5,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#f97316',
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 18,
   },
   description: {
-    fontSize: 15,
+    fontSize: 16,
     color: '#6b7280',
     textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 24,
-    paddingHorizontal: 10,
+    lineHeight: 26,
+    marginBottom: 28,
+    paddingHorizontal: 5,
   },
   featuresContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    gap: 8,
+    gap: 10,
   },
   featureBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 24,
     backgroundColor: '#fff',
-    borderWidth: 1,
+    borderWidth: 2,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 4,
   },
   featureText: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '700',
   },
   footer: {
     paddingHorizontal: 20,
-    gap: 24,
+    gap: 28,
   },
   paginatorContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 8,
+    gap: 10,
+    height: 12,
   },
   dot: {
-    height: 8,
-    borderRadius: 4,
+    height: 12,
+    borderRadius: 6,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  dotGradient: {
+    flex: 1,
+  },
+  buttonWrapper: {
+    borderRadius: 32,
+    overflow: 'hidden',
   },
   nextBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 30,
+    gap: 12,
+    paddingVertical: 18,
+    paddingHorizontal: 48,
+    borderRadius: 32,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+    overflow: 'hidden',
+    minWidth: 200,
   },
   nextBtnText: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 19,
+    fontWeight: '700',
     color: '#fff',
+    letterSpacing: 0.5,
   },
 });
