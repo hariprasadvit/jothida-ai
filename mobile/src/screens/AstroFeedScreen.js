@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
+  ActivityIndicator,
   View,
   Text,
   StyleSheet,
@@ -931,7 +932,7 @@ function getLuckyTimeDescription(language) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: '#ffffff',
     ...(Platform.OS === 'web' && { height: '100vh', maxHeight: '100vh', overflow: 'hidden' }),
   },
   fullScreen: {
@@ -944,9 +945,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    color: '#fff',
-    fontSize: 16,
-    marginTop: 16,
+    color: '#6b5644',
+    fontSize: 13,
+    marginTop: 14,
+    fontWeight: '800',
   },
   touchContainer: {
     flex: 1,
@@ -969,31 +971,48 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
   },
+  storyCardInner: {
+    width: '100%',
+    backgroundColor: '#fff8f0',
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: '#e8d5c4',
+    paddingHorizontal: 18,
+    paddingVertical: 22,
+    shadowColor: '#d4a574',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
+  },
   storyContent: {
     alignItems: 'center',
     width: '100%',
   },
   storyLabel: {
-    color: '#9ca3af',
-    fontSize: 12,
-    fontWeight: '600',
-    letterSpacing: 2,
+    color: '#8b6f47',
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 1.2,
     marginBottom: 8,
-    marginTop: 20,
+    marginTop: 6,
+    textTransform: 'uppercase',
   },
   storyTitle: {
-    color: '#fff',
-    fontSize: 28,
-    fontWeight: 'bold',
+    color: '#6b5644',
+    fontSize: 26,
+    fontWeight: '900',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 14,
+    letterSpacing: -0.3,
   },
   storyDescription: {
-    color: '#d1d5db',
-    fontSize: 16,
+    color: '#6b5644',
+    fontSize: 15,
     textAlign: 'center',
     lineHeight: 24,
-    marginTop: 16,
+    marginTop: 12,
+    fontWeight: '600',
   },
 
   // Planet Influence styles
@@ -1039,12 +1058,13 @@ const styles = StyleSheet.create({
   },
   rasiSymbol: {
     fontSize: 48,
-    color: '#fff',
+    color: '#6b5644',
   },
   rasiName: {
-    color: '#9ca3af',
+    color: '#8b6f47',
     fontSize: 14,
     marginTop: 4,
+    fontWeight: '800',
   },
   personalMessageBox: {
     flexDirection: 'row',
@@ -1073,12 +1093,12 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: 'rgba(249, 115, 22, 0.2)',
+    backgroundColor: '#fff7ed',
     borderWidth: 4,
     borderColor: '#f97316',
     justifyContent: 'center',
     alignItems: 'center',
-    marginVertical: 20,
+    marginVertical: 18,
   },
   scoreValue: {
     color: '#f97316',
@@ -1086,9 +1106,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   scoreLabel: {
-    color: '#9ca3af',
-    fontSize: 12,
+    color: '#8b6f47',
+    fontSize: 11,
     marginTop: 4,
+    fontWeight: '800',
   },
   tipBox: {
     flexDirection: 'row',
@@ -1173,9 +1194,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   stepText: {
-    color: '#d1d5db',
+    color: '#6b5644',
     fontSize: 14,
     flex: 1,
+    fontWeight: '700',
   },
 
   // Lucky Time styles
@@ -1202,15 +1224,16 @@ const styles = StyleSheet.create({
     minWidth: 100,
   },
   timeSlotTime: {
-    color: '#fff',
+    color: '#6b5644',
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: '900',
     marginTop: 8,
   },
   timeSlotLabel: {
-    color: '#9ca3af',
+    color: '#8b6f47',
     fontSize: 10,
     marginTop: 4,
+    fontWeight: '800',
   },
 
   // Progress bar styles
@@ -1225,13 +1248,13 @@ const styles = StyleSheet.create({
   progressBarContainer: {
     flex: 1,
     height: 3,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: '#e8d5c4',
     borderRadius: 2,
     overflow: 'hidden',
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#fff',
+    backgroundColor: '#f97316',
     borderRadius: 2,
   },
 
@@ -1302,7 +1325,99 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   counterText: {
-    color: '#9ca3af',
+    color: '#6b5644',
     fontSize: 12,
+    fontWeight: '800',
+  },
+
+  topBar: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    zIndex: 20,
+  },
+  topIconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#fff8f0',
+    borderWidth: 1,
+    borderColor: '#e8d5c4',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  topTitleWrap: {
+    alignItems: 'center',
+    flex: 1,
+    paddingHorizontal: 10,
+  },
+  topTitle: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#6b5644',
+    letterSpacing: 0.2,
+  },
+  topSubtitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#8b6f47',
+    marginTop: 2,
+  },
+
+  sideNav: {
+    position: 'absolute',
+    left: 12,
+    right: 12,
+    top: '50%',
+    transform: [{ translateY: -24 }],
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    zIndex: 20,
+  },
+  navButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#fff8f0',
+    borderWidth: 1,
+    borderColor: '#e8d5c4',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  navButtonDisabled: {
+    opacity: 0.55,
+  },
+
+  bottomBar: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 20,
+  },
+  swipeHint: {
+    color: '#8b6f47',
+    fontSize: 11,
+    fontWeight: '800',
+    marginBottom: 10,
+  },
+  primaryAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#f97316',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#ea580c',
+  },
+  primaryActionText: {
+    color: '#fff',
+    fontWeight: '900',
+    letterSpacing: 0.3,
   },
 });
