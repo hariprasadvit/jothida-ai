@@ -409,19 +409,23 @@ const RashiPalanTicker = ({ transits, language, t, userRashi, onRashiPress }) =>
               userRashi.toLowerCase().includes(rashi.key.substring(0, 4))
             );
 
+            const spriteSize = 32;
+            const spriteWidth = spriteSize * 4;
+            const spriteHeight = spriteSize * 3;
+
             return (
               <View key={`${rashi.key}-${index}`} style={rashiTickerStyles.rashiItem}>
-                <View style={rashiTickerStyles.iconContainer}>
+                <View style={[rashiTickerStyles.iconContainer, { width: spriteSize, height: spriteSize, borderRadius: spriteSize / 2 }]}>
                   <Image
                     source={{ uri: ZODIAC_SPRITE_URL }}
                     style={{
                       position: 'absolute',
-                      width: 120,
-                      height: 90,
-                      left: -(rashi.spriteCol * 30),
-                      top: -(rashi.spriteRow * 30),
+                      width: spriteWidth,
+                      height: spriteHeight,
+                      left: -(rashi.spriteCol * spriteSize),
+                      top: -(rashi.spriteRow * spriteSize),
                     }}
-                    resizeMode="stretch"
+                    resizeMode="cover"
                   />
                 </View>
                 <Text style={[
@@ -509,9 +513,6 @@ const rashiTickerStyles = StyleSheet.create({
     gap: 6,
   },
   iconContainer: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
     overflow: 'hidden',
     backgroundColor: 'transparent',
     position: 'relative',
