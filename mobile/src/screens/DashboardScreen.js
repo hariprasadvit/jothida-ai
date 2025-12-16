@@ -2049,6 +2049,8 @@ export default function DashboardScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
+      {/* Divine Background Pattern */}
+      <KolamPattern color="#d4a574" opacity={0.08} />
       {/* Warm auspicious gradient background */}
       <LinearGradient colors={['#faf7f2', '#f5ede5', '#fff8f0']} style={styles.gradient}>
         <ScrollView
@@ -2071,6 +2073,7 @@ export default function DashboardScreen({ navigation }) {
               { opacity: headerFadeAnim, transform: [{ translateY: headerSlideAnim }] },
             ]}
           >
+            <OmWatermark style={{ position: 'absolute', right: -20, top: -20 }} color="#f97316" size={140} />
             <View>
               <View style={styles.logoRow}>
                 <View style={styles.logoIcon}>
