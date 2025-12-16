@@ -3101,7 +3101,7 @@ export default function DashboardScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   gradient: { flex: 1 },
-  scrollContent: { paddingHorizontal: 16 },
+  scrollContent: { paddingHorizontal: 0 },
 
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fef3c7' },
   loadingText: { marginTop: 16, color: '#92400e', fontSize: 16, fontWeight: '500' },
