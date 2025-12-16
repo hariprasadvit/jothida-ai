@@ -441,22 +441,26 @@ export default function LanguageSelectionScreen({ onLanguageSelected }) {
                     }
                     style={styles.languageButtonGradient}
                   >
-                    <Text
-                      style={[
-                        styles.languageName,
-                        language === lang.code && styles.languageNameSelected,
-                      ]}
-                    >
-                      {lang.name}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.languageNameEn,
-                        language === lang.code && styles.languageNameEnSelected,
-                      ]}
-                    >
-                      {lang.nameEn}
-                    </Text>
+                    <View style={styles.languageTextContainer}>
+                      <Text
+                        style={[
+                          styles.languageName,
+                          language === lang.code && styles.languageNameSelected,
+                        ]}
+                      >
+                        {lang.name}
+                      </Text>
+                      {lang.name !== lang.nameEn && (
+                        <Text
+                          style={[
+                            styles.languageNameEn,
+                            language === lang.code && styles.languageNameEnSelected,
+                          ]}
+                        >
+                          {lang.nameEn}
+                        </Text>
+                      )}
+                    </View>
                     {language === lang.code && (
                       <Ionicons
                         name="checkmark-circle"
@@ -612,14 +616,20 @@ const styles = StyleSheet.create({
   languageButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingVertical: 18,
     paddingHorizontal: 28,
+  },
+  languageTextContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
   languageName: {
     fontSize: 22,
     fontWeight: '600',
     color: '#1f2937',
-    flex: 1,
   },
   languageNameSelected: {
     color: '#fff',
