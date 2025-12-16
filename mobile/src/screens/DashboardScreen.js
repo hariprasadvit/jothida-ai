@@ -2654,9 +2654,11 @@ export default function DashboardScreen({ navigation }) {
           </AnimatedCard>
 
           {/* Aura Heatmap - Planet Strength Visualization */}
+          <DivineDivider color="#d97706" />
           {planetAura && (
             <AnimatedCard delay={600}>
               <View style={[styles.card, styles.auraCard]}>
+                <LotusCorner style={{ position: 'absolute', top: 0, right: 0 }} color="#d4a574" size={50} />
                 <View style={styles.cardHeader}>
                   <Ionicons name="planet" size={16} color="#c69c6d" />
                   <Text style={styles.cardTitle}>
