@@ -555,14 +555,14 @@ const styles = StyleSheet.create({
     borderColor: '#e5e7eb',
   },
   transitTimeValue: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '900',
-    color: '#1f2937',
-    lineHeight: 20,
+    color: '#0f172a',
+    lineHeight: 22,
   },
   transitTimeLabel: {
-    fontSize: 9,
-    color: '#6b7280',
-    fontWeight: '700',
+    fontSize: 10,
+    color: '#4b5563',
+    fontWeight: '800',
   },
 });
