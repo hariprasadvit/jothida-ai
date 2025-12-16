@@ -264,20 +264,20 @@ const translateEventLabel = (event, language, t) => {
 
 // ============== RASHI PALAN DATA & COMPONENT ==============
 
-// 12 Zodiac signs with emoji icons and ruling planets
+// 12 Zodiac signs with Ionicons and ruling planets
 const RASHI_DATA = [
-  { key: 'aries', symbol: '🐏', ruler: 'Mars', element: 'fire', ta: 'மேஷம்' },
-  { key: 'taurus', symbol: '🐂', ruler: 'Venus', element: 'earth', ta: 'ரிஷபம்' },
-  { key: 'gemini', symbol: '👯', ruler: 'Mercury', element: 'air', ta: 'மிதுனம்' },
-  { key: 'cancer', symbol: '🦀', ruler: 'Moon', element: 'water', ta: 'கடகம்' },
-  { key: 'leo', symbol: '🦁', ruler: 'Sun', element: 'fire', ta: 'சிம்மம்' },
-  { key: 'virgo', symbol: '👰', ruler: 'Mercury', element: 'earth', ta: 'கன்னி' },
-  { key: 'libra', symbol: '⚖️', ruler: 'Venus', element: 'air', ta: 'துலாம்' },
-  { key: 'scorpio', symbol: '🦂', ruler: 'Mars', element: 'water', ta: 'விருச்சிகம்' },
-  { key: 'sagittarius', symbol: '🏹', ruler: 'Jupiter', element: 'fire', ta: 'தனுசு' },
-  { key: 'capricorn', symbol: '🐐', ruler: 'Saturn', element: 'earth', ta: 'மகரம்' },
-  { key: 'aquarius', symbol: '🏺', ruler: 'Saturn', element: 'air', ta: 'கும்பம்' },
-  { key: 'pisces', symbol: '🐟', ruler: 'Jupiter', element: 'water', ta: 'மீனம்' },
+  { key: 'aries', icon: 'flame', color: '#ef4444', ruler: 'Mars', element: 'fire', ta: 'மேஷம்' },
+  { key: 'taurus', icon: 'leaf', color: '#22c55e', ruler: 'Venus', element: 'earth', ta: 'ரிஷபம்' },
+  { key: 'gemini', icon: 'people', color: '#3b82f6', ruler: 'Mercury', element: 'air', ta: 'மிதுனம்' },
+  { key: 'cancer', icon: 'water', color: '#06b6d4', ruler: 'Moon', element: 'water', ta: 'கடகம்' },
+  { key: 'leo', icon: 'sunny', color: '#f59e0b', ruler: 'Sun', element: 'fire', ta: 'சிம்மம்' },
+  { key: 'virgo', icon: 'flower', color: '#84cc16', ruler: 'Mercury', element: 'earth', ta: 'கன்னி' },
+  { key: 'libra', icon: 'scale', color: '#ec4899', ruler: 'Venus', element: 'air', ta: 'துலாம்' },
+  { key: 'scorpio', icon: 'flash', color: '#8b5cf6', ruler: 'Mars', element: 'water', ta: 'விருச்சிகம்' },
+  { key: 'sagittarius', icon: 'navigate', color: '#f97316', ruler: 'Jupiter', element: 'fire', ta: 'தனுசு' },
+  { key: 'capricorn', icon: 'triangle', color: '#737373', ruler: 'Saturn', element: 'earth', ta: 'மகரம்' },
+  { key: 'aquarius', icon: 'fitness', color: '#0ea5e9', ruler: 'Saturn', element: 'air', ta: 'கும்பம்' },
+  { key: 'pisces', icon: 'fish', color: '#14b8a6', ruler: 'Jupiter', element: 'water', ta: 'மீனம்' },
 ];
 
 // Calculate dynamic Rashi score based on current transits and date
@@ -407,7 +407,9 @@ const RashiPalanTicker = ({ transits, language, t, userRashi, onRashiPress }) =>
 
             return (
               <View key={`${rashi.key}-${index}`} style={rashiTickerStyles.rashiItem}>
-                <Text style={rashiTickerStyles.rashiSymbol}>{rashi.symbol}</Text>
+                <View style={[rashiTickerStyles.iconContainer, { backgroundColor: rashi.color + '20' }]}>
+                  <Ionicons name={rashi.icon} size={16} color={rashi.color} />
+                </View>
                 <Text style={[
                   rashiTickerStyles.rashiName,
                   isUserRashi && rashiTickerStyles.rashiNameHighlight
@@ -417,7 +419,7 @@ const RashiPalanTicker = ({ transits, language, t, userRashi, onRashiPress }) =>
                 <Text style={[rashiTickerStyles.scoreText, { color: getScoreColor(rashi.score) }]}>
                   {rashi.score}%
                 </Text>
-                {isUserRashi && <Text style={rashiTickerStyles.youIndicator}>★</Text>}
+                {isUserRashi && <Ionicons name="star" size={14} color="#f97316" style={rashiTickerStyles.youIndicator} />}
                 <Text style={rashiTickerStyles.separator}>│</Text>
               </View>
             );
@@ -431,9 +433,11 @@ const RashiPalanTicker = ({ transits, language, t, userRashi, onRashiPress }) =>
 // Rashi Ticker Styles - News Bulletin Style
 const rashiTickerStyles = StyleSheet.create({
   container: {
-    backgroundColor: '#0c0c0c',
+    backgroundColor: '#fff',
     marginTop: 0,
     marginHorizontal: -16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
   },
   header: {
     flexDirection: 'row',
@@ -477,8 +481,8 @@ const rashiTickerStyles = StyleSheet.create({
   },
   tickerWrapper: {
     overflow: 'hidden',
-    backgroundColor: '#111',
-    paddingVertical: 10,
+    backgroundColor: '#fff',
+    paddingVertical: 12,
   },
   tickerContent: {
     flexDirection: 'row',
@@ -487,19 +491,23 @@ const rashiTickerStyles = StyleSheet.create({
   rashiItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 4,
-    gap: 5,
+    paddingHorizontal: 6,
+    gap: 6,
   },
-  rashiSymbol: {
-    fontSize: 16,
+  iconContainer: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   rashiName: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#fff',
+    color: '#1f2937',
   },
   rashiNameHighlight: {
-    color: '#fbbf24',
+    color: '#f97316',
     fontWeight: '800',
   },
   scoreText: {
@@ -508,13 +516,11 @@ const rashiTickerStyles = StyleSheet.create({
     minWidth: 40,
   },
   youIndicator: {
-    fontSize: 12,
-    color: '#fbbf24',
     marginLeft: -2,
   },
   separator: {
     fontSize: 16,
-    color: '#444',
+    color: '#d1d5db',
     marginHorizontal: 8,
   },
 });
