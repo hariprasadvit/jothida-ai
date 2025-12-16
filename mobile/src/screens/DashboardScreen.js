@@ -2133,13 +2133,13 @@ export default function DashboardScreen({ navigation }) {
 
           {/* Story Preview Row */}
           <AnimatedCard delay={75}>
-            <TouchableOpacity
-              style={styles.storyPreviewRow}
-              onPress={() => navigation.navigate('AstroFeed')}
-              activeOpacity={0.8}
-            >
+            <View style={styles.storyPreviewRow}>
               <View style={styles.storyCirclesContainer}>
-                <View style={[styles.storyCircle, styles.storyCircleActive]}>
+                <TouchableOpacity
+                  style={[styles.storyCircle, styles.storyCircleActive]}
+                  onPress={() => navigation.navigate('AstroFeed', { initialStory: 'planet' })}
+                  activeOpacity={0.7}
+                >
                   <LinearGradient
                     colors={['#f97316', '#ef4444', '#ec4899']}
                     style={styles.storyGradientBorder}
@@ -2149,8 +2149,12 @@ export default function DashboardScreen({ navigation }) {
                     </View>
                   </LinearGradient>
                   <Text style={styles.storyLabel}>{t('planet')}</Text>
-                </View>
-                <View style={[styles.storyCircle, styles.storyCircleActive]}>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.storyCircle, styles.storyCircleActive]}
+                  onPress={() => navigation.navigate('AstroFeed', { initialStory: 'moon' })}
+                  activeOpacity={0.7}
+                >
                   <LinearGradient
                     colors={['#8b5cf6', '#6366f1', '#3b82f6']}
                     style={styles.storyGradientBorder}
@@ -2160,8 +2164,12 @@ export default function DashboardScreen({ navigation }) {
                     </View>
                   </LinearGradient>
                   <Text style={styles.storyLabel}>{t('moon')}</Text>
-                </View>
-                <View style={[styles.storyCircle, styles.storyCircleActive]}>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.storyCircle, styles.storyCircleActive]}
+                  onPress={() => navigation.navigate('AstroFeed', { initialStory: 'insight' })}
+                  activeOpacity={0.7}
+                >
                   <LinearGradient
                     colors={['#22c55e', '#16a34a', '#15803d']}
                     style={styles.storyGradientBorder}
@@ -2171,8 +2179,12 @@ export default function DashboardScreen({ navigation }) {
                     </View>
                   </LinearGradient>
                   <Text style={styles.storyLabel}>{t('insight')}</Text>
-                </View>
-                <View style={[styles.storyCircle, styles.storyCircleActive]}>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.storyCircle, styles.storyCircleActive]}
+                  onPress={() => navigation.navigate('AstroFeed', { initialStory: 'star' })}
+                  activeOpacity={0.7}
+                >
                   <LinearGradient
                     colors={['#f59e0b', '#d97706', '#b45309']}
                     style={styles.storyGradientBorder}
@@ -2182,15 +2194,19 @@ export default function DashboardScreen({ navigation }) {
                     </View>
                   </LinearGradient>
                   <Text style={styles.storyLabel}>{t('star')}</Text>
-                </View>
-                <View style={styles.storyCircle}>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.storyCircle}
+                  onPress={() => navigation.navigate('AstroFeed')}
+                  activeOpacity={0.7}
+                >
                   <View style={styles.storyMoreCircle}>
                     <Ionicons name="add" size={24} color="#f97316" />
                   </View>
                   <Text style={styles.storyLabel}>{t('more')}</Text>
-                </View>
+                </TouchableOpacity>
               </View>
-            </TouchableOpacity>
+            </View>
           </AnimatedCard>
 
           {/* Tamil Calendar */}
