@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Svg, Path, Circle, G, Defs, Pattern, Rect } from 'react-native-svg';
 import { View, StyleSheet } from 'react-native';
 
 // 1. Kolam / Mandala Pattern (Traditional Indian Rangoli)
-export const KolamPattern = ({ color = "#d4a574", opacity = 0.35, style }) => (
-  <View style={[styles.absoluteFill, style, { opacity, zIndex: 0 }]} pointerEvents="none">
-    <Svg height="100%" width="100%">
-      <Defs>
-        <Pattern id="kolam" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+export const KolamPattern = ({ color = "#d4a574", opacity = 0.35, style }) => {
+  const patternId = useRef(`kolam-${Math.random().toString(36).slice(2)}`).current;
+
+  return (
+    <View style={[styles.absoluteFill, style, { opacity, zIndex: 0 }]} pointerEvents="none">
+      <Svg height="100%" width="100%">
+        <Defs>
+          <Pattern id={patternId} x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
           <Path
             d="M30 0 C30 15 45 30 60 30 C45 30 30 45 30 60 C30 45 15 30 0 30 C15 30 30 15 30 0"
             fill="none"
@@ -17,10 +20,11 @@ export const KolamPattern = ({ color = "#d4a574", opacity = 0.35, style }) => (
           <Circle cx="30" cy="30" r="4" fill={color} />
         </Pattern>
       </Defs>
-      <Rect x="0" y="0" width="100%" height="100%" fill="url(#kolam)" />
-    </Svg>
-  </View>
-);
+        <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${patternId})`} />
+      </Svg>
+    </View>
+  );
+};
 
 // 2. Lotus Corner Decoration (Sacred Lotus Petals)
 export const LotusCorner = ({ color = "#d4a574", size = 60, style }) => (
@@ -65,11 +69,14 @@ export const OmWatermark = ({ color = "#f97316", size = 120, style }) => (
 );
 
 // 4. Decorative Divider (Traditional Hindu Border Pattern)
-export const DivineDivider = ({ color = "#d97706" }) => (
-  <View style={{ height: 24, width: '100%', overflow: 'hidden', marginVertical: 12, alignItems: 'center', justifyContent: 'center' }}>
-    <Svg height="100%" width="100%">
-      <Defs>
-        <Pattern id="border" x="0" y="0" width="40" height="24" patternUnits="userSpaceOnUse">
+export const DivineDivider = ({ color = "#d97706" }) => {
+  const borderId = useRef(`border-${Math.random().toString(36).slice(2)}`).current;
+
+  return (
+    <View style={{ height: 24, width: '100%', overflow: 'hidden', marginVertical: 12, alignItems: 'center', justifyContent: 'center' }}>
+      <Svg height="100%" width="100%">
+        <Defs>
+          <Pattern id={borderId} x="0" y="0" width="40" height="24" patternUnits="userSpaceOnUse">
           <Path
             d="M0 12 Q10 2 20 12 Q30 22 40 12"
             fill="none"
@@ -80,10 +87,11 @@ export const DivineDivider = ({ color = "#d97706" }) => (
           <Circle cx="20" cy="12" r="3" fill={color} opacity="1" />
         </Pattern>
       </Defs>
-      <Rect x="0" y="0" width="100%" height="100%" fill="url(#border)" />
-    </Svg>
-  </View>
-);
+        <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${borderId})`} />
+      </Svg>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   absoluteFill: {

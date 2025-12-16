@@ -586,35 +586,31 @@ const DecorativeBorder = ({ style }) => {
 };
 
 // Detailed Diya (Oil Lamp) Icon - Traditional style
-const DiyaIcon = ({ size = 40, color = '#d97706' }) => (
-  <Svg width={size} height={size} viewBox="0 0 100 100">
-    <Defs>
-      <RadialGradient id="flameGlow" cx="50%" cy="20%" r="60%">
-        <Stop offset="0%" stopColor="#fbbf24" stopOpacity="1" />
-        <Stop offset="50%" stopColor="#f97316" stopOpacity="0.6" />
-        <Stop offset="100%" stopColor="#f97316" stopOpacity="0" />
-      </RadialGradient>
-    </Defs>
-    {/* Flame glow */}
-    <Ellipse cx="50" cy="22" rx="18" ry="22" fill="url(#flameGlow)" />
-    {/* Outer flame */}
-    <Path d="M50 5 Q58 18 55 30 Q52 38 50 42 Q48 38 45 30 Q42 18 50 5" fill="#f97316" />
-    {/* Inner flame */}
-    <Path d="M50 12 Q54 20 52 28 Q51 34 50 38 Q49 34 48 28 Q46 20 50 12" fill="#fbbf24" />
-    {/* Flame core */}
-    <Path d="M50 18 Q52 24 51 30 Q50 34 50 36 Q50 34 49 30 Q48 24 50 18" fill="#fff" opacity="0.8" />
-    {/* Lamp body */}
-    <Ellipse cx="50" cy="52" rx="28" ry="10" fill={color} />
-    <Path d="M22 52 Q22 68 32 78 L68 78 Q78 68 78 52" fill={color} />
-    {/* Lamp decorations */}
-    <Ellipse cx="50" cy="60" rx="20" ry="6" fill="#b45309" opacity="0.5" />
-    {/* Base */}
-    <Ellipse cx="50" cy="82" rx="22" ry="6" fill={color} />
-    <Ellipse cx="50" cy="88" rx="18" ry="4" fill="#92400e" />
-    {/* Highlight */}
-    <Ellipse cx="40" cy="52" rx="8" ry="3" fill="#fcd34d" opacity="0.4" />
-  </Svg>
-);
+const DiyaIcon = ({ size = 40, color = '#d97706' }) => {
+  const glowId = useRef(`flameGlow-${Math.random().toString(36).slice(2)}`).current;
+
+  return (
+    <Svg width={size} height={size} viewBox="0 0 100 100">
+      <Defs>
+        <RadialGradient id={glowId} cx="50%" cy="20%" r="60%">
+          <Stop offset="0%" stopColor="#fbbf24" stopOpacity="1" />
+          <Stop offset="50%" stopColor="#f97316" stopOpacity="0.6" />
+          <Stop offset="100%" stopColor="#f97316" stopOpacity="0" />
+        </RadialGradient>
+      </Defs>
+      <Ellipse cx="50" cy="22" rx="18" ry="22" fill={`url(#${glowId})`} />
+      <Path d="M50 5 Q58 18 55 30 Q52 38 50 42 Q48 38 45 30 Q42 18 50 5" fill="#f97316" />
+      <Path d="M50 12 Q54 20 52 28 Q51 34 50 38 Q49 34 48 28 Q46 20 50 12" fill="#fbbf24" />
+      <Path d="M50 18 Q52 24 51 30 Q50 34 50 36 Q50 34 49 30 Q48 24 50 18" fill="#fff" opacity="0.8" />
+      <Ellipse cx="50" cy="52" rx="28" ry="10" fill={color} />
+      <Path d="M22 52 Q22 68 32 78 L68 78 Q78 68 78 52" fill={color} />
+      <Ellipse cx="50" cy="60" rx="20" ry="6" fill="#b45309" opacity="0.5" />
+      <Ellipse cx="50" cy="82" rx="22" ry="6" fill={color} />
+      <Ellipse cx="50" cy="88" rx="18" ry="4" fill="#92400e" />
+      <Ellipse cx="40" cy="52" rx="8" ry="3" fill="#fcd34d" opacity="0.4" />
+    </Svg>
+  );
+};
 
 
 
@@ -2071,6 +2067,15 @@ export default function DashboardScreen({ navigation }) {
             style={styles.headerBar}
           />
 
+          {/* Traditional top ornament (non-emoji, consistent with cards) */}
+          <View style={styles.topOrnament}>
+            <View style={styles.topOrnamentLine} />
+            <View style={styles.topOrnamentIcon}>
+              <DiyaIcon size={18} color="#d97706" />
+            </View>
+            <View style={styles.topOrnamentLine} />
+          </View>
+
 
           {/* Header */}
           <Animated.View
@@ -3138,7 +3143,10 @@ const styles = StyleSheet.create({
 
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#faf7f2' },
   loadingText: { marginTop: 16, color: '#8b6f47', fontSize: 16, fontWeight: '600' },
-  headerBar: { height: 0 },
+  headerBar: { height: 3, marginHorizontal: 16, marginTop: 10, borderRadius: 2 },
+  topOrnament: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 10, marginBottom: 4, marginHorizontal: 16 },
+  topOrnamentLine: { flex: 1, height: 1, backgroundColor: '#e8d5c4' },
+  topOrnamentIcon: { paddingHorizontal: 10, backgroundColor: '#faf7f2' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: 24, paddingBottom: 20, backgroundColor: '#fff8f0', marginHorizontal: 16, marginTop: 16, borderRadius: 20, borderWidth: 1, borderColor: '#e8d5c4', shadowColor: '#d4a574', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 3 },
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   logoIcon: { width: 36, height: 36 },
