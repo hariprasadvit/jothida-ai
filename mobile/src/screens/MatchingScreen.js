@@ -1229,18 +1229,23 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   groomCard: {
-    borderColor: '#bfdbfe',
+    borderColor: '#e8d5c4',
+    borderLeftWidth: 4,
+    borderLeftColor: '#3b82f6',
   },
   brideCard: {
-    borderColor: '#fbcfe8',
+    borderColor: '#e8d5c4',
+    borderLeftWidth: 4,
+    borderLeftColor: '#ec4899',
   },
   inputGroup: {
     marginBottom: 12,
   },
   label: {
     fontSize: 12,
-    color: '#6b7280',
+    color: '#8b6f47',
     marginBottom: 6,
+    fontWeight: '600',
   },
   input: {
     borderWidth: 1,
@@ -1253,7 +1258,7 @@ const styles = StyleSheet.create({
     color: '#6b5644',
   },
   brideInput: {
-    borderColor: '#fbcfe8',
+    borderColor: '#e8d5c4',
   },
   datePickerButton: {
     flexDirection: 'row',
@@ -1267,15 +1272,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#fef6ed',
   },
   brideDatePicker: {
-    borderColor: '#fbcfe8',
+    borderColor: '#e8d5c4',
   },
   datePickerText: {
     fontSize: 14,
-    color: '#374151',
+    color: '#6b5644',
+    fontWeight: '600',
   },
   datePickerPlaceholder: {
     fontSize: 14,
-    color: '#9ca3af',
+    color: '#b8997a',
+    fontWeight: '600',
   },
   row: {
     flexDirection: 'row',
@@ -1293,7 +1300,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fef6ed',
   },
   bridePicker: {
-    borderColor: '#fbcfe8',
+    borderColor: '#e8d5c4',
   },
   picker: {
     height: 50,
