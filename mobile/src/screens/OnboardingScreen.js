@@ -117,6 +117,7 @@ const ShimmerEffect = ({ colors = ['transparent', 'rgba(255,255,255,0.3)', 'tran
 
   return (
     <Animated.View
+      pointerEvents="none"
       style={[
         styles.shimmerContainer,
         { transform: [{ translateX }] },
