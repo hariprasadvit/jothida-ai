@@ -659,6 +659,38 @@ export const muhurthamAPI = {
   },
 };
 
+// Helper function to convert ArrayBuffer to base64 (React Native compatible)
+const arrayBufferToBase64 = (buffer) => {
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  let binary = '';
+  // Process in chunks to avoid call stack overflow for large files
+  const chunkSize = 8192;
+  for (let i = 0; i < len; i += chunkSize) {
+    const chunk = bytes.subarray(i, Math.min(i + chunkSize, len));
+    binary += String.fromCharCode.apply(null, chunk);
+  }
+  // Use global btoa if available (web), otherwise use custom encoding
+  if (typeof btoa === 'function') {
+    return btoa(binary);
+  }
+  // Base64 encoding for React Native
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  let result = '';
+  let i = 0;
+  while (i < binary.length) {
+    const a = binary.charCodeAt(i++);
+    const b = i < binary.length ? binary.charCodeAt(i++) : 0;
+    const c = i < binary.length ? binary.charCodeAt(i++) : 0;
+    const triplet = (a << 16) | (b << 8) | c;
+    result += chars[(triplet >> 18) & 63];
+    result += chars[(triplet >> 12) & 63];
+    result += i > binary.length + 1 ? '=' : chars[(triplet >> 6) & 63];
+    result += i > binary.length ? '=' : chars[triplet & 63];
+  }
+  return result;
+};
+
 // Report API
 export const reportAPI = {
   generateReport: async (birthDetails) => {
@@ -684,10 +716,10 @@ export const reportAPI = {
     }
 
     // For mobile (React Native), convert arraybuffer to base64
-    // This will be handled by the ProfileScreen
+    const base64Data = arrayBufferToBase64(response.data);
     return {
-      data: response.data,
-      isArrayBuffer: true
+      data: base64Data,
+      isBase64: true
     };
   },
 };

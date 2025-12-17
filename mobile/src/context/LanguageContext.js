@@ -24,6 +24,13 @@ export const translations = {
     chat: 'AI',
     muhurtham: 'முகூர்த்தம்',
     profile: 'சுயவிவரம்',
+    // Short nav labels
+    homeShort: 'முகப்பு',
+    storiesShort: 'கதை',
+    matchShort: 'பொருத்தம்',
+    jothidanShort: 'ஜோதிடர்',
+    muhurthamShort: 'நேரம்',
+    profileShort: 'நான்',
 
     // Dashboard
     greeting: 'வணக்கம்',
@@ -696,6 +703,13 @@ export const translations = {
     chat: 'AI',
     muhurtham: 'ಮುಹೂರ್ತ',
     profile: 'ಪ್ರೊಫೈಲ್',
+    // Short nav labels
+    homeShort: 'ಮನೆ',
+    storiesShort: 'ಕಥೆ',
+    matchShort: 'ಜೋಡಿ',
+    jothidanShort: 'ಜ್ಯೋತಿಷಿ',
+    muhurthamShort: 'ಸಮಯ',
+    profileShort: 'ನಾನು',
 
     // Dashboard
     greeting: 'ನಮಸ್ಕಾರ',
@@ -1368,6 +1382,13 @@ export const translations = {
     chat: 'AI',
     muhurtham: 'Muhurtham',
     profile: 'Profile',
+    // Short nav labels
+    homeShort: 'Home',
+    storiesShort: 'Stories',
+    matchShort: 'Match',
+    jothidanShort: 'Jothidar',
+    muhurthamShort: 'Time',
+    profileShort: 'Me',
 
     // Dashboard
     greeting: 'Hello',

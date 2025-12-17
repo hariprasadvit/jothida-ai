@@ -338,7 +338,7 @@ const AnimatedPoruthamItem = ({ porutham, index, isExpanded, onPress, statusStyl
 
 export default function MatchingScreen() {
   const { userProfile } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const insets = useSafeAreaInsets();
   const bottomPadding = Platform.OS === 'android' ? Math.max(insets.bottom, 80) : insets.bottom + 80;
 

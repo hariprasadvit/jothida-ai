@@ -26,7 +26,7 @@ import { mobileAPI, reportAPI } from '../services/api';
 import { generateComprehensivePDFHTML } from '../services/reportGenerator';
 import AppHeader from '../components/AppHeader';
 import { searchCities, POPULAR_CITIES } from '../data/cities';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 
 // Tamil to translation key mappings for ProfileScreen
 const TAMIL_PLANET_MAP = {
@@ -2179,21 +2179,13 @@ export default function ProfileScreen({ navigation }) {
         URL.revokeObjectURL(url);
         Alert.alert(t('pdfSuccess'), t('pdfCreated'));
       } else {
-        // For mobile (React Native), handle arraybuffer response
+        // For mobile (React Native), handle base64 response
         const fileUri = FileSystem.documentDirectory + fileName;
 
-        // Check if response is arraybuffer (mobile) or blob (web)
-        if (pdfResult.isArrayBuffer && pdfResult.data) {
-          // Convert ArrayBuffer to base64
-          const uint8Array = new Uint8Array(pdfResult.data);
-          let binary = '';
-          for (let i = 0; i < uint8Array.byteLength; i++) {
-            binary += String.fromCharCode(uint8Array[i]);
-          }
-          const base64data = btoa(binary);
-
-          await FileSystem.writeAsStringAsync(fileUri, base64data, {
-            encoding: FileSystem.EncodingType.Base64,
+        // API now returns base64 directly for mobile
+        if (pdfResult.isBase64 && pdfResult.data) {
+          await FileSystem.writeAsStringAsync(fileUri, pdfResult.data, {
+            encoding: 'base64',
           });
 
           if (await Sharing.isAvailableAsync()) {
@@ -2212,7 +2204,7 @@ export default function ProfileScreen({ navigation }) {
           reader.onloadend = async () => {
             const base64data = reader.result.split(',')[1];
             await FileSystem.writeAsStringAsync(fileUri, base64data, {
-              encoding: FileSystem.EncodingType.Base64,
+              encoding: 'base64',
             });
 
             if (await Sharing.isAvailableAsync()) {

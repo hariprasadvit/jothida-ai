@@ -111,6 +111,9 @@ const TAMIL_TIME_PERIOD_MAP = {
   'மத்தியானம்': 'Afternoon', 'காலை': 'Morning', 'மாலை': 'Evening',
   'இரவு': 'Night', 'நள்ளிரவு': 'Midnight', 'அதிகாலை': 'Early Morning',
   'சூரிய உதயம்': 'Sunrise', 'சூரிய அஸ்தமனம்': 'Sunset',
+  'பிரம்ம முகூர்த்தம்': 'Brahma Muhurtham', 'அபிஜித் முகூர்த்தம்': 'Abhijit Muhurtham',
+  'ராகு காலம்': 'Rahu Kalam', 'யம கண்டம்': 'Yama Gandam', 'குளிகை காலம்': 'Gulikai Kalam',
+  'நல்ல நேரம்': 'Good Time', 'சுப முகூர்த்தம்': 'Auspicious Time',
 };
 
 // Tamil mood names to English
@@ -1246,10 +1249,10 @@ const ScoreJustificationModal = ({ visible, onClose, data, t, language = 'en' })
                 )}
 
                 {/* Suggestion if available */}
-                {(data.suggestion || data.recommendation) && (
+                {(data.suggestion || data.recommendation) && (language === 'ta' || data.suggestion_en || data.recommendation_en) && (
                   <View style={styles.suggestionBox}>
                     <Ionicons name="bulb" size={18} color="#f97316" />
-                    <Text style={styles.suggestionText}>{data.suggestion || data.recommendation}</Text>
+                    <Text style={styles.suggestionText}>{language === 'ta' ? (data.suggestion || data.recommendation) : (data.suggestion_en || data.recommendation_en)}</Text>
                   </View>
                 )}
               </View>
@@ -1439,10 +1442,10 @@ const ScoreJustificationModal = ({ visible, onClose, data, t, language = 'en' })
                 )}
 
                 {/* Suggestion/Recommendation Section */}
-                {(data.suggestion || data.recommendation) && (
+                {(data.suggestion || data.recommendation) && (language === 'ta' || data.suggestion_en || data.recommendation_en) && (
                   <View style={styles.suggestionBox}>
                     <Ionicons name="bulb" size={18} color="#f97316" />
-                    <Text style={styles.suggestionText}>{data.suggestion || data.recommendation}</Text>
+                    <Text style={styles.suggestionText}>{language === 'ta' ? (data.suggestion || data.recommendation) : (data.suggestion_en || data.recommendation_en)}</Text>
                   </View>
                 )}
               </>
@@ -1599,7 +1602,7 @@ const TimelineYearModal = ({ visible, onClose, data, language, t }) => {
             )}
 
             {/* Insight */}
-            {insight.text && (
+            {insight.text && (language === 'ta' || insight.text_en) && (
               <View style={[styles.suggestionBox, {
                 backgroundColor: insight.mood === 'positive' ? '#dcfce720' :
                                  insight.mood === 'challenging' ? '#fee2e220' : '#fef3c720'
@@ -1608,7 +1611,7 @@ const TimelineYearModal = ({ visible, onClose, data, language, t }) => {
                   insight.mood === 'positive' ? '#16a34a' :
                   insight.mood === 'challenging' ? '#dc2626' : '#f97316'
                 } />
-                <Text style={styles.suggestionText}>{insight.text}</Text>
+                <Text style={styles.suggestionText}>{language === 'ta' ? insight.text : insight.text_en}</Text>
               </View>
             )}
 
@@ -2810,10 +2813,10 @@ export default function DashboardScreen({ navigation }) {
                 )}
 
                 {/* Transit Summary */}
-                {planetAura.transit_summary && (
+                {planetAura.transit_summary && (language === 'ta' || planetAura.transit_summary_en) && (
                   <View style={styles.auraTransitSummary}>
                     <Ionicons name="pulse" size={14} color="#a78bfa" />
-                    <Text style={styles.auraTransitText}>{language === 'ta' ? planetAura.transit_summary : (planetAura.transit_summary_en || planetAura.transit_summary)}</Text>
+                    <Text style={styles.auraTransitText}>{language === 'ta' ? planetAura.transit_summary : planetAura.transit_summary_en}</Text>
                   </View>
                 )}
 
@@ -2931,12 +2934,12 @@ export default function DashboardScreen({ navigation }) {
                     </View>
 
                     {/* Alert Message */}
-                    {transitsMap.moon_transit.transit_message && (
+                    {transitsMap.moon_transit.transit_message && (language === 'ta' || transitsMap.moon_transit.transit_message_en) && (
                       <View style={styles.alertMessageBox}>
                         <View style={styles.alertMessageIconWrapper}>
                           <Ionicons name="notifications" size={18} color="#f59e0b" />
                         </View>
-                        <Text style={styles.alertMessageText}>{language === 'ta' ? transitsMap.moon_transit.transit_message : (transitsMap.moon_transit.transit_message_en || transitsMap.moon_transit.transit_message)}</Text>
+                        <Text style={styles.alertMessageText}>{language === 'ta' ? transitsMap.moon_transit.transit_message : transitsMap.moon_transit.transit_message_en}</Text>
                       </View>
                     )}
                   </View>
@@ -3047,11 +3050,11 @@ export default function DashboardScreen({ navigation }) {
                             <Text style={styles.retroAlertName}>{translatePlanetString(retro.tamil, language, t)}</Text>
                             <View style={[
                               styles.retroStatusPill,
-                              { backgroundColor: retro.status === 'retrograde' ? '#ef444440' : '#f59e0b40' }
+                              { backgroundColor: retro.status === 'retrograde' ? '#dc262620' : '#d9770620' }
                             ]}>
                               <Text style={[
                                 styles.retroStatusText,
-                                { color: retro.status === 'retrograde' ? '#fca5a5' : '#fcd34d' }
+                                { color: retro.status === 'retrograde' ? '#b91c1c' : '#c2410c' }
                               ]}>
                                 {t('retrograde')}
                               </Text>

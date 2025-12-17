@@ -600,15 +600,15 @@ const styles = StyleSheet.create({
   },
   languageOptions: {
     width: '100%',
-    maxWidth: 400,
+    maxWidth: 320,
     gap: 10,
+    alignSelf: 'center',
   },
   languageButton: {
     borderRadius: 12,
     overflow: 'hidden',
     borderWidth: 2,
     borderColor: '#fed7aa',
-    minWidth: '100%',
   },
   languageButtonSelected: {
     borderColor: '#f97316',

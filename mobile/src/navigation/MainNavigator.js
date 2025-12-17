@@ -17,26 +17,20 @@ const Tab = createBottomTabNavigator();
 
 export default function MainNavigator() {
   const insets = useSafeAreaInsets();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const bottomPadding = Platform.OS === 'android' ? Math.max(insets.bottom, 10) : insets.bottom;
 
+  // Very short labels that fit in bottom nav for all languages
   const getTabLabel = (routeName) => {
-    switch (routeName) {
-      case 'Dashboard':
-        return t('home');
-      case 'AstroFeed':
-        return t('astroFeed');
-      case 'Matching':
-        return t('matching');
-      case 'UngalJothidan':
-        return t('ungalJothidan');
-      case 'Muhurtham':
-        return t('muhurtham');
-      case 'Profile':
-        return t('profile');
-      default:
-        return routeName;
-    }
+    const labels = {
+      Dashboard: { en: 'Home', ta: 'முகப்பு', kn: 'ಮನೆ' },
+      AstroFeed: { en: 'Feed', ta: 'கதை', kn: 'ಕಥೆ' },
+      Matching: { en: 'Match', ta: 'ஜோடி', kn: 'ಜೋಡಿ' },
+      UngalJothidan: { en: 'Daily', ta: 'தினம்', kn: 'ದಿನ' },
+      Muhurtham: { en: 'Time', ta: 'நேரம்', kn: 'ಸಮಯ' },
+      Profile: { en: 'Me', ta: 'நான்', kn: 'ನಾನು' },
+    };
+    return labels[routeName]?.[language] || labels[routeName]?.en || routeName;
   };
 
   return (
@@ -50,11 +44,11 @@ export default function MainNavigator() {
           backgroundColor: '#fff8f0',
           borderTopColor: '#e8d5c4',
           borderTopWidth: 1,
-          paddingTop: 10,
-          paddingBottom: Platform.OS === 'web' ? 10 : bottomPadding + 8,
-          height: Platform.OS === 'web' ? 74 : 74 + bottomPadding,
-          borderTopLeftRadius: 24,
-          borderTopRightRadius: 24,
+          paddingTop: 6,
+          paddingBottom: Platform.OS === 'web' ? 8 : bottomPadding + 6,
+          height: Platform.OS === 'web' ? 60 : 60 + bottomPadding,
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
           ...(Platform.OS !== 'web' && {
             position: 'absolute',
             bottom: 0,
@@ -62,13 +56,13 @@ export default function MainNavigator() {
             right: 0,
           }),
           shadowColor: '#d4a574',
-          shadowOffset: { width: 0, height: -8 },
-          shadowOpacity: 0.14,
-          shadowRadius: 14,
-          elevation: 12,
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+          elevation: 8,
         },
         tabBarItemStyle: {
-          paddingVertical: 6,
+          paddingVertical: 2,
         },
         tabBarShowLabel: false,
         tabBarIcon: ({ focused, color, size }) => {
@@ -91,27 +85,26 @@ export default function MainNavigator() {
           const label = getTabLabel(route.name);
 
           return (
-            <View
-              style={{
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-                borderRadius: 18,
-                justifyContent: 'center',
-                alignItems: 'center',
-                backgroundColor: focused ? '#fff7ed' : 'transparent',
-                borderWidth: focused ? 1 : 0,
-                borderColor: focused ? '#fed7aa' : 'transparent',
-              }}
-            >
-              <Ionicons name={iconName} size={Math.min(size, 22)} color={color} />
+            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+              <View
+                style={{
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  borderRadius: 12,
+                  backgroundColor: focused ? '#fff7ed' : 'transparent',
+                  borderWidth: focused ? 1 : 0,
+                  borderColor: focused ? '#fed7aa' : 'transparent',
+                }}
+              >
+                <Ionicons name={iconName} size={20} color={color} />
+              </View>
               <Text
-                numberOfLines={1}
                 style={{
                   marginTop: 2,
-                  fontSize: 10,
-                  fontWeight: '800',
-                  letterSpacing: 0.2,
+                  fontSize: 9,
+                  fontWeight: focused ? '700' : '500',
                   color,
+                  textAlign: 'center',
                 }}
               >
                 {label}
