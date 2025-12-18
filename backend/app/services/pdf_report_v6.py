@@ -2102,7 +2102,7 @@ class V6ReportGenerator:
         """
 
     def _pages_15_20_life_areas(self) -> str:
-        """Pages 15-20: Life Area Analysis"""
+        """Pages 15-20: Life Area Analysis with Detailed Insights"""
         life_areas = self.report_data['life_areas']
         pages_html = ""
 
@@ -2117,8 +2117,12 @@ class V6ReportGenerator:
 
         for area_key, area_title, page_num in areas:
             area = life_areas.get(area_key, {})
+            detailed = area.get('detailed_insights', {})
 
             planets_list = ', '.join(area.get('planets_in_house', [])) or 'None'
+
+            # Build area-specific detailed section
+            detailed_html = self._render_detailed_insights(area_key, detailed)
 
             pages_html += f"""
             <div class="page">
@@ -2158,15 +2162,232 @@ class V6ReportGenerator:
                     <p>{planets_list}</p>
                 </div>
 
+                {detailed_html}
+
                 <div class="{'success' if area.get('combined_score', 0) > 0.6 else 'warning' if area.get('combined_score', 0) > 0.45 else 'highlight'}">
                     <p><strong>Interpretation:</strong> {area.get('interpretation', 'Moderate')}</p>
                 </div>
 
-                <div class="math-trace">{area.get('math_trace', '')}</div>
+                <div class="math-trace">{detailed.get('math_reasoning', area.get('math_trace', ''))}</div>
             </div>
             """
 
         return pages_html
+
+    def _render_detailed_insights(self, area_key: str, detailed: dict) -> str:
+        """Render detailed insights based on life area type"""
+        if area_key == 'career':
+            return self._render_career_insights(detailed)
+        elif area_key == 'health':
+            return self._render_health_insights(detailed)
+        elif area_key == 'marriage':
+            return self._render_marriage_insights(detailed)
+        elif area_key == 'wealth':
+            return self._render_wealth_insights(detailed)
+        elif area_key == 'education':
+            return self._render_education_insights(detailed)
+        elif area_key == 'children':
+            return self._render_children_insights(detailed)
+        return ""
+
+    def _render_career_insights(self, detailed: dict) -> str:
+        """Render career-specific detailed insights"""
+        if not detailed:
+            return ""
+
+        recommended = detailed.get('recommended_fields', [])
+        recommended_html = ', '.join(recommended[:6]) if recommended else 'General fields'
+
+        traits = detailed.get('career_traits', [])
+        traits_html = ', '.join(traits) if traits else ''
+
+        return f"""
+        <div class="section">
+            <h2 class="section-title">Recommended Career Fields</h2>
+            <div class="success" style="padding: 10px; margin: 5px 0;">
+                <p><strong>{recommended_html}</strong></p>
+            </div>
+            <p style="font-size: 9pt; color: #666; margin-top: 5px;"><em>Based on: {detailed.get('strength_analysis', '')}</em></p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Career Direction & Approach</h2>
+            <p><strong>Direction:</strong> {detailed.get('career_direction', 'N/A')}</p>
+            <p><strong>Approach:</strong> {detailed.get('approach', 'N/A')}</p>
+            <p><strong>Career Traits:</strong> {traits_html or 'Adaptable'}</p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Timing & Progression</h2>
+            <p>{detailed.get('timing_note', 'Steady progression expected')}</p>
+            <p><strong>Planet Influence:</strong> {detailed.get('planets_influence', 'N/A')}</p>
+        </div>
+        """
+
+    def _render_health_insights(self, detailed: dict) -> str:
+        """Render health-specific detailed insights"""
+        if not detailed:
+            return ""
+
+        body_areas = detailed.get('body_areas_to_monitor', [])
+        body_html = ', '.join(body_areas[:5]) if body_areas else 'General wellness'
+
+        recommendations = detailed.get('recommendations', [])
+        rec_html = ''.join([f'<li>{r}</li>' for r in recommendations[:4]])
+
+        weak_planets = detailed.get('weak_planets', [])
+        weak_html = ', '.join(weak_planets) if weak_planets else 'None'
+
+        return f"""
+        <div class="section">
+            <h2 class="section-title">Health Focus Areas</h2>
+            <div class="warning" style="padding: 10px; margin: 5px 0;">
+                <p><strong>Monitor:</strong> {body_html}</p>
+            </div>
+            <p><strong>Constitution:</strong> {detailed.get('constitution_assessment', 'N/A')}</p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Vitality Analysis</h2>
+            <p><strong>Vitality Score:</strong> {detailed.get('vitality_score', 'N/A')}</p>
+            <p><strong>Physical Energy:</strong> {detailed.get('physical_energy', 'N/A')}</p>
+            <p><strong>Chronic Tendency:</strong> {detailed.get('chronic_tendency', 'None')}</p>
+            <p><strong>Weak Planets:</strong> {weak_html}</p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Health Recommendations</h2>
+            <ul style="margin-left: 20px; font-size: 9pt;">
+                {rec_html or '<li>Maintain regular health checkups</li>'}
+            </ul>
+        </div>
+        """
+
+    def _render_marriage_insights(self, detailed: dict) -> str:
+        """Render marriage-specific detailed insights"""
+        if not detailed:
+            return ""
+
+        dynamics = detailed.get('relationship_dynamics', [])
+        dynamics_html = ', '.join(dynamics) if dynamics else 'Balanced partnership'
+
+        return f"""
+        <div class="section">
+            <h2 class="section-title">Partner Characteristics</h2>
+            <div class="highlight" style="padding: 10px; margin: 5px 0;">
+                <p><strong>{detailed.get('partner_characteristics', 'N/A')}</strong></p>
+            </div>
+            <p><strong>7th House Sign:</strong> {detailed.get('7th_house_sign', 'N/A')}</p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Relationship Analysis</h2>
+            <p><strong>Venus Analysis:</strong> {detailed.get('venus_analysis', 'N/A')}</p>
+            <p><strong>Jupiter Analysis:</strong> {detailed.get('jupiter_analysis', 'N/A')}</p>
+            <p><strong>Harmony Potential:</strong> {detailed.get('harmony_potential', 'N/A')}</p>
+            <p><strong>Dynamics:</strong> {dynamics_html}</p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Timing & Advice</h2>
+            <p><strong>Timing:</strong> {detailed.get('timing_indication', 'N/A')}</p>
+            <p><strong>Key Advice:</strong> {detailed.get('key_advice', 'N/A')}</p>
+        </div>
+        """
+
+    def _render_wealth_insights(self, detailed: dict) -> str:
+        """Render wealth-specific detailed insights"""
+        if not detailed:
+            return ""
+
+        sources = detailed.get('recommended_income_sources', [])
+        sources_html = ', '.join(sources[:4]) if sources else 'General income'
+
+        return f"""
+        <div class="section">
+            <h2 class="section-title">Wealth Potential</h2>
+            <div class="success" style="padding: 10px; margin: 5px 0;">
+                <p><strong>{detailed.get('wealth_potential', 'N/A')}</strong></p>
+            </div>
+            <p><strong>Pattern:</strong> {detailed.get('accumulation_pattern', 'N/A')}</p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Income Sources</h2>
+            <p><strong>Recommended:</strong> {sources_html}</p>
+            <p><strong>Jupiter Influence:</strong> {detailed.get('jupiter_influence', 'N/A')}</p>
+            <p><strong>11th Lord:</strong> {detailed.get('11th_lord', 'N/A')}</p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Financial Strategy</h2>
+            <p><strong>Timing:</strong> {detailed.get('timing_pattern', 'N/A')}</p>
+            <p><strong>Investment Advice:</strong> {detailed.get('investment_advice', 'N/A')}</p>
+        </div>
+        """
+
+    def _render_education_insights(self, detailed: dict) -> str:
+        """Render education-specific detailed insights"""
+        if not detailed:
+            return ""
+
+        fields = detailed.get('recommended_fields', [])
+        fields_html = ', '.join(fields[:6]) if fields else 'General studies'
+
+        return f"""
+        <div class="section">
+            <h2 class="section-title">Recommended Fields of Study</h2>
+            <div class="success" style="padding: 10px; margin: 5px 0;">
+                <p><strong>{fields_html}</strong></p>
+            </div>
+            <p><strong>Higher Education:</strong> {detailed.get('higher_education_prospects', 'N/A')}</p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Learning Profile</h2>
+            <p><strong>Learning Style:</strong> {detailed.get('learning_style', 'N/A')}</p>
+            <p><strong>Intellectual Capacity:</strong> {detailed.get('intellectual_capacity', 'N/A')}</p>
+            <p><strong>Concentration:</strong> {detailed.get('concentration', 'N/A')}</p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Academic Strengths</h2>
+            <p><strong>Mercury Strength:</strong> {detailed.get('mercury_strength', 'N/A')}</p>
+            <p><strong>Jupiter Strength:</strong> {detailed.get('jupiter_strength', 'N/A')}</p>
+            <p><strong>Best Approach:</strong> {detailed.get('best_approach', 'N/A')}</p>
+        </div>
+        """
+
+    def _render_children_insights(self, detailed: dict) -> str:
+        """Render children-specific detailed insights"""
+        if not detailed:
+            return ""
+
+        dynamics = detailed.get('relationship_dynamics', [])
+        dynamics_html = ', '.join(dynamics) if dynamics else 'Harmonious bond expected'
+
+        return f"""
+        <div class="section">
+            <h2 class="section-title">Progeny Prospects</h2>
+            <div class="highlight" style="padding: 10px; margin: 5px 0;">
+                <p><strong>{detailed.get('progeny_prospects', 'N/A')}</strong></p>
+            </div>
+            <p><strong>5th House Sign:</strong> {detailed.get('5th_house_sign', 'N/A')}</p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Children Characteristics</h2>
+            <p><strong>Traits:</strong> {detailed.get('children_characteristics', 'N/A')}</p>
+            <p><strong>Jupiter Analysis:</strong> {detailed.get('jupiter_analysis', 'N/A')}</p>
+            <p><strong>Creative Expression:</strong> {detailed.get('creative_expression', 'N/A')}</p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Timing & Relationship</h2>
+            <p><strong>Timing:</strong> {detailed.get('timing_indication', 'N/A')}</p>
+            <p><strong>Dynamics:</strong> {dynamics_html}</p>
+        </div>
+        """
 
     def _page_21_yogas(self) -> str:
         """Page 21: Yogas Present"""

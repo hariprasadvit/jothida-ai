@@ -350,6 +350,196 @@ HOUSE_TAMIL = {
     9: 'பாக்கியம்', 10: 'கர்மம்', 11: 'லாபம்', 12: 'விரயம்'
 }
 
+# ============== CAREER FIELD MAPPINGS ==============
+# Based on classical Jyotish texts: 10th lord, planets in 10th, and D10 analysis
+
+PLANET_CAREER_FIELDS = {
+    'Sun': {
+        'primary': ['Government', 'Administration', 'Politics', 'Leadership', 'Healthcare Administration'],
+        'secondary': ['Management', 'Gold/Jewelry business', 'Medicine (administration)', 'Forest/Wildlife'],
+        'traits': ['Authority-driven', 'Public-facing roles', 'Leadership positions']
+    },
+    'Moon': {
+        'primary': ['Nursing', 'Hospitality', 'Food Industry', 'Dairy', 'Psychology'],
+        'secondary': ['Travel & Tourism', 'Shipping/Maritime', 'Caregiving', 'Counseling', 'Interior Design'],
+        'traits': ['Nurturing roles', 'Public interaction', 'Emotionally engaging work']
+    },
+    'Mars': {
+        'primary': ['Military/Defense', 'Engineering', 'Surgery', 'Sports', 'Real Estate'],
+        'secondary': ['Police/Law enforcement', 'Fire services', 'Mechanical work', 'Construction', 'Martial arts'],
+        'traits': ['Physical work', 'Competitive fields', 'Technical expertise']
+    },
+    'Mercury': {
+        'primary': ['IT/Software', 'Writing/Journalism', 'Accounting', 'Trading', 'Communication'],
+        'secondary': ['Astrology', 'Teaching', 'Marketing', 'Data Analysis', 'Languages', 'Commerce'],
+        'traits': ['Intellectual work', 'Communication-centric', 'Analytical roles']
+    },
+    'Jupiter': {
+        'primary': ['Teaching/Education', 'Law', 'Finance/Banking', 'Religious services', 'Consulting'],
+        'secondary': ['Philosophy', 'Publishing', 'Advisory roles', 'Spiritual guidance', 'Higher education'],
+        'traits': ['Wisdom-sharing', 'Guiding others', 'Ethical professions']
+    },
+    'Venus': {
+        'primary': ['Arts & Entertainment', 'Fashion', 'Beauty Industry', 'Luxury goods', 'Music'],
+        'secondary': ['Interior Design', 'Hospitality', 'Event management', 'Cosmetics', 'Film/Media'],
+        'traits': ['Aesthetic work', 'Creative fields', 'Relationship-oriented']
+    },
+    'Saturn': {
+        'primary': ['Engineering', 'Mining', 'Agriculture', 'Manufacturing', 'Labor-intensive work'],
+        'secondary': ['Oil & Gas', 'Judiciary', 'Real Estate', 'Construction', 'Old age care', 'Archaeology'],
+        'traits': ['Systematic work', 'Long-term projects', 'Service to masses']
+    },
+    'Rahu': {
+        'primary': ['Technology', 'Foreign trade', 'Aviation', 'Research', 'Unconventional fields'],
+        'secondary': ['Pharmaceuticals', 'Chemicals', 'Electronics', 'Occult sciences', 'Import/Export'],
+        'traits': ['Innovative work', 'Cross-cultural roles', 'Breaking new ground']
+    },
+    'Ketu': {
+        'primary': ['Spirituality', 'Research', 'Computer programming', 'Mathematics', 'Healing'],
+        'secondary': ['Occult', 'Veterinary', 'Meditation teaching', 'Alternative medicine', 'Detectives'],
+        'traits': ['Introspective work', 'Behind-the-scenes', 'Intuitive fields']
+    }
+}
+
+# Sign-based career inclinations (for 10th house sign)
+SIGN_CAREER_FIELDS = {
+    'Aries': ['Entrepreneurship', 'Sports', 'Military', 'Surgery', 'Leadership roles', 'Competitive business'],
+    'Taurus': ['Finance', 'Agriculture', 'Food industry', 'Music', 'Real estate', 'Luxury goods', 'Banking'],
+    'Gemini': ['Writing', 'Journalism', 'IT', 'Sales', 'Teaching', 'Marketing', 'Communication media'],
+    'Cancer': ['Hospitality', 'Nursing', 'Psychology', 'Real estate', 'Food business', 'Child care'],
+    'Leo': ['Government', 'Entertainment', 'Politics', 'Management', 'Creative arts', 'Luxury brands'],
+    'Virgo': ['Healthcare', 'Accounting', 'Data analysis', 'Quality control', 'Service industry', 'Editing'],
+    'Libra': ['Law', 'Diplomacy', 'Fashion', 'Art', 'Counseling', 'Public relations', 'Partnerships'],
+    'Scorpio': ['Research', 'Investigation', 'Psychology', 'Surgery', 'Insurance', 'Occult', 'Mining'],
+    'Sagittarius': ['Education', 'Law', 'Publishing', 'Travel', 'Philosophy', 'Religious work', 'Import/Export'],
+    'Capricorn': ['Administration', 'Engineering', 'Politics', 'Manufacturing', 'Government', 'Construction'],
+    'Aquarius': ['Technology', 'Social work', 'NGOs', 'Innovation', 'Science', 'Networking', 'Aviation'],
+    'Pisces': ['Healthcare', 'Spirituality', 'Art', 'Film', 'Psychology', 'Charity', 'Marine/Water-related']
+}
+
+# ============== HEALTH AREA MAPPINGS ==============
+# Based on classical Jyotish: Body parts ruled by signs and planets
+
+SIGN_BODY_PARTS = {
+    'Aries': ['Head', 'Brain', 'Face', 'Eyes'],
+    'Taurus': ['Throat', 'Neck', 'Thyroid', 'Vocal cords'],
+    'Gemini': ['Shoulders', 'Arms', 'Hands', 'Lungs', 'Nervous system'],
+    'Cancer': ['Chest', 'Stomach', 'Breasts', 'Digestive system'],
+    'Leo': ['Heart', 'Spine', 'Upper back', 'Circulatory system'],
+    'Virgo': ['Intestines', 'Digestive tract', 'Nervous system', 'Lower abdomen'],
+    'Libra': ['Kidneys', 'Lower back', 'Bladder', 'Skin'],
+    'Scorpio': ['Reproductive organs', 'Excretory system', 'Pelvis'],
+    'Sagittarius': ['Hips', 'Thighs', 'Liver', 'Sciatic nerve'],
+    'Capricorn': ['Knees', 'Bones', 'Joints', 'Teeth', 'Skin'],
+    'Aquarius': ['Ankles', 'Calves', 'Circulatory system', 'Nervous system'],
+    'Pisces': ['Feet', 'Toes', 'Lymphatic system', 'Immune system']
+}
+
+PLANET_HEALTH_AREAS = {
+    'Sun': {
+        'governs': ['Heart', 'Eyes', 'Vitality', 'Bones', 'Right eye'],
+        'weak_indicators': ['Heart issues', 'Eye problems', 'Low vitality', 'Bone density issues'],
+        'strong_indicators': ['Strong constitution', 'Good eyesight', 'High energy levels']
+    },
+    'Moon': {
+        'governs': ['Mind', 'Emotions', 'Fluids', 'Left eye', 'Stomach', 'Breasts'],
+        'weak_indicators': ['Mental stress', 'Fluid imbalance', 'Digestive issues', 'Emotional instability'],
+        'strong_indicators': ['Emotional balance', 'Good digestion', 'Mental clarity']
+    },
+    'Mars': {
+        'governs': ['Blood', 'Muscles', 'Bone marrow', 'Energy levels', 'Head'],
+        'weak_indicators': ['Blood pressure issues', 'Accidents', 'Inflammation', 'Anger-related issues'],
+        'strong_indicators': ['Physical strength', 'Quick recovery', 'Good blood health']
+    },
+    'Mercury': {
+        'governs': ['Nervous system', 'Skin', 'Speech', 'Intellect', 'Respiratory'],
+        'weak_indicators': ['Nervous disorders', 'Skin issues', 'Speech problems', 'Respiratory issues'],
+        'strong_indicators': ['Sharp intellect', 'Clear communication', 'Healthy skin']
+    },
+    'Jupiter': {
+        'governs': ['Liver', 'Fat tissue', 'Ears', 'Thighs', 'Arterial system'],
+        'weak_indicators': ['Liver issues', 'Obesity', 'Diabetes risk', 'Ear problems'],
+        'strong_indicators': ['Good liver function', 'Healthy weight management', 'Longevity']
+    },
+    'Venus': {
+        'governs': ['Reproductive system', 'Kidneys', 'Throat', 'Face', 'Hormones'],
+        'weak_indicators': ['Reproductive issues', 'Kidney problems', 'Hormonal imbalance', 'Skin disorders'],
+        'strong_indicators': ['Hormonal balance', 'Beautiful appearance', 'Good reproductive health']
+    },
+    'Saturn': {
+        'governs': ['Bones', 'Teeth', 'Joints', 'Chronic conditions', 'Aging'],
+        'weak_indicators': ['Joint pain', 'Dental issues', 'Chronic ailments', 'Slow metabolism'],
+        'strong_indicators': ['Strong bones', 'Longevity', 'Resilience']
+    },
+    'Rahu': {
+        'governs': ['Nervous system', 'Phobias', 'Mysterious ailments', 'Skin'],
+        'weak_indicators': ['Anxiety', 'Mysterious diseases', 'Poison effects', 'Mental disturbances'],
+        'strong_indicators': ['Resistance to unusual diseases', 'Strong nervous system']
+    },
+    'Ketu': {
+        'governs': ['Nervous system', 'Spine', 'Subtle body', 'Immunity'],
+        'weak_indicators': ['Spine issues', 'Immune disorders', 'Mysterious pains', 'Skin diseases'],
+        'strong_indicators': ['Strong intuition', 'Spiritual health', 'Quick healing']
+    }
+}
+
+# ============== MARRIAGE/RELATIONSHIP INDICATORS ==============
+PLANET_MARRIAGE_INDICATORS = {
+    'Venus': {'role': 'Karaka for marriage', 'strong': 'Harmonious relationships', 'weak': 'Relationship challenges'},
+    'Jupiter': {'role': 'Husband indicator (for females)', 'strong': 'Wise partner', 'weak': 'Partner issues'},
+    'Mars': {'role': 'Passion/energy in marriage', 'strong': 'Active partnership', 'weak': 'Conflicts possible'},
+    'Moon': {'role': 'Emotional bonding', 'strong': 'Emotional harmony', 'weak': 'Mood fluctuations'},
+    'Saturn': {'role': 'Longevity of marriage', 'strong': 'Stable long-term', 'weak': 'Delays/obstacles'}
+}
+
+SIGN_MARRIAGE_STYLE = {
+    'Aries': 'Independent partner, leadership in relationship',
+    'Taurus': 'Stable, comfort-seeking, loyal partnership',
+    'Gemini': 'Communicative, intellectually stimulating partner',
+    'Cancer': 'Nurturing, family-oriented, emotional bonding',
+    'Leo': 'Romantic, generous, proud partnership',
+    'Virgo': 'Practical, service-oriented, analytical partner',
+    'Libra': 'Harmonious, partnership-focused, balanced',
+    'Scorpio': 'Intense, transformative, deep bonding',
+    'Sagittarius': 'Freedom-loving, philosophical partner',
+    'Capricorn': 'Ambitious, traditional, committed partner',
+    'Aquarius': 'Unconventional, friendly, independent partner',
+    'Pisces': 'Compassionate, intuitive, spiritual bonding'
+}
+
+# ============== WEALTH INDICATORS ==============
+PLANET_WEALTH_INDICATORS = {
+    'Jupiter': {'role': 'Natural wealth indicator', 'fields': ['Banking', 'Finance', 'Education', 'Advisory']},
+    'Venus': {'role': 'Luxury and comfort', 'fields': ['Luxury goods', 'Arts', 'Entertainment', 'Beauty']},
+    'Mercury': {'role': 'Business acumen', 'fields': ['Trading', 'Commerce', 'IT', 'Communication']},
+    'Sun': {'role': 'Authority and position', 'fields': ['Government', 'Gold', 'Administration']},
+    'Moon': {'role': 'Public dealings', 'fields': ['Liquids', 'Public business', 'Import/Export']},
+    'Saturn': {'role': 'Slow steady wealth', 'fields': ['Real estate', 'Mining', 'Agriculture']},
+    'Mars': {'role': 'Property/land', 'fields': ['Real estate', 'Engineering', 'Military']}
+}
+
+# ============== EDUCATION INDICATORS ==============
+PLANET_EDUCATION_FIELDS = {
+    'Mercury': ['Commerce', 'Accounting', 'IT', 'Languages', 'Writing', 'Mathematics'],
+    'Jupiter': ['Law', 'Philosophy', 'Higher studies', 'Teaching', 'Finance', 'Vedic studies'],
+    'Venus': ['Arts', 'Music', 'Design', 'Fashion', 'Film studies', 'Literature'],
+    'Mars': ['Engineering', 'Medicine (Surgery)', 'Sports science', 'Military studies'],
+    'Saturn': ['Engineering', 'Mining', 'Agriculture', 'History', 'Archaeology'],
+    'Sun': ['Political science', 'Administration', 'Medicine', 'Government studies'],
+    'Moon': ['Psychology', 'Nursing', 'Hospitality', 'Marine studies'],
+    'Rahu': ['Technology', 'Foreign studies', 'Research', 'Aviation', 'Electronics'],
+    'Ketu': ['Computer science', 'Mathematics', 'Occult sciences', 'Spiritual studies']
+}
+
+# ============== CHILDREN INDICATORS ==============
+PLANET_CHILDREN_INDICATORS = {
+    'Jupiter': {'role': 'Primary Putrakaraka', 'strong': 'Good progeny prospects', 'weak': 'Delays or challenges'},
+    'Venus': {'role': 'Creative expression', 'strong': 'Creative children', 'weak': 'May need remedies'},
+    'Mars': {'role': 'Energy and vitality', 'strong': 'Active children', 'weak': 'Health concerns possible'},
+    'Moon': {'role': 'Emotional bond', 'strong': 'Close relationship', 'weak': 'Emotional distance'},
+    'Sun': {'role': 'Father indicator', 'strong': 'Strong father figure', 'weak': 'Father-child dynamics'}
+}
+
 
 @dataclass
 class PlanetPosition:
@@ -2998,7 +3188,7 @@ class JyotishEngine:
     # ============== LIFE AREA ANALYSIS ==============
 
     def analyze_life_area(self, area: str) -> Dict[str, Any]:
-        """Analyze a specific life area with house lord logic"""
+        """Analyze a specific life area with house lord logic and detailed insights"""
         area_houses = {
             'career': [10, 2, 6],
             'marriage': [7, 2, 4],
@@ -3041,6 +3231,12 @@ class JyotishEngine:
                    (0.6 if len(planets_in_house) > 0 else 0.4) * 0.2)
         combined = max(0.35, min(0.95, combined))
 
+        # Get detailed insights based on area type
+        detailed_insights = self._get_detailed_life_area_insights(
+            area, house_sign, house_lord, lord_poi['total'],
+            karaka, karaka_strength, planets_in_house, combined
+        )
+
         return {
             'area': area,
             'primary_house': primary_house,
@@ -3052,7 +3248,409 @@ class JyotishEngine:
             'planets_in_house': planets_in_house,
             'combined_score': round(combined, 2),
             'interpretation': 'Favorable' if combined > 0.6 else ('Moderate' if combined > 0.45 else 'Needs attention'),
-            'math_trace': f'H{primary_house} lord {house_lord}={lord_poi["total"]:.2f}, karaka {karaka}={karaka_strength:.2f}'
+            'math_trace': f'H{primary_house} lord {house_lord}={lord_poi["total"]:.2f}, karaka {karaka}={karaka_strength:.2f}',
+            'detailed_insights': detailed_insights
+        }
+
+    def _get_detailed_life_area_insights(self, area: str, house_sign: str, house_lord: str,
+                                          lord_strength: float, karaka: str, karaka_strength: float,
+                                          planets_in_house: List[str], combined_score: float) -> Dict[str, Any]:
+        """Generate detailed, mathematically-derived insights for each life area"""
+
+        if area == 'career':
+            return self._get_career_insights(house_sign, house_lord, lord_strength, planets_in_house, combined_score)
+        elif area == 'health':
+            return self._get_health_insights(house_sign, house_lord, lord_strength, planets_in_house, combined_score)
+        elif area == 'marriage':
+            return self._get_marriage_insights(house_sign, house_lord, lord_strength, planets_in_house, combined_score)
+        elif area == 'wealth':
+            return self._get_wealth_insights(house_sign, house_lord, lord_strength, planets_in_house, combined_score)
+        elif area == 'education':
+            return self._get_education_insights(house_sign, house_lord, lord_strength, planets_in_house, combined_score)
+        elif area == 'children':
+            return self._get_children_insights(house_sign, house_lord, lord_strength, planets_in_house, combined_score)
+        else:
+            return {'summary': 'Analysis available for this area'}
+
+    def _get_career_insights(self, house_sign: str, house_lord: str, lord_strength: float,
+                             planets_in_house: List[str], combined_score: float) -> Dict[str, Any]:
+        """Generate detailed career field recommendations based on planetary analysis"""
+
+        # Primary fields from 10th house lord
+        lord_fields = PLANET_CAREER_FIELDS.get(house_lord, {})
+        primary_careers = lord_fields.get('primary', [])[:3]
+        secondary_careers = lord_fields.get('secondary', [])[:2]
+        career_traits = lord_fields.get('traits', [])
+
+        # Sign-based career inclinations
+        sign_careers = SIGN_CAREER_FIELDS.get(house_sign, [])[:3]
+
+        # Additional fields from planets in 10th house
+        planet_influenced_careers = []
+        for planet in planets_in_house:
+            p_fields = PLANET_CAREER_FIELDS.get(planet, {})
+            planet_influenced_careers.extend(p_fields.get('primary', [])[:2])
+
+        # Calculate career direction strength
+        # Strong lord = authority-driven, Weak lord = service-oriented
+        if lord_strength > 0.65:
+            career_direction = 'Leadership and authority positions suit you best'
+            approach = 'Take initiative, seek management roles'
+        elif lord_strength > 0.45:
+            career_direction = 'Balanced approach between leadership and collaboration'
+            approach = 'Build expertise, then move to leadership'
+        else:
+            career_direction = 'Service-oriented and skill-based roles recommended'
+            approach = 'Focus on expertise and technical skills'
+
+        # Timing based on Saturn's influence on 10th
+        lagna_idx = RASIS.index(self.lagna_sign) if self.lagna_sign in RASIS else 0
+        saturn_pos = self.planets.get('Saturn')
+        saturn_aspect_10th = False
+        if saturn_pos:
+            saturn_house = saturn_pos.house
+            # Saturn aspects 3rd, 7th, 10th from its position
+            aspects = [(saturn_house + 2) % 12 + 1, (saturn_house + 6) % 12 + 1, (saturn_house + 9) % 12 + 1]
+            saturn_aspect_10th = 10 in aspects or saturn_house == 10
+
+        career_timing = 'Steady progression expected' if not saturn_aspect_10th else 'Slow but stable career growth; patience required'
+
+        # Build recommended fields list (unique, prioritized)
+        all_recommended = []
+        seen = set()
+        for field in (primary_careers + sign_careers + secondary_careers + planet_influenced_careers):
+            if field not in seen:
+                all_recommended.append(field)
+                seen.add(field)
+
+        return {
+            'recommended_fields': all_recommended[:6],
+            'primary_from_lord': primary_careers,
+            'secondary_options': secondary_careers,
+            'sign_influence': sign_careers,
+            'career_traits': career_traits,
+            'career_direction': career_direction,
+            'approach': approach,
+            'timing_note': career_timing,
+            'strength_analysis': f'10th lord {house_lord} at {lord_strength:.0%} strength in {house_sign}',
+            'planets_influence': f'{", ".join(planets_in_house)} in 10th house' if planets_in_house else 'No planets in 10th house',
+            'math_reasoning': f'Career fields derived from: 10th lord ({house_lord}), 10th sign ({house_sign}), planets in 10th ({", ".join(planets_in_house) or "none"})'
+        }
+
+    def _get_health_insights(self, house_sign: str, house_lord: str, lord_strength: float,
+                             planets_in_house: List[str], combined_score: float) -> Dict[str, Any]:
+        """Generate detailed health focus areas based on planetary analysis"""
+
+        # Areas to focus on based on 6th house sign (health challenges)
+        lagna_idx = RASIS.index(self.lagna_sign) if self.lagna_sign in RASIS else 0
+        sixth_sign = RASIS[(lagna_idx + 5) % 12]
+        eighth_sign = RASIS[(lagna_idx + 7) % 12]
+
+        # Body parts from Lagna sign (constitution)
+        lagna_body_parts = SIGN_BODY_PARTS.get(self.lagna_sign, [])
+
+        # Body parts to monitor from 6th and 8th house signs
+        sixth_body_parts = SIGN_BODY_PARTS.get(sixth_sign, [])
+        eighth_body_parts = SIGN_BODY_PARTS.get(eighth_sign, [])
+
+        # Weak planets and their health indicators
+        health_focus_areas = []
+        health_strengths = []
+        weak_planets = []
+
+        for planet in ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn']:
+            if planet in self.planets:
+                strength = self.calculate_shadbala(planet)['total']
+                health_data = PLANET_HEALTH_AREAS.get(planet, {})
+
+                if strength < 0.45:
+                    weak_planets.append(planet)
+                    health_focus_areas.extend(health_data.get('weak_indicators', [])[:2])
+                elif strength > 0.65:
+                    health_strengths.extend(health_data.get('strong_indicators', [])[:1])
+
+        # Overall constitution assessment
+        sun_strength = self.calculate_shadbala('Sun')['total'] if 'Sun' in self.planets else 0.5
+        moon_strength = self.calculate_shadbala('Moon')['total'] if 'Moon' in self.planets else 0.5
+
+        if sun_strength > 0.6 and moon_strength > 0.6:
+            constitution = 'Strong overall constitution and vitality'
+        elif sun_strength > 0.5 or moon_strength > 0.5:
+            constitution = 'Moderate constitution; maintain balanced lifestyle'
+        else:
+            constitution = 'Pay attention to overall vitality and energy levels'
+
+        # Mars for physical energy, Saturn for chronic conditions
+        mars_strength = self.calculate_shadbala('Mars')['total'] if 'Mars' in self.planets else 0.5
+        saturn_influence = 'Monitor for chronic conditions' if 'Saturn' in planets_in_house else ''
+
+        # Unique focus areas
+        unique_focus = list(set(health_focus_areas))[:5]
+
+        return {
+            'body_areas_to_monitor': unique_focus,
+            'constitution_assessment': constitution,
+            'lagna_ruled_parts': lagna_body_parts,
+            'sixth_house_vulnerabilities': sixth_body_parts[:3],
+            'eighth_house_concerns': eighth_body_parts[:2],
+            'health_strengths': health_strengths[:3],
+            'weak_planets': weak_planets,
+            'vitality_score': f'Sun={sun_strength:.0%}, Moon={moon_strength:.0%}',
+            'physical_energy': f'Mars at {mars_strength:.0%} - {"Good" if mars_strength > 0.5 else "Build through exercise"}',
+            'chronic_tendency': saturn_influence or 'No major chronic indicators',
+            'recommendations': self._get_health_recommendations(weak_planets, sixth_sign),
+            'math_reasoning': f'Health analysis from: Lagna ({self.lagna_sign}), 6th house ({sixth_sign}), 8th house ({eighth_sign}), weak planets ({", ".join(weak_planets) or "none"})'
+        }
+
+    def _get_health_recommendations(self, weak_planets: List[str], sixth_sign: str) -> List[str]:
+        """Generate specific health recommendations based on weak planets"""
+        recommendations = []
+
+        if 'Sun' in weak_planets:
+            recommendations.append('Regular morning sunlight exposure; focus on heart health')
+        if 'Moon' in weak_planets:
+            recommendations.append('Maintain emotional balance; stay hydrated; monitor digestion')
+        if 'Mars' in weak_planets:
+            recommendations.append('Regular physical exercise; manage anger; watch blood pressure')
+        if 'Mercury' in weak_planets:
+            recommendations.append('Stress management; skin care; breathing exercises')
+        if 'Jupiter' in weak_planets:
+            recommendations.append('Monitor weight and liver health; avoid excess')
+        if 'Venus' in weak_planets:
+            recommendations.append('Reproductive health checkups; kidney function monitoring')
+        if 'Saturn' in weak_planets:
+            recommendations.append('Joint and bone care; regular dental checkups')
+
+        if not recommendations:
+            recommendations.append('Overall good planetary health indicators')
+            recommendations.append('Maintain regular health checkups')
+
+        return recommendations[:4]
+
+    def _get_marriage_insights(self, house_sign: str, house_lord: str, lord_strength: float,
+                               planets_in_house: List[str], combined_score: float) -> Dict[str, Any]:
+        """Generate detailed marriage/relationship insights"""
+
+        # Venus analysis (primary karaka for marriage)
+        venus_strength = self.calculate_shadbala('Venus')['total'] if 'Venus' in self.planets else 0.5
+        venus_pos = self.planets.get('Venus')
+        venus_sign = venus_pos.sign if venus_pos else 'Unknown'
+
+        # Jupiter analysis (husband karaka for females)
+        jupiter_strength = self.calculate_shadbala('Jupiter')['total'] if 'Jupiter' in self.planets else 0.5
+
+        # 7th house sign indicates partner type
+        partner_style = SIGN_MARRIAGE_STYLE.get(house_sign, 'Balanced partnership approach')
+
+        # Relationship dynamics from planets in 7th
+        dynamics = []
+        for planet in planets_in_house:
+            indicator = PLANET_MARRIAGE_INDICATORS.get(planet, {})
+            if indicator:
+                if lord_strength > 0.5:
+                    dynamics.append(indicator.get('strong', ''))
+                else:
+                    dynamics.append(indicator.get('weak', ''))
+
+        # Timing indicators
+        if 'Saturn' in planets_in_house or house_lord == 'Saturn':
+            timing = 'Marriage may be delayed but stable once established'
+        elif 'Jupiter' in planets_in_house or house_lord == 'Jupiter':
+            timing = 'Auspicious for marriage; supportive spouse'
+        elif 'Venus' in planets_in_house:
+            timing = 'Romantic and passionate relationship indicated'
+        else:
+            timing = 'Standard timing based on dasha periods'
+
+        # Compatibility factors
+        harmony_score = (venus_strength + lord_strength + jupiter_strength) / 3
+
+        return {
+            'partner_characteristics': partner_style,
+            '7th_house_sign': house_sign,
+            '7th_lord': house_lord,
+            'lord_strength_pct': f'{lord_strength:.0%}',
+            'venus_analysis': f'Venus at {venus_strength:.0%} in {venus_sign}',
+            'jupiter_analysis': f'Jupiter at {jupiter_strength:.0%}',
+            'relationship_dynamics': dynamics if dynamics else ['Balanced partnership expected'],
+            'timing_indication': timing,
+            'harmony_potential': f'{harmony_score:.0%}',
+            'planets_in_7th': planets_in_house,
+            'key_advice': 'Strong 7th lord indicates supportive partnership' if lord_strength > 0.55 else 'Focus on communication and understanding in relationships',
+            'math_reasoning': f'Marriage analysis from: 7th lord ({house_lord}={lord_strength:.0%}), Venus={venus_strength:.0%}, Jupiter={jupiter_strength:.0%}'
+        }
+
+    def _get_wealth_insights(self, house_sign: str, house_lord: str, lord_strength: float,
+                             planets_in_house: List[str], combined_score: float) -> Dict[str, Any]:
+        """Generate detailed wealth and financial insights"""
+
+        # 2nd house (wealth accumulation) and 11th house (gains) analysis
+        lagna_idx = RASIS.index(self.lagna_sign) if self.lagna_sign in RASIS else 0
+        eleventh_sign = RASIS[(lagna_idx + 10) % 12]
+        eleventh_lord = RASI_LORDS[eleventh_sign]
+
+        # Jupiter (natural wealth karaka) analysis
+        jupiter_strength = self.calculate_shadbala('Jupiter')['total'] if 'Jupiter' in self.planets else 0.5
+
+        # Income sources based on 2nd lord and planets
+        income_sources = []
+        lord_wealth = PLANET_WEALTH_INDICATORS.get(house_lord, {})
+        income_sources.extend(lord_wealth.get('fields', [])[:2])
+
+        for planet in planets_in_house:
+            p_wealth = PLANET_WEALTH_INDICATORS.get(planet, {})
+            income_sources.extend(p_wealth.get('fields', [])[:1])
+
+        # Wealth accumulation pattern
+        if lord_strength > 0.65:
+            accumulation = 'Strong wealth accumulation potential'
+            pattern = 'Consistent income growth expected'
+        elif lord_strength > 0.45:
+            accumulation = 'Moderate wealth through steady efforts'
+            pattern = 'Build savings systematically'
+        else:
+            accumulation = 'Wealth requires sustained effort'
+            pattern = 'Focus on stable income before investments'
+
+        # Saturn influence on wealth (delays but stability)
+        saturn_pos = self.planets.get('Saturn')
+        wealth_timing = 'Steady growth' if not saturn_pos or saturn_pos.house not in [2, 11] else 'Slow but stable wealth building'
+
+        # Best wealth sources
+        unique_sources = list(set(income_sources))[:4]
+
+        return {
+            'wealth_potential': accumulation,
+            'accumulation_pattern': pattern,
+            '2nd_lord': house_lord,
+            '11th_lord': eleventh_lord,
+            'lord_strength': f'{lord_strength:.0%}',
+            'jupiter_influence': f'Jupiter at {jupiter_strength:.0%} - {"Favorable" if jupiter_strength > 0.5 else "Build through discipline"}',
+            'recommended_income_sources': unique_sources,
+            'timing_pattern': wealth_timing,
+            'investment_advice': 'Can take calculated risks' if combined_score > 0.6 else 'Prefer stable, low-risk investments',
+            'planets_in_2nd': planets_in_house,
+            'math_reasoning': f'Wealth analysis from: 2nd lord ({house_lord}={lord_strength:.0%}), 11th lord ({eleventh_lord}), Jupiter={jupiter_strength:.0%}'
+        }
+
+    def _get_education_insights(self, house_sign: str, house_lord: str, lord_strength: float,
+                                planets_in_house: List[str], combined_score: float) -> Dict[str, Any]:
+        """Generate detailed education and learning insights"""
+
+        # Mercury (intellect) and Jupiter (higher learning) analysis
+        mercury_strength = self.calculate_shadbala('Mercury')['total'] if 'Mercury' in self.planets else 0.5
+        jupiter_strength = self.calculate_shadbala('Jupiter')['total'] if 'Jupiter' in self.planets else 0.5
+
+        # Education fields from planets
+        recommended_fields = []
+
+        # From 4th/5th lord
+        lord_fields = PLANET_EDUCATION_FIELDS.get(house_lord, [])
+        recommended_fields.extend(lord_fields[:3])
+
+        # From Mercury (intellect)
+        mercury_fields = PLANET_EDUCATION_FIELDS.get('Mercury', [])[:2]
+
+        # From planets in education houses
+        for planet in planets_in_house:
+            p_fields = PLANET_EDUCATION_FIELDS.get(planet, [])
+            recommended_fields.extend(p_fields[:2])
+
+        # Learning style
+        if mercury_strength > 0.6:
+            learning_style = 'Quick learner; analytical and logical approach'
+        elif mercury_strength > 0.4:
+            learning_style = 'Steady learner; benefits from structured learning'
+        else:
+            learning_style = 'Visual and practical learning methods work best'
+
+        # Higher education prospects
+        if jupiter_strength > 0.6 and lord_strength > 0.5:
+            higher_ed = 'Excellent prospects for higher education and advanced degrees'
+        elif jupiter_strength > 0.45:
+            higher_ed = 'Good potential for specialized education'
+        else:
+            higher_ed = 'Practical and skill-based education recommended'
+
+        # Unique fields
+        unique_fields = list(set(recommended_fields))[:6]
+
+        return {
+            'recommended_fields': unique_fields,
+            'learning_style': learning_style,
+            'higher_education_prospects': higher_ed,
+            '4th_5th_lord': house_lord,
+            'mercury_strength': f'{mercury_strength:.0%}',
+            'jupiter_strength': f'{jupiter_strength:.0%}',
+            'lord_strength': f'{lord_strength:.0%}',
+            'intellectual_capacity': 'High' if mercury_strength > 0.6 else ('Moderate' if mercury_strength > 0.4 else 'Develops with practice'),
+            'concentration': 'Strong focus' if 'Saturn' in planets_in_house else 'Build through discipline',
+            'best_approach': 'Self-study and research' if mercury_strength > 0.55 else 'Guided learning with mentorship',
+            'math_reasoning': f'Education analysis from: 4th/5th lord ({house_lord}={lord_strength:.0%}), Mercury={mercury_strength:.0%}, Jupiter={jupiter_strength:.0%}'
+        }
+
+    def _get_children_insights(self, house_sign: str, house_lord: str, lord_strength: float,
+                               planets_in_house: List[str], combined_score: float) -> Dict[str, Any]:
+        """Generate detailed children/progeny insights"""
+
+        # Jupiter (Putrakaraka - primary significator for children)
+        jupiter_strength = self.calculate_shadbala('Jupiter')['total'] if 'Jupiter' in self.planets else 0.5
+        jupiter_pos = self.planets.get('Jupiter')
+
+        # 5th house analysis
+        lagna_idx = RASIS.index(self.lagna_sign) if self.lagna_sign in RASIS else 0
+
+        # Children prospects
+        if jupiter_strength > 0.6 and lord_strength > 0.55:
+            prospects = 'Good prospects for children; harmonious relationship expected'
+        elif jupiter_strength > 0.45 or lord_strength > 0.5:
+            prospects = 'Children indicated; normal progeny prospects'
+        else:
+            prospects = 'May require patience; remedial measures may help'
+
+        # Relationship with children
+        dynamics = []
+        for planet in planets_in_house:
+            indicator = PLANET_CHILDREN_INDICATORS.get(planet, {})
+            if indicator:
+                dynamics.append(f'{planet}: {indicator.get("strong" if lord_strength > 0.5 else "weak", "")}')
+
+        # Timing
+        if 'Saturn' in planets_in_house or house_lord == 'Saturn':
+            timing = 'Children may come later in life; stable relationship'
+        elif 'Jupiter' in planets_in_house or house_lord == 'Jupiter':
+            timing = 'Auspicious timing for children; blessed progeny'
+        else:
+            timing = 'Timing based on dasha periods of 5th lord'
+
+        # Children characteristics from 5th sign
+        child_traits = {
+            'Aries': 'Active, independent children',
+            'Taurus': 'Artistic, comfort-loving children',
+            'Gemini': 'Intelligent, communicative children',
+            'Cancer': 'Emotional, nurturing children',
+            'Leo': 'Confident, creative children',
+            'Virgo': 'Analytical, detail-oriented children',
+            'Libra': 'Balanced, artistic children',
+            'Scorpio': 'Intense, determined children',
+            'Sagittarius': 'Adventurous, philosophical children',
+            'Capricorn': 'Disciplined, ambitious children',
+            'Aquarius': 'Innovative, independent children',
+            'Pisces': 'Creative, intuitive children'
+        }
+
+        return {
+            'progeny_prospects': prospects,
+            '5th_house_sign': house_sign,
+            '5th_lord': house_lord,
+            'lord_strength': f'{lord_strength:.0%}',
+            'jupiter_analysis': f'Jupiter (Putrakaraka) at {jupiter_strength:.0%}',
+            'children_characteristics': child_traits.get(house_sign, 'Good natured children'),
+            'relationship_dynamics': dynamics if dynamics else ['Harmonious bond expected'],
+            'timing_indication': timing,
+            'planets_in_5th': planets_in_house,
+            'creative_expression': 'Strong' if combined_score > 0.6 else 'Moderate',
+            'math_reasoning': f'Children analysis from: 5th lord ({house_lord}={lord_strength:.0%}), Jupiter={jupiter_strength:.0%}'
         }
 
     # ============== ELEMENT & GUNA BALANCE ==============
