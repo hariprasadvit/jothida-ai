@@ -1551,7 +1551,7 @@ export const translations = {
     needsRemedy: 'Needs Remedy',
 
     // Ungal Jothidan (Your Astrologer)
-    ungalJothidan: 'Ungal Jothidan',
+    ungalJothidan: 'Your Astrologer',
     yourAstrologer: 'Your Personal Astrologer',
     todaysConfidence: "Today's Confidence",
     loadingInsights: 'Loading your daily insights...',

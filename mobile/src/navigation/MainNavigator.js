@@ -1,10 +1,9 @@
 import React from 'react';
-import { Platform, Text, View } from 'react-native';
+import { Platform, View, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { CommonActions } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLanguage } from '../context/LanguageContext';
 
 import DashboardScreen from '../screens/DashboardScreen';
 import AstroFeedScreen from '../screens/AstroFeedScreen';
@@ -15,100 +14,67 @@ import ProfileScreen from '../screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
+const TAB_CONFIG = {
+  Dashboard: { icon: 'home', iconOutline: 'home-outline' },
+  AstroFeed: { icon: 'sparkles', iconOutline: 'sparkles-outline' },
+  Matching: { icon: 'heart', iconOutline: 'heart-outline' },
+  UngalJothidan: { icon: 'sunny', iconOutline: 'sunny-outline' },
+  Muhurtham: { icon: 'calendar', iconOutline: 'calendar-outline' },
+  Profile: { icon: 'person', iconOutline: 'person-outline' },
+};
+
 export default function MainNavigator() {
   const insets = useSafeAreaInsets();
-  const { t, language } = useLanguage();
-  const bottomPadding = Platform.OS === 'android' ? Math.max(insets.bottom, 10) : insets.bottom;
+  const bottomPadding = Platform.OS === 'android' ? Math.max(insets.bottom, 12) : insets.bottom;
 
-  // Very short labels that fit in bottom nav for all languages
-  const getTabLabel = (routeName) => {
-    const labels = {
-      Dashboard: { en: 'Home', ta: 'முகப்பு', kn: 'ಮನೆ' },
-      AstroFeed: { en: 'Feed', ta: 'கதை', kn: 'ಕಥೆ' },
-      Matching: { en: 'Match', ta: 'ஜோடி', kn: 'ಜೋಡಿ' },
-      UngalJothidan: { en: 'Daily', ta: 'தினம்', kn: 'ದಿನ' },
-      Muhurtham: { en: 'Time', ta: 'நேரம்', kn: 'ಸಮಯ' },
-      Profile: { en: 'Me', ta: 'நான்', kn: 'ನಾನು' },
-    };
-    return labels[routeName]?.[language] || labels[routeName]?.en || routeName;
-  };
+  const resetTabListener = ({ navigation, route }) => ({
+    tabPress: () => {
+      const state = navigation.getState();
+      if (state.routes[state.index].name === route.name) {
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: route.name }],
+          })
+        );
+      }
+    },
+  });
 
   return (
     <Tab.Navigator
-      screenOptions={({ route, navigation }) => ({
+      screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: '#f97316',
-        tabBarInactiveTintColor: '#8b6f47',
+        tabBarShowLabel: false,
         tabBarHideOnKeyboard: true,
+        tabBarActiveTintColor: '#ea580c',
+        tabBarInactiveTintColor: '#b8a99a',
         tabBarStyle: {
-          backgroundColor: '#fff8f0',
-          borderTopColor: '#e8d5c4',
-          borderTopWidth: 1,
-          paddingTop: 6,
-          paddingBottom: Platform.OS === 'web' ? 8 : bottomPadding + 6,
-          height: Platform.OS === 'web' ? 60 : 60 + bottomPadding,
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
+          backgroundColor: '#fffaf5',
+          borderTopWidth: 0,
+          paddingTop: 12,
+          paddingBottom: Platform.OS === 'web' ? 12 : bottomPadding + 8,
+          height: Platform.OS === 'web' ? 70 : 70 + bottomPadding,
+          elevation: 20,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.08,
+          shadowRadius: 12,
           ...(Platform.OS !== 'web' && {
             position: 'absolute',
             bottom: 0,
             left: 0,
             right: 0,
           }),
-          shadowColor: '#d4a574',
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.1,
-          shadowRadius: 8,
-          elevation: 8,
         },
-        tabBarItemStyle: {
-          paddingVertical: 2,
-        },
-        tabBarShowLabel: false,
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
-
-          if (route.name === 'Dashboard') {
-            iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'AstroFeed') {
-            iconName = focused ? 'sparkles' : 'sparkles-outline';
-          } else if (route.name === 'Matching') {
-            iconName = focused ? 'heart' : 'heart-outline';
-          } else if (route.name === 'UngalJothidan') {
-            iconName = focused ? 'sunny' : 'sunny-outline';
-          } else if (route.name === 'Muhurtham') {
-            iconName = focused ? 'calendar' : 'calendar-outline';
-          } else if (route.name === 'Profile') {
-            iconName = focused ? 'person' : 'person-outline';
-          }
-
-          const label = getTabLabel(route.name);
+        tabBarIcon: ({ focused, color }) => {
+          const config = TAB_CONFIG[route.name];
+          const iconName = focused ? config.icon : config.iconOutline;
 
           return (
-            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-              <View
-                style={{
-                  paddingHorizontal: 10,
-                  paddingVertical: 4,
-                  borderRadius: 12,
-                  backgroundColor: focused ? '#fff7ed' : 'transparent',
-                  borderWidth: focused ? 1 : 0,
-                  borderColor: focused ? '#fed7aa' : 'transparent',
-                }}
-              >
-                <Ionicons name={iconName} size={20} color={color} />
-              </View>
-              <Text
-                style={{
-                  marginTop: 2,
-                  fontSize: 9,
-                  fontWeight: focused ? '700' : '500',
-                  color,
-                  textAlign: 'center',
-                }}
-              >
-                {label}
-              </Text>
+            <View style={[styles.iconContainer, focused && styles.iconContainerActive]}>
+              <Ionicons name={iconName} size={24} color={color} />
+              {focused && <View style={styles.activeIndicator} />}
             </View>
           );
         },
@@ -117,112 +83,54 @@ export default function MainNavigator() {
       <Tab.Screen
         name="Dashboard"
         component={DashboardScreen}
-        options={{ tabBarLabel: t('home') }}
-        listeners={({ navigation, route }) => ({
-          tabPress: (e) => {
-            const state = navigation.getState();
-            // If already on this tab, reset it
-            if (state.routes[state.index].name === route.name) {
-              navigation.dispatch(
-                CommonActions.reset({
-                  index: 0,
-                  routes: [{ name: route.name }],
-                })
-              );
-            }
-          },
-        })}
+        listeners={resetTabListener}
       />
       <Tab.Screen
         name="AstroFeed"
         component={AstroFeedScreen}
-        options={{ tabBarLabel: t('astroFeed') }}
-        listeners={({ navigation, route }) => ({
-          tabPress: (e) => {
-            const state = navigation.getState();
-            if (state.routes[state.index].name === route.name) {
-              navigation.dispatch(
-                CommonActions.reset({
-                  index: 0,
-                  routes: [{ name: route.name }],
-                })
-              );
-            }
-          },
-        })}
+        listeners={resetTabListener}
       />
       <Tab.Screen
         name="Matching"
         component={MatchingScreen}
-        options={{ tabBarLabel: t('matching') }}
-        listeners={({ navigation, route }) => ({
-          tabPress: (e) => {
-            const state = navigation.getState();
-            if (state.routes[state.index].name === route.name) {
-              navigation.dispatch(
-                CommonActions.reset({
-                  index: 0,
-                  routes: [{ name: route.name }],
-                })
-              );
-            }
-          },
-        })}
+        listeners={resetTabListener}
       />
       <Tab.Screen
         name="UngalJothidan"
         component={UngalJothidanScreen}
-        options={{ tabBarLabel: t('ungalJothidan') }}
-        listeners={({ navigation, route }) => ({
-          tabPress: (e) => {
-            const state = navigation.getState();
-            if (state.routes[state.index].name === route.name) {
-              navigation.dispatch(
-                CommonActions.reset({
-                  index: 0,
-                  routes: [{ name: route.name }],
-                })
-              );
-            }
-          },
-        })}
+        listeners={resetTabListener}
       />
       <Tab.Screen
         name="Muhurtham"
         component={MuhurthamScreen}
-        options={{ tabBarLabel: t('muhurtham') }}
-        listeners={({ navigation, route }) => ({
-          tabPress: (e) => {
-            const state = navigation.getState();
-            if (state.routes[state.index].name === route.name) {
-              navigation.dispatch(
-                CommonActions.reset({
-                  index: 0,
-                  routes: [{ name: route.name }],
-                })
-              );
-            }
-          },
-        })}
+        listeners={resetTabListener}
       />
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
-        options={{ tabBarLabel: t('profile') }}
-        listeners={({ navigation, route }) => ({
-          tabPress: (e) => {
-            const state = navigation.getState();
-            if (state.routes[state.index].name === route.name) {
-              navigation.dispatch(
-                CommonActions.reset({
-                  index: 0,
-                  routes: [{ name: route.name }],
-                })
-              );
-            }
-          },
-        })}
+        listeners={resetTabListener}
       />
     </Tab.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  iconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  iconContainerActive: {
+    backgroundColor: '#fff7ed',
+  },
+  activeIndicator: {
+    position: 'absolute',
+    bottom: 2,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#ea580c',
+  },
+});
