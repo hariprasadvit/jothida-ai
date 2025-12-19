@@ -1,9 +1,8 @@
 import React from 'react';
-import { Platform, View, StyleSheet } from 'react-native';
+import { Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { CommonActions } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import DashboardScreen from '../screens/DashboardScreen';
 import AstroFeedScreen from '../screens/AstroFeedScreen';
@@ -24,9 +23,6 @@ const TAB_CONFIG = {
 };
 
 export default function MainNavigator() {
-  const insets = useSafeAreaInsets();
-  const bottomPadding = Platform.OS === 'android' ? Math.max(insets.bottom, 12) : insets.bottom;
-
   const resetTabListener = ({ navigation, route }) => ({
     tabPress: () => {
       const state = navigation.getState();
@@ -48,35 +44,19 @@ export default function MainNavigator() {
         tabBarShowLabel: false,
         tabBarHideOnKeyboard: true,
         tabBarActiveTintColor: '#ea580c',
-        tabBarInactiveTintColor: '#b8a99a',
+        tabBarInactiveTintColor: '#9ca3af',
         tabBarStyle: {
-          backgroundColor: '#fffaf5',
-          borderTopWidth: 0,
-          paddingTop: 12,
-          paddingBottom: Platform.OS === 'web' ? 12 : bottomPadding + 8,
-          height: Platform.OS === 'web' ? 70 : 70 + bottomPadding,
-          elevation: 20,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.08,
-          shadowRadius: 12,
-          ...(Platform.OS !== 'web' && {
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-          }),
+          backgroundColor: '#ffffff',
+          borderTopWidth: 1,
+          borderTopColor: '#f3f4f6',
+          height: Platform.OS === 'ios' ? 85 : 65,
+          paddingTop: 10,
+          paddingBottom: Platform.OS === 'ios' ? 25 : 10,
         },
         tabBarIcon: ({ focused, color }) => {
           const config = TAB_CONFIG[route.name];
           const iconName = focused ? config.icon : config.iconOutline;
-
-          return (
-            <View style={[styles.iconContainer, focused && styles.iconContainerActive]}>
-              <Ionicons name={iconName} size={24} color={color} />
-              {focused && <View style={styles.activeIndicator} />}
-            </View>
-          );
+          return <Ionicons name={iconName} size={26} color={color} />;
         },
       })}
     >
@@ -113,24 +93,3 @@ export default function MainNavigator() {
     </Tab.Navigator>
   );
 }
-
-const styles = StyleSheet.create({
-  iconContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  iconContainerActive: {
-    backgroundColor: '#fff7ed',
-  },
-  activeIndicator: {
-    position: 'absolute',
-    bottom: 2,
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#ea580c',
-  },
-});
