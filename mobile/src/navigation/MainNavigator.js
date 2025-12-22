@@ -1,8 +1,7 @@
-import React from 'react';
-import { Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { CommonActions } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import DashboardScreen from '../screens/DashboardScreen';
 import AstroFeedScreen from '../screens/AstroFeedScreen';
@@ -23,6 +22,9 @@ const TAB_CONFIG = {
 };
 
 export default function MainNavigator() {
+  const insets = useSafeAreaInsets();
+  const bottomPadding = Math.max(insets.bottom, 10);
+
   const resetTabListener = ({ navigation, route }) => ({
     tabPress: () => {
       const state = navigation.getState();
@@ -49,9 +51,9 @@ export default function MainNavigator() {
           backgroundColor: '#ffffff',
           borderTopWidth: 1,
           borderTopColor: '#f3f4f6',
-          height: Platform.OS === 'ios' ? 85 : 65,
-          paddingTop: 10,
-          paddingBottom: Platform.OS === 'ios' ? 25 : 10,
+          height: 60 + bottomPadding,
+          paddingTop: 8,
+          paddingBottom: bottomPadding,
         },
         tabBarIcon: ({ focused, color }) => {
           const config = TAB_CONFIG[route.name];
