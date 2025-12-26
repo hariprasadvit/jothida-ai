@@ -1510,15 +1510,24 @@ class V6ReportGenerator:
                 planets_str = ', '.join([PLANET_ABBR.get(p, p[:2]) for p in planets]) if planets else 'Empty'
             years_str = ', '.join([str(y) for y in important_years]) if important_years else 'General influence'
 
+            # Language-specific display
+            if is_english:
+                house_title = f"{house_num}. House {house_num}"
+                sign_display = sign
+                lord_display = lord
+            else:
+                house_title = f"{house_num}. House {house_num} / {sign_tamil}"
+                sign_display = f"{sign_tamil} ({sign})"
+                lord_display = f"{lord_tamil} ({lord})"
+
             house_html = f"""
             <div class="bhava-prediction">
                 <div class="bhava-header">
-                    <span class="bhava-title">{house_num}. {HOUSE_KARAKAS.get(house_num, {}).get('name', f'House {house_num}')} /
-                        {HOUSE_KARAKAS.get(house_num, {}).get('tamil', '')}</span>
-                    <span class="bhava-sign">{sign_tamil} ({sign})</span>
+                    <span class="bhava-title">{house_title}</span>
+                    <span class="bhava-sign">{sign_display}</span>
                 </div>
                 <p style="font-size: 9pt; margin: 4px 0;">
-                    <strong>Lord:</strong> {lord_tamil} ({lord}) in House {lord_house} |
+                    <strong>Lord:</strong> {lord_display} in House {lord_house} |
                     <strong>Planets:</strong> {planets_str}
                 </p>
                 <p class="content" style="font-size: 9pt;">{prediction}</p>
