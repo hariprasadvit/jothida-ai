@@ -42,12 +42,14 @@ class DoshaStatus(BaseModel):
 class MatchingResponse(BaseModel):
     overall_score: float
     overall_status: str
-    ai_verdict: str
-    poruthams: list[PoruttamScore]
-    doshas: list[DoshaStatus]
+    ai_verdict: dict  # Contains verdict, verdict_en, explanation, explanation_en, recommendation
+    poruthams: list  # Porutham details
+    doshas: list  # Dosha details
     compatibility_radar: dict  # For radar chart
     future_timeline: list[dict]  # Predicted events
     recommendations: list[str]
+    bride_details: dict
+    groom_details: dict
 
 @router.post("/check", response_model=MatchingResponse)
 async def check_matching(request: Request, data: MatchingRequest):
