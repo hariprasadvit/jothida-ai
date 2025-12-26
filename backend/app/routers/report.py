@@ -232,6 +232,7 @@ async def preview_report_info():
     """
     return {
         "report_name": "Comprehensive Jathagam Report",
+        "version": "6.2.1-lang-fix",  # Version marker to verify deployment
         "pages": "44 pages (V6.2 + V7.0)",
         "sections": [
             "Cover Page with Birth Details",
