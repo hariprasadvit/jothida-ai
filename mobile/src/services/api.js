@@ -693,7 +693,7 @@ const arrayBufferToBase64 = (buffer) => {
 
 // Report API
 export const reportAPI = {
-  generateReport: async (birthDetails) => {
+  generateReport: async (birthDetails, language = 'ta') => {
     const coords = getCityCoordinates(birthDetails.birthPlace);
     const isWeb = Platform.OS === 'web';
 
@@ -705,6 +705,7 @@ export const reportAPI = {
       birth_place: birthDetails.birthPlace,
       latitude: coords.lat,
       longitude: coords.lon,
+      language: language,
     }, {
       responseType: isWeb ? 'blob' : 'arraybuffer',
       timeout: 120000, // 2 minutes for PDF generation

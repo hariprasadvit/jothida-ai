@@ -47,6 +47,24 @@ except ImportError:
     FUTURE_PROJECTION_AVAILABLE = False
     FutureProjectionService = None
 
+# V6.3+ Import comprehensive traits data for storytelling content
+try:
+    from .traits_data import (
+        RASI_TRAITS, NAKSHATRA_TRAITS, DASHA_PREDICTIONS,
+        PLANET_HOUSE_EFFECTS, LIFE_AREA_NARRATIVES,
+        get_combined_personality, get_personality_narrative, get_dasha_narrative,
+        YOGA_DESCRIPTIONS, get_yoga_description
+    )
+    TRAITS_DATA_AVAILABLE = True
+except ImportError:
+    TRAITS_DATA_AVAILABLE = False
+    RASI_TRAITS = {}
+    NAKSHATRA_TRAITS = {}
+    DASHA_PREDICTIONS = {}
+    PLANET_HOUSE_EFFECTS = {}
+    LIFE_AREA_NARRATIVES = {}
+    YOGA_DESCRIPTIONS = {}
+
 
 def get_v6_css() -> str:
     """V6.2 CSS with Saffron/Gold color scheme"""
@@ -265,6 +283,7 @@ class V6ReportGenerator:
         self.chart_data = chart_data
         self.user_data = user_data
         self.language = language
+        print(f"[V6ReportGenerator] Initialized with language: '{language}'")
         self.engine = JyotishEngine(chart_data, user_data)
         self.report_data = self.engine.generate_report_data()
 
@@ -313,6 +332,7 @@ class V6ReportGenerator:
             self._lifesign_dosha_analysis(),          # LifeSign: Dosha Analysis with Mantras
             self._page_1_identity(),               # Page 1: Identity & Chart Snapshot
             self._page_1b_detailed_charts(),       # Page 1b: Detailed Charts (NEW)
+            self._page_personality_traits(),       # NEW: Comprehensive Personality (300-500 words)
             self._page_2_panchanga(),              # Page 2: Panchanga Psychology
             self._page_3_elements(),               # Page 3: Elemental & Guna Balance
             self._page_4_purushartha(),            # Page 4: Purushartha Dominance
@@ -378,6 +398,7 @@ class V6ReportGenerator:
         """Render South Indian style chart as HTML with planet abbreviations (Su, Mo, Ma)"""
         houses = chart_data.get('houses', {})
         lagna = chart_data.get('lagna', 'Aries')
+        is_english = self.language == 'en'
 
         # South Indian chart layout - signs are fixed positions
         grid_layout = [
@@ -427,14 +448,20 @@ class V6ReportGenerator:
                     house_num = sign_to_house.get(sign, 0)
                     planets_str = ' '.join(sign_planets.get(sign, []))
                     is_lagna = (sign == lagna_sign)
-                    sign_tamil = RASI_TAMIL[RASIS.index(sign)] if sign in RASIS else sign
+
+                    # Use English sign abbreviation or Tamil based on language
+                    if is_english:
+                        sign_display = sign[:3]
+                    else:
+                        sign_tamil = RASI_TAMIL[RASIS.index(sign)] if sign in RASIS else sign
+                        sign_display = sign_tamil[:3]
 
                     cell_class = "corner" if (row_idx in [0, 3] or col_idx in [0, 3]) else "middle"
                     lagna_marker = '<span class="lagna-marker">Asc</span>' if is_lagna else ''
 
                     cells_html += f'''
                     <div class="chart-cell {cell_class}">
-                        <span class="sign-name">{sign_tamil[:3]}</span>
+                        <span class="sign-name">{sign_display}</span>
                         <span class="house-num">H{house_num}</span>
                         <div class="planets">{lagna_marker} {planets_str}</div>
                     </div>
@@ -451,6 +478,7 @@ class V6ReportGenerator:
         """Render Navamsa chart with abbreviations"""
         planets = d9_data.get('planets', {})
         vargottama = d9_data.get('vargottama', [])
+        is_english = self.language == 'en'
 
         # Build sign to planets mapping using abbreviations
         sign_planets = {sign: [] for sign in RASIS}
@@ -477,12 +505,19 @@ class V6ReportGenerator:
                     cells_html += '<div class="chart-cell center-empty"></div>'
                 else:
                     planets_str = ' '.join(sign_planets.get(sign, []))
-                    sign_tamil = RASI_TAMIL[RASIS.index(sign)] if sign in RASIS else sign
+
+                    # Use English sign abbreviation or Tamil based on language
+                    if is_english:
+                        sign_display = sign[:3]
+                    else:
+                        sign_tamil = RASI_TAMIL[RASIS.index(sign)] if sign in RASIS else sign
+                        sign_display = sign_tamil[:3]
+
                     cell_class = "corner" if (row_idx in [0, 3] or col_idx in [0, 3]) else "middle"
 
                     cells_html += f'''
                     <div class="chart-cell {cell_class}">
-                        <span class="sign-name">{sign_tamil[:3]}</span>
+                        <span class="sign-name">{sign_display}</span>
                         <div class="planets">{planets_str}</div>
                     </div>
                     '''
@@ -526,8 +561,17 @@ class V6ReportGenerator:
 
     def _render_side_by_side_charts(self, d1_data: Dict, d9_data: Dict) -> str:
         """Render D1 Rasi and D9 Navamsa charts side by side"""
-        d1_html = self._render_south_indian_chart(d1_data, "D1 Rasi Chart / ராசி சக்கரம்")
-        d9_html = self._render_d9_chart(d9_data, "D9 Navamsa Chart / நவாம்ச சக்கரம்")
+        is_english = self.language == 'en'
+
+        if is_english:
+            d1_title = "D1 Rasi Chart"
+            d9_title = "D9 Navamsa Chart"
+        else:
+            d1_title = "D1 Rasi Chart / ராசி சக்கரம்"
+            d9_title = "D9 Navamsa Chart / நவாம்ச சக்கரம்"
+
+        d1_html = self._render_south_indian_chart(d1_data, d1_title)
+        d9_html = self._render_d9_chart(d9_data, d9_title)
 
         return f'''
         <div class="charts-side-by-side" style="display: flex; justify-content: space-around; gap: 20px; flex-wrap: wrap;">
@@ -539,6 +583,7 @@ class V6ReportGenerator:
     def _render_nirayana_longitudes_table(self) -> str:
         """Render Nirayana Longitudes Summary table with Deg:Min:Sec format"""
         longitudes = self.engine.get_nirayana_longitudes_table()
+        is_english = self.language == 'en'
 
         rows = ""
         for p in longitudes:
@@ -553,26 +598,46 @@ class V6ReportGenerator:
             if p.get('combust'):
                 status += '<span style="color: #9333EA;">(C)</span>'
 
+            # Language-specific display
+            if is_english:
+                planet_display = f"<strong>{p.get('abbr', '')}</strong> {p.get('planet', '')}"
+                rasi_display = p.get('rasi', '')
+            else:
+                planet_display = f"<strong>{p.get('abbr', '')}</strong> {p.get('tamil', '')}"
+                rasi_display = p.get('rasi_tamil', '')
+
             rows += f'''
             <tr>
-                <td><strong>{p.get('abbr', '')}</strong> {p.get('tamil', '')}</td>
-                <td>{p.get('rasi_tamil', '')}</td>
+                <td>{planet_display}</td>
+                <td>{rasi_display}</td>
                 <td>{p.get('longitude_dms', '')}</td>
                 <td>{p.get('nakshatra', '')} / {p.get('pada', '')}</td>
                 <td>{status or '-'}</td>
             </tr>
             '''
 
+        # Language-specific headers
+        if is_english:
+            title = "Nirayana Longitudes Summary"
+            th_planet = "Planet"
+            th_rasi = "Rasi"
+            th_star = "Star / Pada"
+        else:
+            title = "Nirayana Longitudes Summary / நிரயன தீர்க்காம்சம்"
+            th_planet = "Planet / கிரகம்"
+            th_rasi = "Rasi / ராசி"
+            th_star = "Star / Pada"
+
         return f'''
         <div class="section">
-            <h3 class="section-title">Nirayana Longitudes Summary / நிரயன தீர்க்காம்சம்</h3>
+            <h3 class="section-title">{title}</h3>
             <table>
                 <thead>
                     <tr>
-                        <th>Planet / கிரகம்</th>
-                        <th>Rasi / ராசி</th>
+                        <th>{th_planet}</th>
+                        <th>{th_rasi}</th>
                         <th>Deg:Min:Sec</th>
-                        <th>Star / Pada</th>
+                        <th>{th_star}</th>
                         <th>Status</th>
                     </tr>
                 </thead>
@@ -588,6 +653,7 @@ class V6ReportGenerator:
         """Render Special Rasi Chakra with detailed planet info and status markers"""
         chakra_data = self.engine.get_special_rasi_chakra_data()
         houses = chakra_data.get('houses', {})
+        is_english = self.language == 'en'
 
         # South Indian grid layout
         grid_layout = [
@@ -611,8 +677,13 @@ class V6ReportGenerator:
                     h_data = sign_to_house.get(sign, {})
                     house_num = h_data.get('house_num', 0)
                     is_lagna = h_data.get('is_lagna', False)
-                    sign_tamil = h_data.get('sign_tamil', sign[:3])
                     planets = h_data.get('planets', [])
+
+                    # Use English or Tamil sign display
+                    if is_english:
+                        sign_display = sign[:3]
+                    else:
+                        sign_display = h_data.get('sign_tamil', sign[:3])[:3]
 
                     # Build planet display with degrees
                     planet_lines = []
@@ -627,15 +698,21 @@ class V6ReportGenerator:
 
                     cells_html += f'''
                     <div class="chart-cell {cell_class}" style="font-size: 8pt;">
-                        <span class="sign-name">{sign_tamil[:3]}</span>
+                        <span class="sign-name">{sign_display}</span>
                         <span class="house-num">H{house_num}</span>
                         <div class="planets">{lagna_marker} {planets_html}</div>
                     </div>
                     '''
 
+        # Language-specific title
+        if is_english:
+            chart_title = "Special Rasi Chakra"
+        else:
+            chart_title = "Special Rasi Chakra / விசேஷ ராசி சக்கரம்"
+
         return f'''
         <div class="chart-container">
-            <div class="chart-title">Special Rasi Chakra / விசேஷ ராசி சக்கரம்</div>
+            <div class="chart-title">{chart_title}</div>
             <div class="chart-grid">{cells_html}</div>
             <p class="math-trace">
                 Markers: (R)=Retrograde, *=Exalted, ^=Debilitated, (C)=Combust |
@@ -648,15 +725,18 @@ class V6ReportGenerator:
         """Render Bhava Table with Arambha, Madhya, Anthya cusps"""
         bhava_data = self.engine.get_bhava_table_data()
         houses = bhava_data.get('houses', [])
+        is_english = self.language == 'en'
 
         rows = ""
         for h in houses:
             planets_str = ', '.join([p['abbr'] + ('(R)' if p.get('retrograde') else '')
                                      for p in h.get('planets', [])])
+            # Language-specific sign display
+            sign_display = h.get('sign', h['sign_tamil']) if is_english else h['sign_tamil']
             rows += f'''
             <tr>
                 <td><strong>H{h['house_num']}</strong></td>
-                <td>{h['sign_tamil']}</td>
+                <td>{sign_display}</td>
                 <td>{h['lord_abbr']}</td>
                 <td>{h['arambha']['degree_dms']}</td>
                 <td>{h['madhya']['degree_dms']}</td>
@@ -665,14 +745,22 @@ class V6ReportGenerator:
             </tr>
             '''
 
+        # Language-specific headers
+        if is_english:
+            title = "Bhava Table"
+            th_sign = "Sign"
+        else:
+            title = "Bhava Table / பாவ அட்டவணை"
+            th_sign = "Sign / ராசி"
+
         return f'''
         <div class="section">
-            <h3 class="section-title">Bhava Table / பாவ அட்டவணை</h3>
+            <h3 class="section-title">{title}</h3>
             <table style="font-size: 8pt;">
                 <thead>
                     <tr>
                         <th>House</th>
-                        <th>Sign / ராசி</th>
+                        <th>{th_sign}</th>
                         <th>Lord</th>
                         <th>Arambha (Start)</th>
                         <th>Madhya (Middle)</th>
@@ -738,6 +826,8 @@ class V6ReportGenerator:
     def _cover_page(self) -> str:
         """Generate cover page"""
         identity = self.report_data['identity']
+        is_english = self.language == 'en'
+
         name = identity['name']
         birth_date = identity['birth_date']
         birth_time = identity['birth_time']
@@ -746,26 +836,47 @@ class V6ReportGenerator:
         moon_sign = identity['moon_sign']
         nakshatra = identity['moon_nakshatra']
 
-        lagna_tamil = RASI_TAMIL[RASIS.index(lagna)] if lagna in RASIS else lagna
-        moon_tamil = RASI_TAMIL[RASIS.index(moon_sign)] if moon_sign in RASIS else moon_sign
+        # Language-specific display values
+        if is_english:
+            lagna_display = lagna
+            moon_display = moon_sign
+            cover_title = "Jothida Report"
+            cover_subtitle = "V6.2 Super Jyotish Report"
+            lbl_dob = "Date of Birth"
+            lbl_tob = "Time of Birth"
+            lbl_pob = "Place of Birth"
+            lbl_lagna = "Lagna"
+            lbl_rasi = "Rasi"
+            lbl_nakshatra = "Nakshatra"
+        else:
+            lagna_display = RASI_TAMIL[RASIS.index(lagna)] if lagna in RASIS else lagna
+            moon_display = RASI_TAMIL[RASIS.index(moon_sign)] if moon_sign in RASIS else moon_sign
+            cover_title = "ஜாதக அறிக்கை"
+            cover_subtitle = "V6.2 Super Jyotish Report"
+            lbl_dob = "பிறந்த தேதி"
+            lbl_tob = "பிறந்த நேரம்"
+            lbl_pob = "பிறந்த இடம்"
+            lbl_lagna = "லக்னம்"
+            lbl_rasi = "ராசி"
+            lbl_nakshatra = "நட்சத்திரம்"
 
         return f"""
         <div class="cover">
-            <div class="cover-title">ஜாதக அறிக்கை</div>
-            <div class="cover-subtitle">V6.2 Super Jyotish Report</div>
+            <div class="cover-title">{cover_title}</div>
+            <div class="cover-subtitle">{cover_subtitle}</div>
 
             <div class="cover-name">{name}</div>
 
             <div class="cover-details">
-                <p><strong>பிறந்த தேதி:</strong> {birth_date}</p>
-                <p><strong>பிறந்த நேரம்:</strong> {birth_time}</p>
-                <p><strong>பிறந்த இடம்:</strong> {birth_place}</p>
+                <p><strong>{lbl_dob}:</strong> {birth_date}</p>
+                <p><strong>{lbl_tob}:</strong> {birth_time}</p>
+                <p><strong>{lbl_pob}:</strong> {birth_place}</p>
             </div>
 
             <div class="cover-chart-summary">
-                <p><strong>லக்னம்:</strong> {lagna_tamil} ({lagna})</p>
-                <p><strong>ராசி:</strong> {moon_tamil} ({moon_sign})</p>
-                <p><strong>நட்சத்திரம்:</strong> {nakshatra}</p>
+                <p><strong>{lbl_lagna}:</strong> {lagna_display} ({lagna})</p>
+                <p><strong>{lbl_rasi}:</strong> {moon_display} ({moon_sign})</p>
+                <p><strong>{lbl_nakshatra}:</strong> {nakshatra}</p>
             </div>
 
             <div style="margin-top: 40px; color: #9ca3af;">
@@ -782,6 +893,9 @@ class V6ReportGenerator:
         panchanga = self.engine.get_complete_panchanga()
         identity = self.report_data['identity']
 
+        # Check language - 'en' for English, 'ta' for Tamil
+        is_english = self.language == 'en'
+
         # Birth details
         name = identity['name']
         birth_date = identity['birth_date']
@@ -790,74 +904,165 @@ class V6ReportGenerator:
         lat = self.user_data.get('latitude', 13.0827)
         lon = self.user_data.get('longitude', 80.2707)
 
-        # Panchanga data
-        weekday = panchanga.get('weekday_tamil', 'ஞாயிறு')
-        nakshatra = panchanga.get('nakshatra_tamil', identity['moon_nakshatra'])
+        # Panchanga data - Language-specific selection
+        if is_english:
+            weekday = panchanga.get('weekday', 'Sunday')
+            nakshatra = panchanga.get('nakshatra', identity['moon_nakshatra'])
+            rasi = panchanga.get('moon_rasi', identity.get('moon_sign', ''))
+            rasi_lord = panchanga.get('moon_rasi_lord', '')
+            lagna = panchanga.get('lagna', identity['lagna'])
+            lagna_lord = panchanga.get('lagna_lord', '')
+            thithi = panchanga.get('thithi', '')
+            karana = panchanga.get('karana', '')
+            yoga = panchanga.get('nithya_yoga', '')
+            star_lord = panchanga.get('star_lord', '')
+            ganam = panchanga.get('ganam', 'Deva')
+            yoni = panchanga.get('yoni', 'Horse')
+            dagda_rasi = panchanga.get('dagda_rasi', '')
+            yogi_planet = panchanga.get('yogi_planet', '')
+            avayogi = panchanga.get('avayogi_planet', '')
+            atmakaraka = panchanga.get('atma_karaka', '')
+            amatyakaraka = panchanga.get('amatya_karaka', '')
+            lagna_aruda = panchanga.get('lagna_pada', '')
+            dhana_aruda = panchanga.get('dhana_pada', '')
+            dasa_system = panchanga.get('dasa_system', 'Vimshottari')
+        else:
+            weekday = panchanga.get('weekday_tamil', 'ஞாயிறு')
+            nakshatra = panchanga.get('nakshatra_tamil', identity['moon_nakshatra'])
+            rasi = panchanga.get('moon_rasi_tamil', '')
+            rasi_lord = panchanga.get('moon_rasi_lord_tamil', '')
+            lagna = panchanga.get('lagna_tamil', identity['lagna'])
+            lagna_lord = panchanga.get('lagna_lord_tamil', '')
+            thithi = panchanga.get('thithi_tamil', '')
+            karana = panchanga.get('karana_tamil', '')
+            yoga = panchanga.get('nithya_yoga_tamil', '')
+            star_lord = panchanga.get('star_lord_tamil', '')
+            ganam = panchanga.get('ganam_tamil', panchanga.get('ganam', 'Deva'))
+            yoni = panchanga.get('yoni_tamil', panchanga.get('yoni', 'Horse'))
+            dagda_rasi = panchanga.get('dagda_rasi_tamil', panchanga.get('dagda_rasi', ''))
+            yogi_planet = panchanga.get('yogi_planet_tamil', '')
+            avayogi = panchanga.get('avayogi_planet_tamil', '')
+            atmakaraka = panchanga.get('atma_karaka_tamil', '')
+            amatyakaraka = panchanga.get('amatya_karaka_tamil', '')
+            lagna_aruda = panchanga.get('lagna_pada_tamil', '')
+            dhana_aruda = panchanga.get('dhana_pada_tamil', '')
+            dasa_system = panchanga.get('dasa_system_tamil', 'விம்ஷோத்தரி')
+
         nakshatra_pada = panchanga.get('nakshatra_pada', 1)
-        rasi = panchanga.get('rasi_tamil', '')
-        rasi_lord = panchanga.get('rasi_lord_tamil', '')
-        lagna = panchanga.get('lagna_tamil', identity['lagna'])
-        lagna_lord = panchanga.get('lagna_lord_tamil', '')
-        thithi = panchanga.get('thithi_tamil', '')
-        karana = panchanga.get('karana_tamil', '')
-        yoga = panchanga.get('yoga_tamil', '')
         sunrise = panchanga.get('sunrise', '06:00')
         sunset = panchanga.get('sunset', '18:00')
-        ayanamsa_val = panchanga.get('ayanamsa', 23.85)
-        try:
-            ayanamsa = float(ayanamsa_val) if ayanamsa_val else 23.85
-        except (ValueError, TypeError):
-            ayanamsa = 23.85
-
-        # Special panchanga details
-        star_lord = panchanga.get('nakshatra_lord_tamil', '')
-        ganam = panchanga.get('ganam', 'Deva')
-        yoni = panchanga.get('yoni', 'Horse')
-        animal = panchanga.get('animal', '')
+        ayanamsa_val = panchanga.get('ayanamsa_value', 'Lahiri 23.8500°')
         chandra_avastha = panchanga.get('chandra_avastha', '')
-        dagda_rasi = panchanga.get('dagda_rasi', '')
         yogi_point = panchanga.get('yogi_point', '')
-        yogi_planet = panchanga.get('yogi_planet_tamil', '')
-        avayogi = panchanga.get('avayogi_tamil', '')
-        atmakaraka = panchanga.get('atmakaraka_tamil', '')
-        amatyakaraka = panchanga.get('amatyakaraka_tamil', '')
-        lagna_aruda = panchanga.get('lagna_aruda', '')
-        dhana_aruda = panchanga.get('dhana_aruda', '')
-        kalidina = panchanga.get('kalidina', 0)
+        kalidina = panchanga.get('kalidina_sankhya', 0)
         dinamana = panchanga.get('dinamana', '')
+
+        # Language-specific labels
+        if is_english:
+            title = "Jothida Report"
+            subtitle = "Om Sri Ganesaya Namaha"
+            birth_title = "Birth Details"
+            panchanga_title = "Panchanga Details"
+            lbl_name = "Name"
+            lbl_sex = "Sex"
+            lbl_dob = "Date of Birth"
+            lbl_tob = "Time of Birth"
+            lbl_pob = "Place of Birth"
+            lbl_ayanamsa = "Ayanamsa"
+            lbl_star = "Birth Star"
+            lbl_rasi = "Birth Rasi"
+            lbl_lagna = "Lagna"
+            lbl_thithi = "Thithi"
+            lbl_sunrise = "Sunrise"
+            lbl_sunset = "Sunset"
+            lbl_dinamana = "Dinamana"
+            lbl_kalidina = "Kalidina Sankhya"
+            lbl_dasa = "Dasa System"
+            lbl_starlord = "Star Lord"
+            lbl_ganam = "Ganam"
+            lbl_yoni = "Yoni"
+            lbl_chandra = "Chandra Avastha"
+            lbl_dagda = "Dagda Rasi"
+            lbl_karana = "Karanam"
+            lbl_yoga = "Nithya Yoga"
+            lbl_yogipt = "Yogi Point"
+            lbl_yogipl = "Yogi Planet"
+            lbl_avayogi = "Avayogi"
+            lbl_atma = "Atma Karaka"
+            lbl_amatya = "Amatya Karaka"
+            lbl_lagna_aruda = "Lagna Aruda (AL)"
+            lbl_dhana_aruda = "Dhana Aruda (A2)"
+            pada_label = f"Pada {nakshatra_pada}"
+            footer_text = "All calculations based on Lahiri Ayanamsa"
+        else:
+            title = "ஜோதிட அறிக்கை"
+            subtitle = "॥ ஓம் ஸ்ரீ கணேசாய நமஹ ॥"
+            birth_title = "பிறப்பு விவரங்கள்"
+            panchanga_title = "பஞ்சாங்க விவரங்கள்"
+            lbl_name = "பெயர்"
+            lbl_sex = "பாலினம்"
+            lbl_dob = "பிறந்த தேதி"
+            lbl_tob = "பிறந்த நேரம்"
+            lbl_pob = "பிறந்த இடம்"
+            lbl_ayanamsa = "அயனாம்சம்"
+            lbl_star = "நட்சத்திரம்"
+            lbl_rasi = "ராசி"
+            lbl_lagna = "லக்னம்"
+            lbl_thithi = "திதி"
+            lbl_sunrise = "சூரிய உதயம்"
+            lbl_sunset = "சூரிய அஸ்தமனம்"
+            lbl_dinamana = "தினமானம்"
+            lbl_kalidina = "காளிதின சங்க்யா"
+            lbl_dasa = "தசா முறை"
+            lbl_starlord = "நட்சத்திர அதிபதி"
+            lbl_ganam = "கணம்"
+            lbl_yoni = "யோனி"
+            lbl_chandra = "சந்திர அவஸ்தா"
+            lbl_dagda = "தக்த ராசி"
+            lbl_karana = "கரணம்"
+            lbl_yoga = "நித்ய யோகம்"
+            lbl_yogipt = "யோகி புள்ளி"
+            lbl_yogipl = "யோகி கிரகம்"
+            lbl_avayogi = "அவயோகி"
+            lbl_atma = "ஆத்மகாரகன்"
+            lbl_amatya = "அமாத்ய காரகன்"
+            lbl_lagna_aruda = "லக்ன ஆருடம் (AL)"
+            lbl_dhana_aruda = "தன ஆருடம் (A2)"
+            pada_label = f"{nakshatra_pada} பாதம்"
+            footer_text = "சுத்த ஜாதக விதிகள்படி கணிக்கப்பட்டது"
 
         return f"""
         <div class="page">
             <div class="lifesign-header">
                 <div class="ganesha-symbol">ॐ</div>
-                <h1>ஜோதிட அறிக்கை</h1>
-                <div class="om-sri">॥ ஓம் ஸ்ரீ கணேசாய நமஹ ॥</div>
+                <h1>{title}</h1>
+                <div class="om-sri">{subtitle}</div>
             </div>
 
             <h2 class="section-title" style="text-align: center; color: var(--maroon);">
-                Birth Details / பிறப்பு விவரங்கள்
+                {birth_title}
             </h2>
 
             <div class="birth-details-box">
                 <div class="birth-details-grid">
                     <div class="birth-detail-item">
-                        <span class="label">Name / பெயர்</span>
+                        <span class="label">{lbl_name}</span>
                         <span class="value"><strong>{name}</strong></span>
                     </div>
                     <div class="birth-detail-item">
-                        <span class="label">Sex / பாலினம்</span>
+                        <span class="label">{lbl_sex}</span>
                         <span class="value">-</span>
                     </div>
                     <div class="birth-detail-item">
-                        <span class="label">Date of Birth / பிறந்த தேதி</span>
+                        <span class="label">{lbl_dob}</span>
                         <span class="value">{birth_date} ({weekday})</span>
                     </div>
                     <div class="birth-detail-item">
-                        <span class="label">Time of Birth / பிறந்த நேரம்</span>
+                        <span class="label">{lbl_tob}</span>
                         <span class="value">{birth_time}</span>
                     </div>
                     <div class="birth-detail-item">
-                        <span class="label">Place of Birth / பிறந்த இடம்</span>
+                        <span class="label">{lbl_pob}</span>
                         <span class="value">{birth_place}</span>
                     </div>
                     <div class="birth-detail-item">
@@ -868,116 +1073,112 @@ class V6ReportGenerator:
             </div>
 
             <h2 class="section-title" style="text-align: center; color: var(--maroon); margin-top: 20px;">
-                Panchanga Details / பஞ்சாங்க விவரங்கள்
+                {panchanga_title}
             </h2>
 
             <div class="panchanga-box">
                 <div class="panchanga-grid">
                     <div class="panchanga-item">
-                        <span class="label">Ayanamsa / அயனாம்சம்</span>
-                        <span class="value">Lahiri {ayanamsa:.4f}°</span>
+                        <span class="label">{lbl_ayanamsa}</span>
+                        <span class="value">{ayanamsa_val}</span>
                     </div>
                     <div class="panchanga-item">
-                        <span class="label">Birth Star / நட்சத்திரம்</span>
-                        <span class="value">{nakshatra} - {nakshatra_pada} பாதம்</span>
+                        <span class="label">{lbl_star}</span>
+                        <span class="value">{nakshatra} - {pada_label}</span>
                     </div>
                     <div class="panchanga-item">
-                        <span class="label">Birth Rasi / ராசி</span>
+                        <span class="label">{lbl_rasi}</span>
                         <span class="value">{rasi} ({rasi_lord})</span>
                     </div>
                     <div class="panchanga-item">
-                        <span class="label">Lagna / லக்னம்</span>
+                        <span class="label">{lbl_lagna}</span>
                         <span class="value">{lagna} ({lagna_lord})</span>
                     </div>
                     <div class="panchanga-item">
-                        <span class="label">Thithi / திதி</span>
+                        <span class="label">{lbl_thithi}</span>
                         <span class="value">{thithi}</span>
                     </div>
                     <div class="panchanga-item">
-                        <span class="label">Sunrise / சூரிய உதயம்</span>
+                        <span class="label">{lbl_sunrise}</span>
                         <span class="value">{sunrise}</span>
                     </div>
                     <div class="panchanga-item">
-                        <span class="label">Sunset / சூரிய அஸ்தமனம்</span>
+                        <span class="label">{lbl_sunset}</span>
                         <span class="value">{sunset}</span>
                     </div>
                     <div class="panchanga-item">
-                        <span class="label">Dinamana / தினமானம்</span>
+                        <span class="label">{lbl_dinamana}</span>
                         <span class="value">{dinamana}</span>
                     </div>
                     <div class="panchanga-item">
-                        <span class="label">Kalidina Sankhya</span>
+                        <span class="label">{lbl_kalidina}</span>
                         <span class="value">{kalidina}</span>
                     </div>
                     <div class="panchanga-item">
-                        <span class="label">Dasa System</span>
-                        <span class="value">Vimshottari</span>
+                        <span class="label">{lbl_dasa}</span>
+                        <span class="value">{dasa_system}</span>
                     </div>
                     <div class="panchanga-item">
-                        <span class="label">Star Lord / நட்சத்திர அதிபதி</span>
+                        <span class="label">{lbl_starlord}</span>
                         <span class="value">{star_lord}</span>
                     </div>
                     <div class="panchanga-item">
-                        <span class="label">Ganam / கணம்</span>
+                        <span class="label">{lbl_ganam}</span>
                         <span class="value">{ganam}</span>
                     </div>
                     <div class="panchanga-item">
-                        <span class="label">Yoni / யோனி</span>
+                        <span class="label">{lbl_yoni}</span>
                         <span class="value">{yoni}</span>
                     </div>
                     <div class="panchanga-item">
-                        <span class="label">Animal / விலங்கு</span>
-                        <span class="value">{animal}</span>
-                    </div>
-                    <div class="panchanga-item">
-                        <span class="label">Chandra Avastha</span>
+                        <span class="label">{lbl_chandra}</span>
                         <span class="value">{chandra_avastha}</span>
                     </div>
                     <div class="panchanga-item">
-                        <span class="label">Dagda Rasi / தக்த ராசி</span>
+                        <span class="label">{lbl_dagda}</span>
                         <span class="value">{dagda_rasi}</span>
                     </div>
                     <div class="panchanga-item">
-                        <span class="label">Karanam / கரணம்</span>
+                        <span class="label">{lbl_karana}</span>
                         <span class="value">{karana}</span>
                     </div>
                     <div class="panchanga-item">
-                        <span class="label">Nithya Yoga / நித்ய யோகம்</span>
+                        <span class="label">{lbl_yoga}</span>
                         <span class="value">{yoga}</span>
                     </div>
                     <div class="panchanga-item">
-                        <span class="label">Yogi Point</span>
+                        <span class="label">{lbl_yogipt}</span>
                         <span class="value">{yogi_point}</span>
                     </div>
                     <div class="panchanga-item">
-                        <span class="label">Yogi Planet / யோகி கிரகம்</span>
+                        <span class="label">{lbl_yogipl}</span>
                         <span class="value">{yogi_planet}</span>
                     </div>
                     <div class="panchanga-item">
-                        <span class="label">Avayogi / அவயோகி</span>
+                        <span class="label">{lbl_avayogi}</span>
                         <span class="value">{avayogi}</span>
                     </div>
                     <div class="panchanga-item">
-                        <span class="label">Atma Karaka / ஆத்மகாரகன்</span>
+                        <span class="label">{lbl_atma}</span>
                         <span class="value">{atmakaraka}</span>
                     </div>
                     <div class="panchanga-item">
-                        <span class="label">Amatya Karaka / அமாத்ய காரகன்</span>
+                        <span class="label">{lbl_amatya}</span>
                         <span class="value">{amatyakaraka}</span>
                     </div>
                     <div class="panchanga-item">
-                        <span class="label">Lagna Aruda (AL)</span>
+                        <span class="label">{lbl_lagna_aruda}</span>
                         <span class="value">{lagna_aruda}</span>
                     </div>
                     <div class="panchanga-item">
-                        <span class="label">Dhana Aruda (A2)</span>
+                        <span class="label">{lbl_dhana_aruda}</span>
                         <span class="value">{dhana_aruda}</span>
                     </div>
                 </div>
             </div>
 
             <div style="text-align: center; margin-top: 15px; font-size: 9pt; color: #6b7280;">
-                All calculations based on Lahiri Ayanamsa | சுத்த ஜாதக விதிகள்படி கணிக்கப்பட்டது
+                {footer_text}
             </div>
         </div>
         """
@@ -986,64 +1187,107 @@ class V6ReportGenerator:
         """LifeSign Format - Page 2: Panchanga Predictions Summary"""
         panchanga = self.engine.get_complete_panchanga()
         identity = self.report_data['identity']
+        is_english = self.language == 'en'
 
         name = identity['name']
-        nakshatra = panchanga.get('nakshatra_tamil', identity['moon_nakshatra'])
+
+        # Language-specific data selection
+        if is_english:
+            nakshatra = panchanga.get('nakshatra', identity['moon_nakshatra'])
+            rasi = panchanga.get('moon_rasi', identity.get('moon_sign', ''))
+            lagna = panchanga.get('lagna', identity.get('lagna', ''))
+            thithi = panchanga.get('thithi', '')
+            yoga = panchanga.get('nithya_yoga', '')
+            karana = panchanga.get('karana', '')
+            weekday = panchanga.get('weekday', '')
+            yogi_planet = panchanga.get('yogi_planet', '')
+            avayogi = panchanga.get('avayogi_planet', '')
+        else:
+            nakshatra = panchanga.get('nakshatra_tamil', identity['moon_nakshatra'])
+            rasi = panchanga.get('moon_rasi_tamil', identity.get('moon_sign', ''))
+            lagna = panchanga.get('lagna_tamil', identity.get('lagna', ''))
+            thithi = panchanga.get('thithi_tamil', '')
+            yoga = panchanga.get('nithya_yoga_tamil', '')
+            karana = panchanga.get('karana_tamil', '')
+            weekday = panchanga.get('weekday_tamil', '')
+            yogi_planet = panchanga.get('yogi_planet_tamil', '')
+            avayogi = panchanga.get('avayogi_planet_tamil', '')
+
         nakshatra_en = panchanga.get('nakshatra', identity['moon_nakshatra'])
-        rasi = panchanga.get('rasi_tamil', '')
-        rasi_en = panchanga.get('rasi', identity['moon_sign'])
-        lagna = panchanga.get('lagna_tamil', '')
-        lagna_en = panchanga.get('lagna', identity['lagna'])
-        nakshatra_lord = panchanga.get('nakshatra_lord', 'Ketu')
-        rasi_lord = panchanga.get('rasi_lord', 'Mars')
+        nakshatra_lord = panchanga.get('star_lord', 'Ketu')
+        rasi_lord = panchanga.get('moon_rasi_lord', 'Mars')
         lagna_lord = panchanga.get('lagna_lord', 'Mars')
 
         # Get nakshatra qualities for prediction
         ganam = panchanga.get('ganam', 'Deva')
         yoni = panchanga.get('yoni', 'Horse')
-        thithi = panchanga.get('thithi_tamil', '')
-        yoga = panchanga.get('yoga_tamil', '')
 
         # Generate dynamic prediction paragraph based on chart data
         prediction_text = self._generate_panchanga_prediction(panchanga, identity)
 
+        # Language-specific labels
+        if is_english:
+            page_title = "Panchanga Predictions"
+            page_subtitle = "Birth Chart Analysis"
+            star_label = "Nakshatra"
+            rasi_label = "Rasi"
+            lagna_label = "Lagna"
+            birth_summary_title = "Birth Summary"
+            nakshatra_char_title = "Nakshatra Characteristics"
+            gana_label = "Gana"
+            panchanga_elements_title = "Panchanga Elements"
+            yogi_planet_label = "Yogi Planet"
+            avayogi_label = "Avayogi"
+        else:
+            page_title = "பஞ்சாங்க பலன்கள்"
+            page_subtitle = "Panchanga Predictions"
+            star_label = "நட்சத்திரம்"
+            rasi_label = "ராசி"
+            lagna_label = "லக்னம்"
+            birth_summary_title = "Birth Summary / பிறப்பு சுருக்கம்"
+            nakshatra_char_title = "Nakshatra Characteristics / நட்சத்திர குணாதிசயங்கள்"
+            gana_label = "கணம்"
+            panchanga_elements_title = "Panchanga Elements / பஞ்சாங்க அம்சங்கள்"
+            yogi_planet_label = "Yogi Planet / யோகி கிரகம்"
+            avayogi_label = "Avayogi / அவயோகி"
+
         return f"""
         <div class="page">
             <div class="lifesign-header">
-                <h1>பஞ்சாங்க பலன்கள்</h1>
-                <div class="om-sri">Panchanga Predictions</div>
+                <h1>{page_title}</h1>
+                <div class="om-sri">{page_subtitle}</div>
             </div>
 
             <div class="highlight" style="text-align: center; margin: 15px 0;">
                 <p style="font-size: 12pt;"><strong>{name}</strong></p>
                 <p style="font-size: 10pt;">
-                    {nakshatra} நட்சத்திரம் | {rasi} ராசி | {lagna} லக்னம்
+                    {nakshatra} {star_label} | {rasi} {rasi_label} | {lagna} {lagna_label}
                 </p>
             </div>
 
             <div class="section">
-                <h2 class="section-title">Birth Summary / பிறப்பு சுருக்கம்</h2>
+                <h2 class="section-title">{birth_summary_title}</h2>
                 <div class="prediction-para">
                     {prediction_text}
                 </div>
             </div>
 
             <div class="section">
-                <h2 class="section-title">Nakshatra Characteristics / நட்சத்திர குணாதிசயங்கள்</h2>
+                <h2 class="section-title">{nakshatra_char_title}</h2>
                 <div class="two-col">
                     <div class="stat-box">
                         <div class="stat-value" style="font-size: 16pt;">{nakshatra}</div>
                         <div class="stat-label">{nakshatra_en} | Lord: {nakshatra_lord}</div>
                     </div>
                     <div class="stat-box">
-                        <div class="stat-value" style="font-size: 16pt;">{ganam} கணம்</div>
+                        <div class="stat-value" style="font-size: 16pt;">{ganam} {gana_label}</div>
                         <div class="stat-label">Gana Type | {yoni} Yoni</div>
                     </div>
                 </div>
             </div>
 
             <div class="section">
-                <h2 class="section-title">Panchanga Elements / பஞ்சாங்க அம்சங்கள்</h2>
+                <h2 class="section-title">{panchanga_elements_title}</h2>
                 <table>
                     <tr>
                         <th>Element</th>
@@ -1051,39 +1295,39 @@ class V6ReportGenerator:
                         <th>Significance</th>
                     </tr>
                     <tr>
-                        <td><strong>Thithi / திதி</strong></td>
+                        <td><strong>Thithi</strong></td>
                         <td>{thithi}</td>
                         <td>{self._get_thithi_significance(panchanga.get('thithi', ''))}</td>
                     </tr>
                     <tr>
-                        <td><strong>Nakshatra / நட்சத்திரம்</strong></td>
+                        <td><strong>Nakshatra</strong></td>
                         <td>{nakshatra}</td>
                         <td>{self._get_nakshatra_significance(nakshatra_en)}</td>
                     </tr>
                     <tr>
-                        <td><strong>Yoga / யோகம்</strong></td>
+                        <td><strong>Yoga</strong></td>
                         <td>{yoga}</td>
-                        <td>{self._get_yoga_significance(panchanga.get('yoga', ''))}</td>
+                        <td>{self._get_yoga_significance(panchanga.get('nithya_yoga', ''))}</td>
                     </tr>
                     <tr>
-                        <td><strong>Karana / கரணம்</strong></td>
-                        <td>{panchanga.get('karana_tamil', '')}</td>
+                        <td><strong>Karana</strong></td>
+                        <td>{karana}</td>
                         <td>{self._get_karana_significance(panchanga.get('karana', ''))}</td>
                     </tr>
                     <tr>
-                        <td><strong>Varam / வாரம்</strong></td>
-                        <td>{panchanga.get('weekday_tamil', '')}</td>
+                        <td><strong>Varam</strong></td>
+                        <td>{weekday}</td>
                         <td>{self._get_weekday_significance(panchanga.get('weekday', ''))}</td>
                     </tr>
                 </table>
             </div>
 
             <div class="success" style="margin-top: 15px;">
-                <p><strong>Yogi Planet / யோகி கிரகம்:</strong> {panchanga.get('yogi_planet_tamil', '')} -
+                <p><strong>{yogi_planet_label}:</strong> {yogi_planet} -
                    This planet brings prosperity when strengthened.</p>
             </div>
             <div class="warning">
-                <p><strong>Avayogi / அவயோகி:</strong> {panchanga.get('avayogi_tamil', '')} -
+                <p><strong>{avayogi_label}:</strong> {avayogi} -
                    This planet's periods require caution.</p>
             </div>
         </div>
@@ -1093,15 +1337,15 @@ class V6ReportGenerator:
         """Generate dynamic prediction paragraph based on panchanga data"""
         name = identity['name']
         nakshatra = panchanga.get('nakshatra', identity['moon_nakshatra'])
-        nakshatra_lord = panchanga.get('nakshatra_lord', 'Ketu')
-        rasi = panchanga.get('rasi', identity['moon_sign'])
-        rasi_lord = panchanga.get('rasi_lord', 'Mars')
+        nakshatra_lord = panchanga.get('star_lord', 'Ketu')
+        rasi = panchanga.get('moon_rasi', identity['moon_sign'])
+        rasi_lord = panchanga.get('moon_rasi_lord', 'Mars')
         lagna = panchanga.get('lagna', identity['lagna'])
         lagna_lord = panchanga.get('lagna_lord', 'Mars')
         ganam = panchanga.get('ganam', 'Deva')
         yoni = panchanga.get('yoni', 'Horse')
         thithi = panchanga.get('thithi', 'Pratipada')
-        yoga = panchanga.get('yoga', 'Vishkambha')
+        yoga = panchanga.get('nithya_yoga', 'Vishkambha')
 
         # Ganam-based personality
         ganam_traits = {
@@ -1241,6 +1485,7 @@ class V6ReportGenerator:
     def _lifesign_bhava_predictions(self) -> str:
         """LifeSign Format - Bhava (House) Predictions with Important Years"""
         bhava_predictions = self.engine.get_bhava_predictions()
+        is_english = self.language == 'en'
 
         # Build separate HTML for houses 1-6 and 7-12
         houses_1_6_html = ""
@@ -1288,11 +1533,23 @@ class V6ReportGenerator:
             else:
                 houses_7_12_html += house_html
 
+        # Language-specific titles
+        if is_english:
+            page1_title = "Bhava Predictions"
+            page1_subtitle = "House Predictions (Houses 1-6)"
+            page2_title = "Bhava Predictions"
+            page2_subtitle = "House Predictions (Houses 7-12)"
+        else:
+            page1_title = "பாவ பலன்கள்"
+            page1_subtitle = "Bhava Predictions (Houses 1-6)"
+            page2_title = "பாவ பலன்கள்"
+            page2_subtitle = "Bhava Predictions (Houses 7-12)"
+
         return f"""
         <div class="page">
             <div class="lifesign-header">
-                <h1>பாவ பலன்கள்</h1>
-                <div class="om-sri">Bhava Predictions (Houses 1-6)</div>
+                <h1>{page1_title}</h1>
+                <div class="om-sri">{page1_subtitle}</div>
             </div>
 
             <div class="section">
@@ -1302,8 +1559,8 @@ class V6ReportGenerator:
 
         <div class="page">
             <div class="lifesign-header">
-                <h1>பாவ பலன்கள்</h1>
-                <div class="om-sri">Bhava Predictions (Houses 7-12)</div>
+                <h1>{page2_title}</h1>
+                <div class="om-sri">{page2_subtitle}</div>
             </div>
 
             <div class="section">
@@ -1317,6 +1574,7 @@ class V6ReportGenerator:
         dasha_data = self.engine.get_detailed_dasha_predictions()
         current_dasha = dasha_data.get('current_dasha', {})
         all_dashas = dasha_data.get('all_dashas', [])
+        is_english = self.language == 'en'
 
         # Current dasha section
         current_html = ""
@@ -1329,11 +1587,16 @@ class V6ReportGenerator:
             remedies = current_dasha.get('remedies', {})
             bhuktis = current_dasha.get('bhuktis', [])
 
+            # Language-specific display
+            mahadasha_display = mahadasha if is_english else f"{mahadasha_tamil} ({mahadasha})"
+            bhukti_title = "Bhukti Periods:" if is_english else "Bhukti Periods / புக்தி காலம்:"
+
             bhukti_html = ""
             for bhukti in bhuktis[:5]:  # Show first 5 bhuktis
+                planet_display = bhukti.get('planet', '') if is_english else f"{bhukti.get('planet_tamil', '')} ({bhukti.get('planet', '')})"
                 bhukti_html += f"""
                 <div class="bhukti-item">
-                    <strong>{bhukti.get('planet_tamil', '')} ({bhukti.get('planet', '')})</strong>:
+                    <strong>{planet_display}</strong>:
                     {bhukti.get('start', '')} to {bhukti.get('end', '')}
                 </div>
                 """
@@ -1341,13 +1604,13 @@ class V6ReportGenerator:
             current_html = f"""
             <div class="dasha-period" style="border-left-color: #10b981; border-width: 4px;">
                 <div class="dasha-header" style="color: #065f46;">
-                    ★ Current Mahadasha: {mahadasha_tamil} ({mahadasha})
+                    ★ Current Mahadasha: {mahadasha_display}
                 </div>
                 <div class="dasha-dates">
                     {start_date} to {end_date}
                 </div>
                 <p class="content" style="font-size: 9pt;">{prediction}</p>
-                <h4 style="font-size: 10pt; margin-top: 8px;">Bhukti Periods / புக்தி காலம்:</h4>
+                <h4 style="font-size: 10pt; margin-top: 8px;">{bhukti_title}</h4>
                 <div class="bhukti-list">{bhukti_html}</div>
                 <div class="mantra-box">
                     <div class="mantra-text">{remedies.get('mantra', 'ॐ शुक्राय नमः')}</div>
@@ -1367,28 +1630,42 @@ class V6ReportGenerator:
             end_date = dasha.get('end_date', '')
             prediction = dasha.get('prediction', '')
 
+            dasha_header = f"{mahadasha} Mahadasha" if is_english else f"{mahadasha_tamil} ({mahadasha}) Mahadasha"
+
             future_html += f"""
             <div class="dasha-period">
-                <div class="dasha-header">{mahadasha_tamil} ({mahadasha}) Mahadasha</div>
+                <div class="dasha-header">{dasha_header}</div>
                 <div class="dasha-dates">{start_date} to {end_date}</div>
                 <p class="content" style="font-size: 9pt;">{prediction}</p>
             </div>
             """
 
+        # Language-specific labels
+        if is_english:
+            page_title = "Vimshottari Dasha Predictions"
+            page_subtitle = "Planetary Period Analysis"
+            current_period_title = "Current Period"
+            upcoming_title = "Upcoming Periods"
+        else:
+            page_title = "விம்சோத்தரி தசா பலன்கள்"
+            page_subtitle = "Vimshottari Dasha Predictions"
+            current_period_title = "Current Period / நடப்பு காலம்"
+            upcoming_title = "Upcoming Periods / வரவிருக்கும் காலங்கள்"
+
         return f"""
         <div class="page">
             <div class="lifesign-header">
-                <h1>விம்சோத்தரி தசா பலன்கள்</h1>
-                <div class="om-sri">Vimshottari Dasha Predictions</div>
+                <h1>{page_title}</h1>
+                <div class="om-sri">{page_subtitle}</div>
             </div>
 
             <div class="section">
-                <h2 class="section-title">Current Period / நடப்பு காலம்</h2>
+                <h2 class="section-title">{current_period_title}</h2>
                 {current_html}
             </div>
 
             <div class="section">
-                <h2 class="section-title">Upcoming Periods / வரவிருக்கும் காலங்கள்</h2>
+                <h2 class="section-title">{upcoming_title}</h2>
                 {future_html}
             </div>
 
@@ -1405,6 +1682,7 @@ class V6ReportGenerator:
     def _lifesign_dosha_analysis(self) -> str:
         """LifeSign Format - Dosha Analysis with Mantras"""
         doshas = self.report_data.get('doshas', {})
+        is_english = self.language == 'en'
         # Handle both dict with 'list' key and direct list formats
         if isinstance(doshas, list):
             dosha_list = doshas
@@ -1413,21 +1691,36 @@ class V6ReportGenerator:
         else:
             dosha_list = []
 
+        # Language-specific labels
+        if is_english:
+            page_title = "Dosha Analysis"
+            page_subtitle = "Astrological Afflictions & Remedies"
+            no_dosha_title = "No Major Doshas Found"
+            no_dosha_text = "The birth chart does not indicate any significant doshas requiring remedies."
+            effects_title = "Effects:"
+            remedies_title = "Remedies"
+            footer_text = "Regular practice of prescribed mantras and remedies can bring positive transformation."
+        else:
+            page_title = "தோஷ பகுப்பாய்வு"
+            page_subtitle = "Dosha Analysis with Remedies"
+            no_dosha_title = "No Major Doshas Found"
+            no_dosha_text = "The birth chart does not indicate any significant doshas requiring remedies.<br>உங்கள் ஜாதகத்தில் குறிப்பிடத்தக்க தோஷங்கள் எதுவும் இல்லை."
+            effects_title = "Effects / விளைவுகள்:"
+            remedies_title = "Remedies / பரிகாரங்கள்"
+            footer_text = "Regular practice of prescribed mantras and remedies can bring positive transformation.<br>நிர்ணயிக்கப்பட்ட மந்திரங்கள் மற்றும் பரிகாரங்களை தொடர்ந்து செய்வது நேர்மறையான மாற்றத்தை கொண்டு வரும்."
+
         if not dosha_list:
             return f"""
             <div class="page">
                 <div class="lifesign-header">
-                    <h1>தோஷ பகுப்பாய்வு</h1>
-                    <div class="om-sri">Dosha Analysis</div>
+                    <h1>{page_title}</h1>
+                    <div class="om-sri">{page_subtitle}</div>
                 </div>
 
                 <div class="success" style="text-align: center; padding: 30px;">
                     <div style="font-size: 48pt; margin-bottom: 15px;">✓</div>
-                    <h2 style="color: #065f46;">No Major Doshas Found</h2>
-                    <p>The birth chart does not indicate any significant doshas requiring remedies.</p>
-                    <p style="margin-top: 15px;">
-                        உங்கள் ஜாதகத்தில் குறிப்பிடத்தக்க தோஷங்கள் எதுவும் இல்லை.
-                    </p>
+                    <h2 style="color: #065f46;">{no_dosha_title}</h2>
+                    <p>{no_dosha_text}</p>
                 </div>
             </div>
             """
@@ -1470,19 +1763,22 @@ class V6ReportGenerator:
                 effects = [net_effect] if net_effect else ['Consult astrologer for detailed analysis']
             effects_html = ''.join([f'<li>{e}</li>' for e in effects[:4]])
 
+            # Dosha name display - use English only for English mode
+            dosha_display = name if is_english else (name_tamil or name)
+
             dosha_html += f"""
             <div class="dosha-card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <span class="dosha-name">{name_tamil or name}</span>
+                    <span class="dosha-name">{dosha_display}</span>
                     <span style="color: {severity_color}; font-weight: 600;">{severity}</span>
                 </div>
                 <p class="content" style="font-size: 9pt;">{description}</p>
 
-                <h4 style="font-size: 10pt; margin-top: 10px; color: var(--muted-red);">Effects / விளைவுகள்:</h4>
+                <h4 style="font-size: 10pt; margin-top: 10px; color: var(--muted-red);">{effects_title}</h4>
                 <ul style="font-size: 9pt; margin-left: 15px;">{effects_html}</ul>
 
                 <div class="remedy-box" style="margin-top: 10px;">
-                    <div class="remedy-title">Remedies / பரிகாரங்கள்</div>
+                    <div class="remedy-title">{remedies_title}</div>
                     <ul style="margin-left: 15px;">{remedies_html}</ul>
                 </div>
             </div>
@@ -1491,8 +1787,8 @@ class V6ReportGenerator:
         return f"""
         <div class="page">
             <div class="lifesign-header">
-                <h1>தோஷ பகுப்பாய்வு</h1>
-                <div class="om-sri">Dosha Analysis with Remedies</div>
+                <h1>{page_title}</h1>
+                <div class="om-sri">{page_subtitle}</div>
             </div>
 
             <div class="warning" style="margin-bottom: 15px;">
@@ -1508,8 +1804,7 @@ class V6ReportGenerator:
 
             <div class="highlight" style="margin-top: 15px;">
                 <p style="font-size: 9pt; text-align: center;">
-                    Regular practice of prescribed mantras and remedies can bring positive transformation.
-                    நிர்ணயிக்கப்பட்ட மந்திரங்கள் மற்றும் பரிகாரங்களை தொடர்ந்து செய்வது நேர்மறையான மாற்றத்தை கொண்டு வரும்.
+                    {footer_text}
                 </p>
             </div>
         </div>
@@ -1612,6 +1907,136 @@ class V6ReportGenerator:
             {bhava_table}
 
             {sudarshana}
+        </div>
+        """
+
+    def _page_personality_traits(self) -> str:
+        """NEW: Comprehensive Personality Analysis with 300-500 word descriptions"""
+        identity = self.report_data['identity']
+        moon_sign = identity.get('moon_sign', 'Aries')
+        nakshatra = identity.get('moon_nakshatra', 'Ashwini')
+        lagna = identity.get('lagna', 'Aries')
+
+        # Get rich trait data
+        rasi_data = RASI_TRAITS.get(moon_sign, {})
+        nakshatra_data = NAKSHATRA_TRAITS.get(nakshatra, {})
+        lagna_data = RASI_TRAITS.get(lagna, {})
+
+        # Moon sign personality (300-500 words)
+        moon_personality = rasi_data.get('personality', f'Your Moon in {moon_sign} shapes your emotional nature and inner world.')
+        moon_strengths = rasi_data.get('strengths', ['Adaptability', 'Intuition', 'Sensitivity'])
+        moon_weaknesses = rasi_data.get('weaknesses', ['Moodiness', 'Over-sensitivity'])
+        moon_relationship = rasi_data.get('relationship_style', 'Seeks emotional connection and security in relationships.')
+
+        # Nakshatra personality (300-500 words)
+        nak_personality = nakshatra_data.get('personality', f'Your birth star {nakshatra} adds unique qualities to your nature.')
+        nak_career = nakshatra_data.get('career_strengths', ['Service', 'Creativity'])
+        nak_relationship = nakshatra_data.get('relationship_nature', 'Seeks meaningful connections.')
+
+        # Lagna influence
+        lagna_personality = lagna_data.get('personality', '')[:600] if lagna_data.get('personality') else f'Your {lagna} rising sign shapes how the world perceives you.'
+        lagna_strengths = lagna_data.get('strengths', ['Leadership', 'Initiative'])
+
+        # Build strengths and weaknesses lists
+        strengths_html = ''.join([f'<li>{s}</li>' for s in moon_strengths[:4]])
+        weaknesses_html = ''.join([f'<li>{w}</li>' for w in moon_weaknesses[:3]])
+        career_html = ''.join([f'<li>{c}</li>' for c in nak_career[:4]])
+
+        return f"""
+        <div class="page">
+            <div class="page-num">Personality Profile</div>
+            <h1 class="page-title">உங்கள் ஆளுமை குணாதிசயங்கள் / Your Personality Profile</h1>
+
+            <div class="highlight" style="margin-bottom: 15px;">
+                <p><strong>Moon Sign:</strong> {moon_sign} ({rasi_data.get('tamil', '')}) |
+                   <strong>Birth Star:</strong> {nakshatra} ({nakshatra_data.get('tamil', '')}) |
+                   <strong>Rising Sign:</strong> {lagna} ({lagna_data.get('tamil', '')})</p>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">ராசி குணங்கள் / Moon Sign Traits: {moon_sign}</h2>
+                <div class="prediction-para">
+                    {moon_personality}
+                </div>
+            </div>
+
+            <div class="two-col">
+                <div class="section">
+                    <h3 class="subsection">Core Strengths / வலிமைகள்</h3>
+                    <ul style="margin-left: 15px; font-size: 9pt;">
+                        {strengths_html}
+                    </ul>
+                </div>
+                <div class="section">
+                    <h3 class="subsection">Areas for Growth / வளர்ச்சி பகுதிகள்</h3>
+                    <ul style="margin-left: 15px; font-size: 9pt;">
+                        {weaknesses_html}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3 class="subsection">Relationship Style / உறவு பாணி</h3>
+                <p style="font-size: 10pt; line-height: 1.6;">{moon_relationship}</p>
+            </div>
+        </div>
+
+        <div class="page">
+            <div class="page-num">Birth Star Profile</div>
+            <h1 class="page-title">நட்சத்திர குணங்கள் / Birth Star Traits: {nakshatra}</h1>
+
+            <div class="highlight" style="margin-bottom: 15px;">
+                <p><strong>Nakshatra Lord:</strong> {nakshatra_data.get('lord', 'Ketu')} |
+                   <strong>Deity:</strong> {nakshatra_data.get('deity', '')} |
+                   <strong>Symbol:</strong> {nakshatra_data.get('symbol', '')}</p>
+            </div>
+
+            <div class="section">
+                <div class="prediction-para">
+                    {nak_personality}
+                </div>
+            </div>
+
+            <div class="section">
+                <h3 class="subsection">Career Aptitudes / தொழில் திறன்கள்</h3>
+                <ul style="margin-left: 15px; font-size: 9pt;">
+                    {career_html}
+                </ul>
+            </div>
+
+            <div class="section">
+                <h3 class="subsection">Relationship Nature / உறவு இயல்பு</h3>
+                <p style="font-size: 10pt; line-height: 1.6;">{nak_relationship}</p>
+            </div>
+        </div>
+
+        <div class="page">
+            <div class="page-num">Rising Sign Profile</div>
+            <h1 class="page-title">லக்ன குணங்கள் / Rising Sign: {lagna}</h1>
+
+            <div class="section">
+                <h2 class="section-title">How the World Sees You / உலகம் உங்களை எப்படி பார்க்கிறது</h2>
+                <div class="prediction-para">
+                    {lagna_personality}
+                </div>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">Combined Influence / ஒருங்கிணைந்த தாக்கம்</h2>
+                <div class="prediction-para">
+                    Your Moon in {moon_sign} combined with {nakshatra} nakshatra and {lagna} rising creates a unique personality blend.
+                    The {rasi_data.get('element', 'elemental')} nature of your Moon sign provides emotional grounding,
+                    while your {nakshatra} birth star adds {nakshatra_data.get('guna', 'specific')} qualities to your character.
+                    Your {lagna} ascendant shapes how you present yourself to the world and approach new situations.
+
+                    This combination gives you natural abilities in {', '.join(lagna_strengths[:2])} from your rising sign,
+                    emotional depth from your {moon_sign} Moon, and the unique gifts of {nakshatra} - including
+                    {nakshatra_data.get('career_strengths', ['intuition', 'service'])[0].lower() if nakshatra_data.get('career_strengths') else 'special talents'}.
+
+                    In relationships, you seek {moon_relationship.split('.')[0].lower() if moon_relationship else 'meaningful connections'},
+                    while your nakshatra nature adds {nak_relationship.split(',')[0].lower() if nak_relationship else 'depth'} to your bonds.
+                </div>
+            </div>
         </div>
         """
 
@@ -2102,7 +2527,7 @@ class V6ReportGenerator:
         """
 
     def _pages_15_20_life_areas(self) -> str:
-        """Pages 15-20: Life Area Analysis with Detailed Insights"""
+        """Pages 15-20: Life Area Analysis with Rich Narrative Descriptions"""
         life_areas = self.report_data['life_areas']
         pages_html = ""
 
@@ -2120,9 +2545,31 @@ class V6ReportGenerator:
             detailed = area.get('detailed_insights', {})
 
             planets_list = ', '.join(area.get('planets_in_house', [])) or 'None'
+            house_sign = area.get('house_sign', 'Aries')
+            house_lord = area.get('house_lord', 'Mars')
+            combined_score = area.get('combined_score', 0.5)
+
+            # Generate rich narrative description based on area
+            narrative = self._generate_life_area_narrative(
+                area_key, house_sign, house_lord, combined_score, planets_list, detailed
+            )
 
             # Build area-specific detailed section
             detailed_html = self._render_detailed_insights(area_key, detailed)
+
+            # Determine outlook based on score
+            if combined_score > 0.7:
+                outlook = "Excellent"
+                outlook_class = "success"
+            elif combined_score > 0.55:
+                outlook = "Good"
+                outlook_class = "success"
+            elif combined_score > 0.4:
+                outlook = "Moderate"
+                outlook_class = "warning"
+            else:
+                outlook = "Challenging - requires attention"
+                outlook_class = "highlight"
 
             pages_html += f"""
             <div class="page">
@@ -2130,49 +2577,261 @@ class V6ReportGenerator:
                 <h1 class="page-title">{page_num}. {area_title} Analysis</h1>
 
                 <div class="highlight">
-                    <p><strong>Primary House:</strong> H{area.get('primary_house', 1)} ({area.get('house_sign', 'N/A')})</p>
-                    <p><strong>House Lord:</strong> {area.get('house_lord', 'N/A')}</p>
-                    <p><strong>Karaka:</strong> {area.get('karaka', 'N/A')}</p>
+                    <p><strong>Primary House:</strong> H{area.get('primary_house', 1)}
+                    in {house_sign} | <strong>Lord:</strong> {house_lord} |
+                    <strong>Karaka:</strong> {area.get('karaka', 'N/A')} |
+                    <strong>Overall Outlook:</strong> {outlook}</p>
                 </div>
 
                 <div class="section">
-                    <h2 class="section-title">Strength Analysis</h2>
-                    <table>
-                        <tr><th>Factor</th><th>Score</th><th>Visual</th></tr>
-                        <tr>
-                            <td>House Lord Strength</td>
-                            <td>{area.get('lord_strength', 0.5):.2f}</td>
-                            <td>{self._score_bar(area.get('lord_strength', 0.5), 100)}</td>
-                        </tr>
-                        <tr>
-                            <td>Karaka Strength</td>
-                            <td>{area.get('karaka_strength', 0.5):.2f}</td>
-                            <td>{self._score_bar(area.get('karaka_strength', 0.5), 100)}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Combined Score</strong></td>
-                            <td><strong>{area.get('combined_score', 0.5):.2f}</strong></td>
-                            <td>{self._score_bar(area.get('combined_score', 0.5), 100)}</td>
-                        </tr>
-                    </table>
-                </div>
-
-                <div class="section">
-                    <h2 class="section-title">Planets in House</h2>
-                    <p>{planets_list}</p>
+                    <h2 class="section-title">Detailed Analysis / விரிவான பகுப்பாய்வு</h2>
+                    <div class="prediction-para">
+                        {narrative}
+                    </div>
                 </div>
 
                 {detailed_html}
 
-                <div class="{'success' if area.get('combined_score', 0) > 0.6 else 'warning' if area.get('combined_score', 0) > 0.45 else 'highlight'}">
-                    <p><strong>Interpretation:</strong> {area.get('interpretation', 'Moderate')}</p>
+                <div class="section">
+                    <h2 class="section-title">Planetary Influences</h2>
+                    <p><strong>Planets in this house:</strong> {planets_list}</p>
+                    <div class="two-col" style="margin-top: 10px;">
+                        <div>
+                            <p><strong>House Lord Strength:</strong></p>
+                            {self._score_bar(area.get('lord_strength', 0.5), 120)}
+                        </div>
+                        <div>
+                            <p><strong>Karaka Strength:</strong></p>
+                            {self._score_bar(area.get('karaka_strength', 0.5), 120)}
+                        </div>
+                    </div>
                 </div>
 
-                <div class="math-trace">{detailed.get('math_reasoning', area.get('math_trace', ''))}</div>
+                <div class="{outlook_class}">
+                    <p><strong>Key Insight:</strong> {area.get('interpretation', 'Moderate potential in this area.')}</p>
+                </div>
             </div>
             """
 
         return pages_html
+
+    def _generate_life_area_narrative(self, area_key: str, house_sign: str,
+                                       house_lord: str, score: float,
+                                       planets: str, detailed: dict) -> str:
+        """Generate rich narrative description for each life area (200-400 words)"""
+
+        # Get sign characteristics
+        sign_traits = RASI_TRAITS.get(house_sign, {})
+        sign_element = sign_traits.get('element', 'Mixed')
+        sign_quality = sign_traits.get('quality', 'Adaptable')
+
+        if area_key == 'career':
+            return self._career_narrative(house_sign, house_lord, score,
+                                          planets, sign_element, detailed)
+        elif area_key == 'marriage':
+            return self._marriage_narrative(house_sign, house_lord, score,
+                                            planets, sign_traits, detailed)
+        elif area_key == 'wealth':
+            return self._wealth_narrative(house_sign, house_lord, score,
+                                          planets, sign_element, detailed)
+        elif area_key == 'health':
+            return self._health_narrative(house_sign, house_lord, score,
+                                          planets, sign_element, detailed)
+        elif area_key == 'children':
+            return self._children_narrative(house_sign, house_lord, score,
+                                            planets, sign_traits, detailed)
+        elif area_key == 'education':
+            return self._education_narrative(house_sign, house_lord, score,
+                                             planets, sign_element, detailed)
+        return "Analysis for this life area."
+
+    def _career_narrative(self, sign: str, lord: str, score: float,
+                          planets: str, element: str, detailed: dict) -> str:
+        """Generate 200-400 word career narrative"""
+        strength = "strong" if score > 0.6 else "moderate" if score > 0.4 else "developing"
+
+        # Career fields based on sign
+        career_map = {
+            'Aries': 'leadership, entrepreneurship, military, sports, or engineering',
+            'Taurus': 'finance, banking, agriculture, arts, or luxury goods',
+            'Gemini': 'communication, writing, media, sales, or technology',
+            'Cancer': 'hospitality, real estate, healthcare, or nurturing professions',
+            'Leo': 'entertainment, politics, management, or creative arts',
+            'Virgo': 'healthcare, research, accounting, or service industries',
+            'Libra': 'law, diplomacy, arts, fashion, or counseling',
+            'Scorpio': 'research, psychology, investigation, or finance',
+            'Sagittarius': 'education, travel, philosophy, or international business',
+            'Capricorn': 'government, administration, traditional business, or management',
+            'Aquarius': 'technology, innovation, social causes, or scientific research',
+            'Pisces': 'arts, healing, spirituality, or creative industries'
+        }
+
+        fields = career_map.get(sign, 'diverse professional fields')
+        rec_fields = ', '.join(detailed.get('recommended_fields', [])[:3]) if detailed.get('recommended_fields') else fields
+
+        narrative = f"""Your career path is illuminated by the {sign} energy governing your 10th house of profession and public standing. With {lord} as the ruling planet of your career house, your professional journey carries the distinctive qualities of this celestial influence.
+
+The {element} element nature of {sign} shapes your approach to work and ambition. {"You bring dynamic energy and initiative to your professional endeavors, naturally gravitating toward roles that allow independence and leadership." if element == 'Fire' else "You approach your career with practicality and persistence, building lasting foundations through methodical effort." if element == 'Earth' else "Your career benefits from your intellectual agility and communication skills, thriving in roles that engage your mind." if element == 'Air' else "Your professional path is guided by intuition and emotional intelligence, excelling in roles that require understanding human nature."}
+
+Based on this configuration, you are naturally suited for careers in {rec_fields}. Your {strength} career indicators suggest {"excellent opportunities for advancement and recognition in your chosen field" if score > 0.6 else "steady progress with consistent effort and strategic planning" if score > 0.4 else "growth through perseverance, with rewards coming through sustained dedication"}.
+
+{"The planets currently placed in your career house add their own influences, creating additional dimensions to your professional potential." if planets != 'None' else "With no planets directly in your career house, the condition of your 10th lord becomes especially important for professional success."}
+
+{detailed.get('timing_note', 'Career developments are particularly significant during the Dasha periods of your 10th lord and the planets aspecting your 10th house.')}"""
+
+        return narrative
+
+    def _marriage_narrative(self, sign: str, lord: str, score: float,
+                            planets: str, sign_traits: dict, detailed: dict) -> str:
+        """Generate 200-400 word marriage/partnership narrative"""
+
+        partner_qualities = {
+            'Aries': 'independent, energetic, and action-oriented',
+            'Taurus': 'stable, sensual, and security-conscious',
+            'Gemini': 'intellectually stimulating, communicative, and versatile',
+            'Cancer': 'nurturing, emotionally supportive, and family-oriented',
+            'Leo': 'confident, generous, and warm-hearted',
+            'Virgo': 'practical, helpful, and detail-oriented',
+            'Libra': 'harmonious, fair-minded, and partnership-focused',
+            'Scorpio': 'intense, loyal, and deeply committed',
+            'Sagittarius': 'adventurous, optimistic, and freedom-loving',
+            'Capricorn': 'responsible, ambitious, and traditionally-minded',
+            'Aquarius': 'unique, independent, and intellectually oriented',
+            'Pisces': 'compassionate, intuitive, and spiritually inclined'
+        }
+
+        qualities = partner_qualities.get(sign, 'balanced and compatible')
+        rel_style = sign_traits.get('relationship_style', 'seeks meaningful partnership')
+
+        narrative = f"""Your 7th house of marriage and partnership falls in {sign}, painting a detailed picture of your relationship destiny. The energy of {lord}, ruling this important house, significantly influences who you attract and how your partnerships unfold.
+
+With {sign} governing partnerships, you are naturally drawn to individuals who are {qualities}. Your ideal partner reflects these {sign} qualities, creating a dynamic where {rel_style.lower() if rel_style else 'mutual growth and understanding flourish'}.
+
+{"Your partnership indicators suggest strong potential for a harmonious and fulfilling marriage. The celestial support for your 7th house brings natural compatibility and the ability to maintain lasting bonds." if score > 0.6 else "Your relationship path shows steady potential with room for growth. Building a strong partnership requires conscious effort in communication and understanding, but the foundations are supportive." if score > 0.4 else "Relationships may require extra attention and conscious cultivation. The challenges indicated can become opportunities for profound growth when approached with patience and self-awareness."}
+
+{"The planets in your 7th house add complexity and specific themes to your relationship experiences. Understanding these influences helps you navigate partnership dynamics more skillfully." if planets != 'None' else "With your 7th house unoccupied by planets, the condition and placement of its lord becomes the primary indicator of marriage timing and quality."}
+
+Venus, the natural significator of marriage, {detailed.get('venus_analysis', 'plays an important role in determining relationship harmony and timing')}.
+
+{detailed.get('key_advice', 'Understanding both your needs and your partners perspective creates the foundation for lasting happiness in partnership.')}"""
+
+        return narrative
+
+    def _wealth_narrative(self, sign: str, lord: str, score: float,
+                          planets: str, element: str, detailed: dict) -> str:
+        """Generate 200-400 word wealth narrative"""
+
+        wealth_approach = {
+            'Fire': 'through bold ventures, entrepreneurship, and taking calculated risks',
+            'Earth': 'through steady accumulation, wise investments, and practical financial management',
+            'Air': 'through intellectual pursuits, networking, and innovative ideas',
+            'Water': 'through intuitive decisions, inheritance, and emotionally-driven opportunities'
+        }
+
+        approach = wealth_approach.get(element, 'through balanced financial strategies')
+
+        narrative = f"""Your financial destiny is shaped by {sign} governing your 2nd house of accumulated wealth, with {lord} directing the flow of resources into your life. This configuration reveals both your natural approach to money and your potential for material prosperity.
+
+The {element} element influence suggests wealth comes to you {approach}. Your relationship with money reflects {sign} qualities - {"you may be quick to earn and equally quick to spend, driven by immediate desires and opportunities" if sign in ['Aries', 'Leo', 'Sagittarius'] else "you value security and tend to build wealth gradually through consistent effort and wise preservation" if sign in ['Taurus', 'Virgo', 'Capricorn'] else "financial decisions often involve intellectual analysis and multiple income streams" if sign in ['Gemini', 'Libra', 'Aquarius'] else "intuition plays a role in your financial decisions, and emotional security is linked to material security"}.
+
+{"Your wealth indicators are strongly positive, suggesting natural ability to attract and retain resources. Financial stability comes more easily to you than many, though wise stewardship remains important." if score > 0.6 else "Your financial path shows steady potential with room for growth through conscious effort. Building wealth requires patience and strategic planning, but the foundations support success." if score > 0.4 else "Wealth accumulation may require extra attention and discipline. The challenges indicated become opportunities for developing stronger financial habits and wisdom."}
+
+Jupiter, the great benefic and natural significator of wealth, {detailed.get('jupiter_note', 'influences your overall prosperity potential')}.
+
+Your 11th house of gains works in conjunction with the 2nd house, together determining your complete financial picture. {detailed.get('income_note', 'Multiple sources of income may develop throughout your life.')}"""
+
+        return narrative
+
+    def _health_narrative(self, sign: str, lord: str, score: float,
+                          planets: str, element: str, detailed: dict) -> str:
+        """Generate 200-400 word health narrative"""
+
+        constitution = {
+            'Fire': 'naturally robust with strong vital energy. You may have excellent recovery abilities but should guard against burnout, fever-related conditions, and inflammatory issues',
+            'Earth': 'steady and enduring, with good stamina. You should pay attention to digestion, weight management, and conditions that develop slowly over time',
+            'Air': 'active and variable, with energy that fluctuates. The nervous system and respiratory health deserve attention, along with managing stress and mental fatigue',
+            'Water': 'sensitive and responsive, deeply connected to emotional states. Water retention, lymphatic health, and conditions affected by emotions require awareness'
+        }
+
+        const_text = constitution.get(element, 'balanced, requiring attention to overall wellness')
+        body_areas = detailed.get('body_areas_to_monitor', ['general wellness'])
+        body_list = ', '.join(body_areas[:3]) if body_areas else 'overall constitution'
+
+        narrative = f"""Your physical constitution and health patterns are revealed through the 6th house of health and the overall strength of your Lagna (ascendant). With {sign} influencing your health house and {lord} as its ruler, specific patterns emerge regarding your vitality and areas requiring attention.
+
+Your {element} element constitution tends to be {const_text}. Understanding this natural tendency helps you take proactive measures for maintaining wellness throughout life.
+
+{"Your health indicators are favorable, suggesting a naturally strong constitution and good recuperative abilities. While no one is immune to health challenges, your chart supports vitality and longevity." if score > 0.6 else "Your health patterns show areas of both strength and sensitivity. Paying attention to preventive care and lifestyle choices significantly improves your wellbeing." if score > 0.4 else "Health matters may require more conscious attention in your life. The challenges indicated actually motivate you to develop excellent health habits that serve you well long-term."}
+
+Based on the planetary configurations, the areas deserving particular attention include: {body_list}. These are not predictions of illness but rather indications of where preventive care is most valuable.
+
+{detailed.get('constitution_assessment', 'Your overall vitality benefits from regular physical activity suited to your constitution, adequate rest, and attention to nutrition.')}
+
+The Sun, representing vitality, and the Lagna lord, representing physical body, together indicate your energy levels and recovery capacity. {detailed.get('vitality_note', 'Maintaining healthy routines during challenging planetary periods provides extra support.')}"""
+
+        return narrative
+
+    def _children_narrative(self, sign: str, lord: str, score: float,
+                            planets: str, sign_traits: dict, detailed: dict) -> str:
+        """Generate 200-400 word children/progeny narrative"""
+
+        parenting_style = {
+            'Aries': 'encouraging independence and courage, fostering a spirit of adventure',
+            'Taurus': 'providing stability and comfort, teaching the value of patience and persistence',
+            'Gemini': 'stimulating intellectual curiosity, encouraging communication and learning',
+            'Cancer': 'deeply nurturing and protective, creating a secure emotional environment',
+            'Leo': 'encouraging creative expression and confidence, celebrating their uniqueness',
+            'Virgo': 'teaching practical skills and attention to detail, fostering helpfulness',
+            'Libra': 'emphasizing fairness and harmony, teaching social grace and cooperation',
+            'Scorpio': 'forming deep emotional bonds, teaching resilience and inner strength',
+            'Sagittarius': 'encouraging exploration and higher learning, fostering optimism',
+            'Capricorn': 'teaching responsibility and discipline, preparing them for success',
+            'Aquarius': 'encouraging individuality and humanitarian values, fostering innovation',
+            'Pisces': 'nurturing creativity and compassion, developing spiritual awareness'
+        }
+
+        style = parenting_style.get(sign, 'balanced and supportive')
+
+        narrative = f"""Your 5th house of children and creative expression falls in {sign}, with {lord} guiding matters related to progeny. This configuration reveals the nature of your relationship with children and the blessings or lessons that come through this area of life.
+
+With {sign} energy in your house of children, your parenting approach naturally involves {style}. Children who come into your life tend to reflect {sign} qualities, and your relationship with them carries these themes.
+
+{"Your chart shows strong indicators for happiness through children. Whether through biological offspring, adoption, or close relationships with young people, this area of life brings significant joy and fulfillment." if score > 0.6 else "Your connection with children develops meaningfully through conscious cultivation. The relationship may involve growth on both sides, with children teaching you as much as you teach them." if score > 0.4 else "Matters related to children may require patience and dedication. Any challenges in this area become opportunities for deep personal growth and understanding."}
+
+Jupiter, the natural significator of children and divine grace, {detailed.get('jupiter_note', 'plays a significant role in determining blessings in this area')}. The condition of Jupiter in your chart provides additional insights into your relationship with progeny.
+
+{"The planets in your 5th house add their specific influences to matters of children and creativity." if planets != 'None' else "With no planets directly occupying your 5th house, the placement and condition of its lord becomes especially significant."}
+
+{detailed.get('timing_note', 'Matters related to children are particularly active during the Dasha periods connected to the 5th house and Jupiter.')}"""
+
+        return narrative
+
+    def _education_narrative(self, sign: str, lord: str, score: float,
+                             planets: str, element: str, detailed: dict) -> str:
+        """Generate 200-400 word education narrative"""
+
+        learning_approach = {
+            'Fire': 'enthusiastic and inspired learner who grasps concepts quickly but may need variety to maintain interest. You learn best through active engagement and practical application',
+            'Earth': 'methodical and thorough student who builds knowledge systematically. You excel when given time to absorb material deeply and apply it practically',
+            'Air': 'intellectually agile learner who excels at theoretical understanding and making connections between ideas. Discussion and debate enhance your learning',
+            'Water': 'intuitive learner who absorbs knowledge emotionally and holistically. Creative and artistic subjects often resonate deeply, and you learn well in supportive environments'
+        }
+
+        approach = learning_approach.get(element, 'adaptive and comprehensive')
+
+        narrative = f"""Your educational journey and intellectual development are illuminated by the 4th house of foundational learning and the 9th house of higher wisdom. With {sign} energy influencing these areas and {lord} as a guiding planet, your learning style and academic potential take specific shape.
+
+You are a {approach}. Understanding this natural tendency helps you choose study methods and educational environments that support your success.
+
+{"Your educational indicators are strongly favorable, suggesting natural academic ability and the capacity for advanced learning. Whether through formal education or self-study, you have the potential to acquire significant knowledge and expertise." if score > 0.6 else "Your educational path shows steady potential with opportunity for significant achievement through consistent effort. Building knowledge requires dedication, but you have the capacity for meaningful intellectual growth." if score > 0.4 else "Learning may require extra effort or non-traditional approaches. The challenges indicated often lead to developing unique perspectives and practical wisdom that formal education alone cannot provide."}
+
+Mercury, the planet of intellect and learning, {detailed.get('mercury_note', 'significantly influences your mental capacity and learning abilities')}. Jupiter, representing higher wisdom and teachers, {detailed.get('jupiter_note', 'shapes your access to guidance and advanced knowledge')}.
+
+Areas of natural intellectual strength include {', '.join(detailed.get('subjects', ['general studies'])[:3]) if detailed.get('subjects') else 'diverse fields of knowledge'}. These subjects tend to come more easily and may form the foundation of your expertise.
+
+{detailed.get('timing_note', 'Educational pursuits are particularly favored during Mercury and Jupiter planetary periods.')}"""
+
+        return narrative
 
     def _render_detailed_insights(self, area_key: str, detailed: dict) -> str:
         """Render detailed insights based on life area type"""
@@ -2390,76 +3049,209 @@ class V6ReportGenerator:
         """
 
     def _page_21_yogas(self) -> str:
-        """Page 21: Yogas Present"""
+        """Page 21-22: Yogas Present with Rich Descriptions"""
         yogas = self.report_data['yogas']
 
-        yoga_cards = ""
-        for yoga in yogas[:6]:  # Limit to 6
-            yoga_cards += f"""
-            <div class="yoga-card">
-                <div class="yoga-name">{yoga['name']} / {yoga.get('name_tamil', '')}</div>
-                <div class="yoga-type">{yoga.get('type', '')}</div>
-                <p><strong>Formation:</strong> {yoga.get('formed_by', '')}</p>
-                <p><strong>Strength:</strong> {self._score_bar(yoga.get('strength', 0.5), 80)} {yoga.get('strength', 0.5):.2f}</p>
-                <p><strong>Effects:</strong> {yoga.get('effects', '')}</p>
+        # Generate pages for all yogas with detailed descriptions
+        yoga_pages = self._generate_yoga_detail_pages(yogas)
+
+        return yoga_pages
+
+    def _generate_yoga_detail_pages(self, yogas: list) -> str:
+        """Generate multiple pages with rich yoga descriptions"""
+        if not yogas:
+            return f"""
+            <div class="page">
+                <div class="page-num">Page 21</div>
+                <h1 class="page-title">21. Yogas Present / யோகங்கள்</h1>
+                <div class="highlight">
+                    <p>Yogas are special planetary combinations that bestow unique blessings and abilities.</p>
+                </div>
+                <div class="section">
+                    <p>No major yogas detected in this chart based on classical formation rules.</p>
+                    <p style="margin-top: 10px;">This doesn't diminish your chart's potential - individual planetary strengths
+                    and house placements provide their own unique gifts and opportunities.</p>
+                </div>
             </div>
             """
 
-        return f"""
-        <div class="page">
-            <div class="page-num">Page 21</div>
-            <h1 class="page-title">21. Yogas Present / யோகங்கள்</h1>
+        pages_html = ""
+        page_num = 21
+        yogas_per_page = 2  # 2 yogas per page for detailed descriptions
 
-            <div class="highlight">
-                <p><strong>Rule:</strong> Yogas formed based on degree-precise planetary positions</p>
-            </div>
+        for page_idx in range(0, len(yogas), yogas_per_page):
+            page_yogas = yogas[page_idx:page_idx + yogas_per_page]
 
-            <div class="section">
-                <h2 class="section-title">Detected Yogas ({len(yogas)})</h2>
-                {yoga_cards if yoga_cards else '<p>No major yogas detected in this chart.</p>'}
+            yoga_content = ""
+            for yoga in page_yogas:
+                yoga_name = yoga.get('name', 'Unknown Yoga')
+
+                # Get rich description from YOGA_DESCRIPTIONS
+                yoga_data = YOGA_DESCRIPTIONS.get(yoga_name, {})
+                rich_description = yoga_data.get('description', yoga.get('effects', f'{yoga_name} brings its unique blessings to your chart.'))
+                effects_list = yoga_data.get('effects', [])
+                activation_info = yoga_data.get('activation', 'During related planetary Dasha periods')
+                category = yoga_data.get('category', yoga.get('type', 'Auspicious'))
+
+                # Truncate description for page fit but keep substantial
+                desc_preview = rich_description[:500] + '...' if len(rich_description) > 500 else rich_description
+
+                # Build effects list HTML
+                effects_html = ""
+                if effects_list:
+                    effects_items = ''.join([f'<li>{effect}</li>' for effect in effects_list[:5]])
+                    effects_html = f'<ul style="font-size: 9pt; margin: 5px 0;">{effects_items}</ul>'
+
+                strength = yoga.get('strength', 0.5)
+                strength_label = "Strong" if strength > 0.7 else "Moderate" if strength > 0.4 else "Developing"
+
+                yoga_content += f"""
+                <div class="section" style="margin-bottom: 20px; page-break-inside: avoid;">
+                    <div style="background: linear-gradient(135deg, #2c5282 0%, #1a365d 100%); color: white; padding: 12px; border-radius: 8px 8px 0 0;">
+                        <h2 style="margin: 0; font-size: 14pt;">{yoga_name} / {yoga.get('name_tamil', yoga_data.get('name_tamil', ''))}</h2>
+                        <p style="margin: 5px 0 0 0; font-size: 10pt; opacity: 0.9;">{category}</p>
+                    </div>
+
+                    <div style="background: #f7fafc; padding: 15px; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 8px 8px;">
+                        <div style="margin-bottom: 10px;">
+                            <span style="font-weight: bold;">Formation:</span> {yoga.get('formed_by', yoga_data.get('formation', 'Classical planetary combination'))}
+                        </div>
+
+                        <div style="margin-bottom: 10px;">
+                            <span style="font-weight: bold;">Strength:</span>
+                            {self._score_bar(strength, 100)} {strength:.0%} ({strength_label})
+                        </div>
+
+                        <div style="background: white; padding: 12px; border-radius: 6px; margin: 10px 0;">
+                            <p style="font-size: 10pt; line-height: 1.6; text-align: justify; margin: 0;">
+                                {desc_preview}
+                            </p>
+                        </div>
+
+                        {f'<div style="margin-top: 10px;"><strong>Key Blessings:</strong>{effects_html}</div>' if effects_html else ''}
+
+                        <div style="background: #ebf8ff; padding: 10px; border-left: 4px solid #3182ce; margin-top: 10px;">
+                            <p style="font-size: 9pt; margin: 0;"><strong>Activation:</strong> {activation_info}</p>
+                        </div>
+                    </div>
+                </div>
+                """
+
+            pages_html += f"""
+            <div class="page">
+                <div class="page-num">Page {page_num}</div>
+                <h1 class="page-title">{page_num}. {'Yogas in Your Chart' if page_num == 21 else 'Additional Yogas'} / யோகங்கள்</h1>
+
+                {'<div class="highlight"><p>Yogas are powerful planetary combinations that bestow special gifts, abilities, and life experiences. Your chart contains the following auspicious formations that will manifest their blessings during specific life periods.</p></div>' if page_num == 21 else ''}
+
+                {yoga_content}
             </div>
-        </div>
-        """
+            """
+            page_num += 1
+
+        return pages_html
 
     def _page_22_yoga_activation(self) -> str:
-        """Page 22: Yoga Activation Timeline"""
+        """Page 22: Yoga Activation Timeline with Rich Narratives"""
         yogas = self.report_data['yogas']
         dasha = self.report_data['dasha']
 
-        activation_rows = ""
-        for yoga in yogas[:6]:
+        if not yogas:
+            return ""  # No separate activation page if no yogas
+
+        mahadasha = dasha['current'].get('mahadasha', 'Saturn')
+        antardasha = dasha['current'].get('antardasha', 'Mercury')
+
+        # Build activation cards with narratives
+        active_yogas = []
+        dormant_yogas = []
+
+        for yoga in yogas:
             activation = yoga.get('activation', {})
-            status = "🟢 Active" if activation.get('is_active') else "⚪ Dormant"
-            activation_rows += f"""
-            <tr>
-                <td>{yoga['name']}</td>
-                <td>{status}</td>
-                <td>{activation.get('period', 'Future')}</td>
-                <td>{activation.get('strength_multiplier', 1.0):.1f}x</td>
-            </tr>
+            is_active = activation.get('is_active', False)
+
+            yoga_name = yoga.get('name', 'Unknown')
+            yoga_data = YOGA_DESCRIPTIONS.get(yoga_name, {})
+
+            if is_active:
+                active_yogas.append((yoga, yoga_data))
+            else:
+                dormant_yogas.append((yoga, yoga_data))
+
+        # Active yogas section
+        active_html = ""
+        if active_yogas:
+            for yoga, yoga_data in active_yogas[:3]:
+                activation = yoga.get('activation', {})
+                multiplier = activation.get('strength_multiplier', 1.0)
+                effects = yoga_data.get('effects', [])
+                effects_text = ', '.join(effects[:3]) if effects else 'Various auspicious results'
+
+                active_html += f"""
+                <div style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+                    <h3 style="margin: 0 0 8px 0;">{yoga.get('name', '')} - ACTIVE NOW</h3>
+                    <p style="margin: 5px 0; font-size: 10pt;">Currently manifesting during {mahadasha}-{antardasha} period</p>
+                    <p style="margin: 5px 0; font-size: 9pt;"><strong>Effect Intensity:</strong> {multiplier:.1f}x normal strength</p>
+                    <p style="margin: 5px 0; font-size: 9pt;"><strong>Manifesting:</strong> {effects_text}</p>
+                </div>
+                """
+        else:
+            active_html = """
+            <div style="background: #f7fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <p style="margin: 0;">No yogas are currently in their peak activation phase. However, dormant yogas
+                still exert subtle influence and will fully activate during their designated planetary periods.</p>
+            </div>
+            """
+
+        # Dormant yogas timeline
+        dormant_html = ""
+        for yoga, yoga_data in dormant_yogas[:4]:
+            activation = yoga.get('activation', {})
+            period = activation.get('period', 'Future Dasha')
+            activation_info = yoga_data.get('activation', 'During related planetary periods')
+
+            dormant_html += f"""
+            <div style="background: #f7fafc; padding: 12px; border-left: 4px solid #718096; margin-bottom: 8px; border-radius: 0 6px 6px 0;">
+                <h4 style="margin: 0 0 5px 0; color: #2d3748;">{yoga.get('name', '')}</h4>
+                <p style="margin: 0; font-size: 9pt; color: #4a5568;">
+                    <strong>Awaiting Activation:</strong> {period}<br>
+                    <strong>When Active:</strong> {activation_info[:150]}{'...' if len(activation_info) > 150 else ''}
+                </p>
+            </div>
             """
 
         return f"""
         <div class="page">
             <div class="page-num">Page 22</div>
-            <h1 class="page-title">22. Yoga Activation Timeline / யோக செயல்பாடு</h1>
+            <h1 class="page-title">22. Yoga Activation & Life Impact / யோக செயல்பாடு</h1>
 
             <div class="highlight">
-                <p><strong>Rule:</strong> Yoga presence ≠ Yoga activation. Activation requires dasha support.</p>
+                <p><strong>Understanding Yoga Activation:</strong> Having a yoga in your chart is like owning a treasure chest.
+                The treasure exists, but you can only access it when the right planetary period provides the key.
+                Your current {mahadasha} Mahadasha with {antardasha} Antardasha determines which yogas are actively blessing you now.</p>
             </div>
 
             <div class="section">
-                <h2 class="section-title">Current Dasha Context</h2>
-                <p><strong>Mahadasha:</strong> {dasha['current'].get('mahadasha', 'N/A')} ({dasha['current'].get('mahadasha_tamil', '')})</p>
-                <p><strong>Antardasha:</strong> {dasha['current'].get('antardasha', 'N/A')} ({dasha['current'].get('antardasha_tamil', '')})</p>
+                <h2 class="section-title">Currently Active Yogas</h2>
+                {active_html}
             </div>
 
             <div class="section">
-                <h2 class="section-title">Yoga Activation Status</h2>
-                <table>
-                    <tr><th>Yoga</th><th>Status</th><th>Activation Period</th><th>Effect Multiplier</th></tr>
-                    {activation_rows if activation_rows else '<tr><td colspan="4">No yogas to analyze</td></tr>'}
-                </table>
+                <h2 class="section-title">Awaiting Activation</h2>
+                <p style="font-size: 9pt; color: #4a5568; margin-bottom: 10px;">
+                    These yogas are present in your chart but will fully manifest during their designated periods:
+                </p>
+                {dormant_html if dormant_html else '<p>All yogas are currently active or activating.</p>'}
+            </div>
+
+            <div class="section" style="background: #fffbeb; padding: 12px; border-radius: 8px; border: 1px solid #f6e05e;">
+                <h3 style="margin: 0 0 8px 0; color: #744210;">Maximizing Your Yoga Benefits</h3>
+                <ul style="font-size: 9pt; margin: 0; color: #744210;">
+                    <li>During active yoga periods, consciously work with the yoga's themes</li>
+                    <li>Strengthen the yoga-forming planets through appropriate remedies</li>
+                    <li>Avoid actions that weaken the yoga-forming planets</li>
+                    <li>Time important decisions to coincide with yoga activation periods</li>
+                </ul>
             </div>
         </div>
         """
@@ -2819,127 +3611,337 @@ class V6ReportGenerator:
         </div>
         """
 
+    def _get_dasha_life_narrative(self, planet: str, strength: float,
+                                   house: int, is_current: bool = False) -> str:
+        """Generate rich 200-400 word narrative for a Dasha period"""
+        dasha_data = DASHA_PREDICTIONS.get(planet, {})
+
+        # Get the general narrative
+        general = dasha_data.get('general', f'The {planet} period brings its unique influences to your life.')
+
+        # Choose strength-based interpretation
+        if strength > 0.6:
+            strength_text = dasha_data.get('strong', f'This is a favorable period for {planet} significations.')
+        else:
+            strength_text = dasha_data.get('weak', f'This period requires conscious effort to harness {planet} energies.')
+
+        # House-based effects
+        house_effect = PLANET_HOUSE_EFFECTS.get(planet, {}).get(house, f'{planet} activates house {house} themes.')
+
+        current_note = f"""
+
+**As your currently operating Mahadasha**, these themes are actively shaping your life now. Pay attention to opportunities and challenges in the areas described above. This is a significant period for working with {planet}'s energy consciously.""" if is_current else ""
+
+        return f"""{general}
+
+**In Your Chart:** {house_effect}
+
+**Period Quality:** {strength_text}{current_note}"""
+
+    def _get_antardasha_narrative(self, maha_lord: str, antar_lord: str,
+                                   strength: float) -> str:
+        """Generate narrative for current Antardasha within Mahadasha context"""
+        antar_data = DASHA_PREDICTIONS.get(antar_lord, {})
+
+        # Relationship between Mahadasha and Antardasha lords
+        friendly_pairs = {
+            ('Sun', 'Moon'), ('Sun', 'Mars'), ('Sun', 'Jupiter'),
+            ('Moon', 'Sun'), ('Moon', 'Mercury'),
+            ('Mars', 'Sun'), ('Mars', 'Moon'), ('Mars', 'Jupiter'),
+            ('Mercury', 'Sun'), ('Mercury', 'Venus'),
+            ('Jupiter', 'Sun'), ('Jupiter', 'Moon'), ('Jupiter', 'Mars'),
+            ('Venus', 'Mercury'), ('Venus', 'Saturn'),
+            ('Saturn', 'Mercury'), ('Saturn', 'Venus')
+        }
+
+        if (maha_lord, antar_lord) in friendly_pairs:
+            relationship = "harmonious"
+            rel_desc = f"The {antar_lord} sub-period flows well with your {maha_lord} Mahadasha, creating supportive conditions."
+        elif maha_lord == antar_lord:
+            relationship = "intensified"
+            rel_desc = f"This is the {antar_lord} within {maha_lord} period - the planet's themes are doubly emphasized."
+        else:
+            relationship = "mixed"
+            rel_desc = f"The {antar_lord} sub-period within {maha_lord} Mahadasha brings diverse energies that require balance."
+
+        brief = antar_data.get('general', '')[:300] if antar_data.get('general') else f'The {antar_lord} antardasha modifies the main period themes.'
+
+        quality = "supportive" if strength > 0.6 else "moderate" if strength > 0.4 else "challenging"
+
+        return f"""During this {antar_lord} Antardasha, the themes of {maha_lord} are modified by {antar_lord}'s influence.
+
+{rel_desc}
+
+{brief}
+
+The current sub-period quality is **{quality}** (strength: {strength:.2f}), {"supporting growth and positive outcomes" if strength > 0.6 else "requiring conscious effort for best results" if strength > 0.4 else "offering growth through challenges and lessons"}."""
+
+    def _get_dasha_brief_theme(self, planet: str) -> str:
+        """Get brief 2-3 sentence theme description for a Dasha period"""
+        themes = {
+            'Sun': 'Period of authority, self-expression, and dealing with father figures. Career recognition and leadership opportunities may arise. Focus on health, vitality, and personal identity.',
+            'Moon': 'Emotional growth, connection with mother, and domestic matters take center stage. Mental peace, intuition, and nurturing relationships are emphasized. Travel and public dealings may increase.',
+            'Mars': 'Energy, courage, and initiative define this period. Property matters, siblings, and competitive endeavors are highlighted. Physical activity and assertive action bring results.',
+            'Mercury': 'Communication, learning, and business opportunities flourish. Intellectual pursuits, writing, and networking are favored. Relations with younger siblings and short travels increase.',
+            'Jupiter': 'Wisdom, expansion, and good fortune characterize this auspicious period. Spiritual growth, higher education, and children bring joy. Financial gains and philosophical understanding develop.',
+            'Venus': 'Love, beauty, and material comforts are emphasized. Romantic relationships, artistic pursuits, and luxury items feature prominently. Marriage and partnerships are highlighted.',
+            'Saturn': 'Discipline, responsibility, and karmic lessons define this period. Career building through persistent effort, dealing with authority, and service to others are themes. Patience brings rewards.',
+            'Rahu': 'Ambition, unconventional paths, and worldly desires drive this period. Foreign connections, technology, and breaking boundaries are emphasized. Material gains possible through unusual means.',
+            'Ketu': 'Spiritual awakening, detachment, and completion of karmic cycles characterize this period. Past-life connections, intuition, and letting go of attachments are themes. Inner transformation occurs.'
+        }
+        return themes.get(planet, f'{planet} period brings its unique planetary influences to your life journey.')
+
+    def _generate_dasha_detailed_page(self, timeline: list) -> str:
+        """Generate detailed Dasha interpretation page for key periods"""
+        # Get 2-3 significant upcoming Dashas
+        detailed_html = ""
+
+        for i, period in enumerate(timeline[:3]):
+            planet = period.get('planet', 'Saturn')
+            start = period.get('start_year', 2020)
+            end = period.get('end_year', 2030)
+
+            dasha_data = DASHA_PREDICTIONS.get(planet, {})
+            general = dasha_data.get('general', '')[:500] if dasha_data.get('general') else f'The {planet} Dasha period.'
+
+            detailed_html += f"""
+            <div class="section">
+                <h2 class="section-title">{planet} Dasha ({start} - {end})</h2>
+                <div class="prediction-para">
+                    {general}
+                </div>
+            </div>
+            """
+
+        return f"""
+        <div class="page">
+            <div class="page-num">Page 34</div>
+            <h1 class="page-title">34. Detailed Dasha Life Predictions / விரிவான தசா வாழ்க்கை</h1>
+
+            <div class="highlight">
+                <p>Each Mahadasha period lasting several years shapes major life themes.
+                Understanding these periods helps you prepare and align with cosmic timing.</p>
+            </div>
+
+            {detailed_html}
+        </div>
+        """
+
     def _pages_32_35_dasha_analysis(self) -> str:
-        """Pages 32-35: Dasha Phase Analysis"""
+        """Pages 32-35: Dasha Phase Analysis with Rich Life Narratives"""
         dasha = self.report_data['dasha']
         timeline = dasha.get('timeline', [])
 
-        # Page 32: Current Dasha
+        # Page 32: Current Dasha with detailed narrative
         current = dasha['current']
         maha_poi = dasha.get('mahadasha_poi', {})
         antar_poi = dasha.get('antardasha_poi', {})
+        mahadasha_lord = current.get('mahadasha', 'Saturn')
+        antardasha_lord = current.get('antardasha', 'Mercury')
+
+        # Get rich narrative for current Mahadasha
+        maha_narrative = self._get_dasha_life_narrative(
+            mahadasha_lord,
+            maha_poi.get('total', 0.5),
+            maha_poi.get('house_position', 1),
+            is_current=True
+        )
+
+        # Get narrative for Antardasha
+        antar_narrative = self._get_antardasha_narrative(
+            mahadasha_lord, antardasha_lord,
+            antar_poi.get('total', 0.5)
+        )
 
         page_32 = f"""
         <div class="page">
             <div class="page-num">Page 32</div>
             <h1 class="page-title">32. Current Dasha Analysis / தற்போதைய தசா பகுப்பாய்வு</h1>
 
-            <div class="section">
-                <h2 class="section-title">Mahadasha: {current['mahadasha']} ({current['mahadasha_tamil']})</h2>
-                <div class="planet-card">
-                    <p><strong>POI Strength:</strong> {maha_poi.get('total', 0.5):.2f}</p>
-                    <p><strong>House Position:</strong> H{maha_poi.get('house_position', 1)}</p>
-                    <p><strong>Dignity:</strong> {maha_poi.get('dignity', 'N/A')}</p>
-                    {self._score_bar(maha_poi.get('total', 0.5), 200)}
-                </div>
-            </div>
-
-            <div class="section">
-                <h2 class="section-title">Antardasha: {current['antardasha']} ({current['antardasha_tamil']})</h2>
-                <div class="planet-card">
-                    <p><strong>POI Strength:</strong> {antar_poi.get('total', 0.5):.2f}</p>
-                    <p><strong>House Position:</strong> H{antar_poi.get('house_position', 1)}</p>
-                    <p><strong>Dignity:</strong> {antar_poi.get('dignity', 'N/A')}</p>
-                    {self._score_bar(antar_poi.get('total', 0.5), 200)}
-                </div>
-            </div>
-
-            <div class="stat-box">
-                <div class="stat-value">{dasha.get('combined_strength', 0.5):.2f}</div>
-                <div class="stat-label">Combined Period Strength</div>
-            </div>
-
             <div class="highlight">
-                <p><strong>Activated Life Areas:</strong> {', '.join(dasha.get('activated_areas', []))}</p>
+                <p><strong>Current Period:</strong> {mahadasha_lord} Mahadasha - {antardasha_lord} Antardasha</p>
+                <p><strong>Activated Life Areas:</strong> {', '.join(dasha.get('activated_areas', ['General life themes']))}</p>
             </div>
 
-            <div class="math-trace">{maha_poi.get('math_trace', '')}</div>
+            <div class="section">
+                <h2 class="section-title">{mahadasha_lord} Mahadasha ({current.get('mahadasha_tamil', '')}) - Your Current Life Theme</h2>
+                <div class="prediction-para">
+                    {maha_narrative}
+                </div>
+                <div class="two-col" style="margin-top: 10px;">
+                    <div>
+                        <p><strong>Period Strength:</strong> {maha_poi.get('total', 0.5):.2f}</p>
+                        {self._score_bar(maha_poi.get('total', 0.5), 120)}
+                    </div>
+                    <div>
+                        <p><strong>House Position:</strong> H{maha_poi.get('house_position', 1)}</p>
+                        <p><strong>Dignity:</strong> {maha_poi.get('dignity', 'Neutral')}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">{antardasha_lord} Antardasha ({current.get('antardasha_tamil', '')}) - Current Sub-Theme</h2>
+                <div class="prediction-para">
+                    {antar_narrative}
+                </div>
+            </div>
         </div>
         """
 
-        # Page 33-35: Dasha Timeline
-        timeline_rows = ""
-        for period in timeline[:10]:
-            timeline_rows += f"""
+        # Page 33-38: Complete 120-Year Dasha Timeline with ALL 9 planetary periods
+        # Vimshottari Dasha complete cycle: Ketu(7), Venus(20), Sun(6), Moon(10), Mars(7), Rahu(18), Jupiter(16), Saturn(19), Mercury(17) = 120 years
+
+        # Generate timeline pages for all 9 periods (split across multiple pages for readability)
+        all_dasha_pages = self._generate_complete_dasha_timeline(timeline)
+
+        page_33_onwards = all_dasha_pages
+
+        return page_32 + page_33_onwards
+
+    def _generate_complete_dasha_timeline(self, timeline: list) -> str:
+        """Generate complete 120-year Dasha timeline with detailed predictions for all 9 periods"""
+
+        # Ensure we have all 9 Dasha periods (complete Vimshottari cycle)
+        all_nine_planets = ['Ketu', 'Venus', 'Sun', 'Moon', 'Mars', 'Rahu', 'Jupiter', 'Saturn', 'Mercury']
+        dasha_durations = {'Ketu': 7, 'Venus': 20, 'Sun': 6, 'Moon': 10, 'Mars': 7, 'Rahu': 18, 'Jupiter': 16, 'Saturn': 19, 'Mercury': 17}
+
+        # Get the full list of periods (either from timeline or generate based on current position)
+        periods_to_show = timeline if len(timeline) >= 9 else timeline
+
+        # Split into pages - 3 periods per page for detailed content
+        pages_html = ""
+        page_num = 33
+        periods_per_page = 3
+
+        for page_idx in range(0, len(periods_to_show), periods_per_page):
+            page_periods = periods_to_show[page_idx:page_idx + periods_per_page]
+
+            periods_html = ""
+            for period in page_periods:
+                planet = period.get('planet', 'Saturn')
+                planet_tamil = period.get('planet_tamil', '')
+                start = period.get('start_year', 2020)
+                end = period.get('end_year', 2030)
+                duration = period.get('duration', dasha_durations.get(planet, 10))
+
+                # Get detailed narrative
+                dasha_data = DASHA_PREDICTIONS.get(planet, {})
+                general_narrative = dasha_data.get('general', f'The {planet} period brings its unique planetary influences to your life.')
+
+                # Truncate for page fit but keep substantial content
+                narrative_preview = general_narrative[:600] + '...' if len(general_narrative) > 600 else general_narrative
+
+                # Life themes
+                theme = self._get_dasha_brief_theme(planet)
+
+                periods_html += f"""
+                <div class="section" style="margin-bottom: 15px; page-break-inside: avoid;">
+                    <h2 class="section-title" style="color: #1a365d; border-bottom: 2px solid #3182ce; padding-bottom: 5px;">
+                        {planet} Dasha ({planet_tamil}) • {duration} Years
+                    </h2>
+                    <p style="font-weight: bold; color: #2c5282; margin: 5px 0;">{start} to {end}</p>
+
+                    <div style="background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%); padding: 12px; border-radius: 8px; margin: 10px 0;">
+                        <p style="font-size: 10pt; line-height: 1.5; text-align: justify; margin: 0;">
+                            {narrative_preview}
+                        </p>
+                    </div>
+
+                    <div style="background: #ebf8ff; padding: 10px; border-left: 4px solid #3182ce; margin-top: 8px;">
+                        <p style="font-size: 9pt; margin: 0;"><strong>Key Themes:</strong> {theme}</p>
+                    </div>
+                </div>
+                """
+
+            pages_html += f"""
+            <div class="page">
+                <div class="page-num">Page {page_num}</div>
+                <h1 class="page-title">{page_num}. Complete Dasha Life Journey / முழு தசா வாழ்க்கை பயணம்</h1>
+
+                <div class="highlight" style="margin-bottom: 15px;">
+                    <p>The Vimshottari Dasha system maps your complete 120-year life cycle through 9 planetary periods.
+                    Each Mahadasha brings its unique themes, opportunities, and lessons based on planetary significations.</p>
+                </div>
+
+                {periods_html}
+            </div>
+            """
+            page_num += 1
+
+        # Add a summary page with complete timeline overview
+        summary_rows = ""
+        for period in periods_to_show:
+            planet = period.get('planet', '')
+            start = period.get('start_year', '')
+            end = period.get('end_year', '')
+            duration = period.get('duration', '')
+
+            # Short theme keywords
+            keywords = {
+                'Sun': 'Authority, Self-expression, Father',
+                'Moon': 'Emotions, Mother, Mind',
+                'Mars': 'Energy, Courage, Property',
+                'Mercury': 'Communication, Learning, Business',
+                'Jupiter': 'Wisdom, Expansion, Fortune',
+                'Venus': 'Love, Beauty, Comfort',
+                'Saturn': 'Discipline, Karma, Service',
+                'Rahu': 'Ambition, Unconventional, Foreign',
+                'Ketu': 'Spirituality, Detachment, Past-life'
+            }
+
+            summary_rows += f"""
             <tr>
-                <td>{period['planet']} ({period['planet_tamil']})</td>
-                <td>{period['start_year']}</td>
-                <td>{period['end_year']}</td>
-                <td>{period['duration']} years</td>
+                <td style="font-weight: bold;">{planet}</td>
+                <td>{start} - {end}</td>
+                <td>{duration} yrs</td>
+                <td style="font-size: 8pt;">{keywords.get(planet, 'Planetary influences')}</td>
             </tr>
             """
 
-        page_33 = f"""
+        pages_html += f"""
         <div class="page">
-            <div class="page-num">Page 33</div>
-            <h1 class="page-title">33. Complete Dasha Timeline / முழு தசா காலவரிசை</h1>
-
-            <div class="section">
-                <table>
-                    <tr><th>Mahadasha</th><th>Start</th><th>End</th><th>Duration</th></tr>
-                    {timeline_rows}
-                </table>
-            </div>
-        </div>
-        """
-
-        page_34 = """
-        <div class="page">
-            <div class="page-num">Page 34</div>
-            <h1 class="page-title">34. Dasha Interpretation Guide / தசா விளக்க வழிகாட்டி</h1>
-
-            <div class="section">
-                <h2 class="section-title">Reading Your Dasha</h2>
-                <p class="content">
-                    Each mahadasha period brings the themes of that planet to the forefront.
-                    The quality of results depends on the planet's natal strength (POI)
-                    and house placement.
-                </p>
-            </div>
-
-            <div class="section">
-                <h2 class="section-title">POI Score Interpretation</h2>
-                <table>
-                    <tr><th>Score Range</th><th>Interpretation</th></tr>
-                    <tr><td>0.65 - 1.00</td><td>Strong period - Planet delivers positive results naturally</td></tr>
-                    <tr><td>0.45 - 0.64</td><td>Moderate period - Mixed results, effort required</td></tr>
-                    <tr><td>0.35 - 0.44</td><td>Challenging period - Growth through obstacles</td></tr>
-                </table>
-            </div>
-        </div>
-        """
-
-        page_35 = f"""
-        <div class="page">
-            <div class="page-num">Page 35</div>
-            <h1 class="page-title">35. Dasha Transit Interaction / தசா கோசார தொடர்பு</h1>
+            <div class="page-num">Page {page_num}</div>
+            <h1 class="page-title">{page_num}. Complete 120-Year Dasha Overview / முழு 120 வருட தசா கண்ணோட்டம்</h1>
 
             <div class="highlight">
-                <p><strong>Current Period Interpretation:</strong> {dasha.get('interpretation_strength', 'Moderate')}</p>
+                <p>This table provides a quick reference of your complete planetary period timeline.
+                Use this to understand the rhythm of your life and prepare for upcoming transitions.</p>
             </div>
 
             <div class="section">
-                <p class="content">
-                    The current {current['mahadasha']} mahadasha with {current['antardasha']} antardasha
-                    creates a combined influence score of {dasha.get('combined_strength', 0.5):.2f}.
-                    This indicates a {'favorable' if dasha.get('combined_strength', 0) > 0.55 else 'moderate'}
-                    period for the significations of these planets.
-                </p>
+                <h2 class="section-title">Your Complete Dasha Timeline</h2>
+                <table style="width: 100%; font-size: 9pt;">
+                    <tr style="background: #2c5282; color: white;">
+                        <th style="padding: 8px;">Planet</th>
+                        <th style="padding: 8px;">Period</th>
+                        <th style="padding: 8px;">Duration</th>
+                        <th style="padding: 8px;">Key Themes</th>
+                    </tr>
+                    {summary_rows}
+                </table>
+            </div>
+
+            <div class="section" style="margin-top: 20px;">
+                <h2 class="section-title">Understanding Dasha Transitions</h2>
+                <div class="prediction-para">
+                    <p>Each Mahadasha transition marks a significant shift in life themes. The ending period gradually fades
+                    while the new period's themes emerge. Pay special attention to the last year of any Mahadasha
+                    (called Antardasha of the same lord) as it intensifies that planet's significations.</p>
+
+                    <p style="margin-top: 10px;"><strong>Preparation Tips:</strong></p>
+                    <ul style="font-size: 9pt;">
+                        <li>Begin aligning with the incoming Dasha's themes 1-2 years before transition</li>
+                        <li>Complete unfinished matters related to the outgoing Dasha</li>
+                        <li>Strengthen the incoming Mahadasha lord through appropriate remedies</li>
+                        <li>Be patient as new themes take 6-12 months to fully manifest</li>
+                    </ul>
+                </div>
             </div>
         </div>
         """
 
-        return page_32 + page_33 + page_34 + page_35
+        return pages_html
 
     def _page_36_validation(self) -> str:
         """Page 36: Past Validation Check"""
@@ -3382,12 +4384,14 @@ class V6ReportGenerator:
 
     def _page_41_monthly_predictions(self) -> str:
         """Page 41: Monthly Predictions using V7.0 MONTH_WISE TimeMode"""
+        is_english = self.language == 'en'
         months_html = ""
         for pred in self.monthly_predictions[:12]:
             factors_str = ', '.join([f.get('name', '') for f in pred.get('top_factors', [])[:2]]) or 'Standard transit influence'
+            month_display = pred['month'] if is_english else f"{pred['month_tamil']}<br><span style='font-size: 8pt; color: #666;'>{pred['month']}</span>"
             months_html += f"""
             <tr>
-                <td style="font-weight: 600;">{pred['month_tamil']}<br><span style="font-size: 8pt; color: #666;">{pred['month']}</span></td>
+                <td style="font-weight: 600;">{month_display}</td>
                 <td>
                     <div class="score-bar">
                         <div class="score-fill {self._get_score_class(pred['score'])}" style="width: {pred['score']}%;"></div>
@@ -3401,10 +4405,13 @@ class V6ReportGenerator:
             </tr>
             """
 
+        page_title = "41. Monthly Predictions (V7.0)" if is_english else "41. மாதாந்திர கணிப்பு / Monthly Predictions (V7.0)"
+        month_header = "Month" if is_english else "மாதம்"
+
         return f"""
         <div class="page">
             <div class="page-num">Page 41</div>
-            <h1 class="page-title">41. மாதாந்திர கணிப்பு / Monthly Predictions (V7.0)</h1>
+            <h1 class="page-title">{page_title}</h1>
 
             <div class="highlight">
                 <p><strong>Engine:</strong> TimeAdaptiveEngine V7.0 with MONTH_WISE mode</p>
@@ -3414,7 +4421,7 @@ class V6ReportGenerator:
             <table>
                 <thead>
                     <tr>
-                        <th>மாதம்</th>
+                        <th>{month_header}</th>
                         <th>Overall Score</th>
                         <th>Phase</th>
                         <th>Career</th>
@@ -3436,6 +4443,7 @@ class V6ReportGenerator:
 
     def _page_42_yearly_predictions(self) -> str:
         """Page 42: 5-Year Forecast using V7.0 FUTURE_PREDICTION TimeMode"""
+        is_english = self.language == 'en'
         years_html = ""
         for pred in self.yearly_predictions:
             years_html += f"""
@@ -3467,10 +4475,12 @@ class V6ReportGenerator:
             </div>
             """
 
+        page_title = "42. 5-Year Forecast (V7.0)" if is_english else "42. வருடாந்திர கணிப்பு / 5-Year Forecast (V7.0)"
+
         return f"""
         <div class="page">
             <div class="page-num">Page 42</div>
-            <h1 class="page-title">42. வருடாந்திர கணிப்பு / 5-Year Forecast (V7.0)</h1>
+            <h1 class="page-title">{page_title}</h1>
 
             <div class="highlight">
                 <p><strong>Engine:</strong> TimeAdaptiveEngine V7.0 with FUTURE_PREDICTION mode</p>
@@ -3489,13 +4499,16 @@ class V6ReportGenerator:
 
     def _page_43_past_events_analysis(self) -> str:
         """Page 43: Past Events Analysis using V7.0 PAST_ANALYSIS TimeMode"""
+        is_english = self.language == 'en'
         past_html = ""
         for analysis in self.past_analysis:
+            age_display = f"{analysis['age']} years" if is_english else f"{analysis['age']} வயது"
+            dasha_display = analysis['dasha'] if is_english else f"{analysis['dasha_tamil']} ({analysis['dasha']})"
             past_html += f"""
             <tr>
                 <td style="font-weight: 600;">{analysis['year']}</td>
-                <td>{analysis['age']} வயது</td>
-                <td>{analysis['dasha_tamil']} ({analysis['dasha']})</td>
+                <td>{age_display}</td>
+                <td>{dasha_display}</td>
                 <td>
                     <div class="score-bar">
                         <div class="score-fill {self._get_score_class(analysis['score'])}" style="width: {analysis['score']}%;"></div>
@@ -3506,10 +4519,12 @@ class V6ReportGenerator:
             </tr>
             """
 
+        page_title = "43. Past Events Analysis (V7.0)" if is_english else "43. கடந்த கால பகுப்பாய்வு / Past Events Analysis (V7.0)"
+
         return f"""
         <div class="page">
             <div class="page-num">Page 43</div>
-            <h1 class="page-title">43. கடந்த கால பகுப்பாய்வு / Past Events Analysis (V7.0)</h1>
+            <h1 class="page-title">{page_title}</h1>
 
             <div class="highlight">
                 <p><strong>Engine:</strong> TimeAdaptiveEngine V7.0 with PAST_ANALYSIS mode</p>
@@ -3549,6 +4564,7 @@ class V6ReportGenerator:
 
     def _page_44_future_timeline(self) -> str:
         """Page 44: Future Life Timeline combining all predictions"""
+        is_english = self.language == 'en'
         timeline_html = ""
 
         # Combine monthly and yearly for a comprehensive view
@@ -3570,10 +4586,15 @@ class V6ReportGenerator:
             </div>
             """
 
+        page_title = "44. Future Life Timeline" if is_english else "44. எதிர்கால வாழ்க்கை பாதை / Future Life Timeline"
+        overview_title = "5-Year Life Path Overview" if is_english else "5-Year Life Path Overview"
+        phase_title = "V7.0 Phase Meanings" if is_english else "V7.0 Phase Meanings"
+        flow_phase = "Flow Phase" if is_english else "Flow Phase / சீரான காலம்"
+
         return f"""
         <div class="page">
             <div class="page-num">Page 44</div>
-            <h1 class="page-title">44. எதிர்கால வாழ்க்கை பாதை / Future Life Timeline</h1>
+            <h1 class="page-title">{page_title}</h1>
 
             <div class="highlight">
                 <p><strong>V7.0 Philosophy:</strong> "Difficulty ≠ Bad Outcome"</p>
@@ -3581,29 +4602,29 @@ class V6ReportGenerator:
             </div>
 
             <div class="section">
-                <h2 class="section-title">5-Year Life Path Overview</h2>
+                <h2 class="section-title">{overview_title}</h2>
                 <div class="timeline">
                     {timeline_html}
                 </div>
             </div>
 
             <div class="section">
-                <h2 class="section-title">V7.0 Phase Meanings</h2>
+                <h2 class="section-title">{phase_title}</h2>
                 <div class="two-col">
                     <div class="yoga-card">
-                        <div class="yoga-name">Flow Phase / சீரான காலம்</div>
+                        <div class="yoga-name">{flow_phase}</div>
                         <p style="font-size: 9pt;">Low pressure + High outcome = Natural success</p>
                     </div>
                     <div class="yoga-card">
-                        <div class="yoga-name">Growth Phase / வளர்ச்சி காலம்</div>
+                        <div class="yoga-name">{"Growth Phase" if is_english else "Growth Phase / வளர்ச்சி காலம்"}</div>
                         <p style="font-size: 9pt;">Neutral pressure + Positive outcome = Steady progress</p>
                     </div>
                     <div class="yoga-card">
-                        <div class="yoga-name">Effort Phase / முயற்சி காலம்</div>
+                        <div class="yoga-name">{"Effort Phase" if is_english else "Effort Phase / முயற்சி காலம்"}</div>
                         <p style="font-size: 9pt;">High pressure + Good outcome = Work brings rewards</p>
                     </div>
                     <div class="yoga-card">
-                        <div class="yoga-name">Steady Phase / நிலையான காலம்</div>
+                        <div class="yoga-name">{"Steady Phase" if is_english else "Steady Phase / நிலையான காலம்"}</div>
                         <p style="font-size: 9pt;">Neutral period = Maintain and prepare</p>
                     </div>
                 </div>

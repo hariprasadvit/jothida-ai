@@ -96,6 +96,7 @@ async def generate_report(request: Request, data: ReportRequest):
 
     # Generate PDF with V6 Super Jyotish Engine
     language = data.language or 'ta'
+    print(f"[REPORT] Generating PDF with language: '{language}' (received: '{data.language}')")
     try:
         pdf_bytes = generate_v6_report(chart_data, user_data, language)
     except Exception as e:

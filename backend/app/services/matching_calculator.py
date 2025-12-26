@@ -219,12 +219,15 @@ class MatchingCalculator:
         return {
             "name": "Dinam",
             "tamil_name": "தினம்",
-            "english_name": "Day",
+            "english": "Day Compatibility",
             "score": score,
             "max_score": 100,
+            "matched": score >= 60,
             "status": self._get_status(score),
             "description": "நாளாந்த வாழ்க்கை இணக்கம் - தம்பதிகளின் அன்றாட வாழ்வில் ஒற்றுமை",
-            "ai_insight": "தினப் பொருத்தம் நல்லது" if is_good else "தினப் பொருத்தம் குறைவு"
+            "description_en": "Daily life harmony - Indicates unity in the couple's everyday life and mutual understanding.",
+            "remedy": "திருமண நாள் மகிழ்ச்சியான நாளில் நடத்தவும்" if not is_good else None,
+            "remedy_en": "Conduct marriage on an auspicious day after consulting a priest" if not is_good else None,
         }
 
     def _calc_ganam(self, bride_nak: int, groom_nak: int) -> Dict:
@@ -243,15 +246,22 @@ class MatchingCalculator:
         else:
             score = 30
 
+        gana_names = {"deva": ("தேவ", "Divine"), "manushya": ("மனுஷ", "Human"), "rakshasa": ("ராட்சச", "Demon")}
+        bride_gana_ta, bride_gana_en = gana_names.get(bride_gana, (bride_gana, bride_gana))
+        groom_gana_ta, groom_gana_en = gana_names.get(groom_gana, (groom_gana, groom_gana))
+
         return {
             "name": "Ganam",
             "tamil_name": "கணம்",
-            "english_name": "Temperament",
+            "english": "Temperament",
             "score": score,
             "max_score": 100,
+            "matched": score >= 60,
             "status": self._get_status(score),
-            "description": "குணநலன் பொருத்தம் - தேவ, மனுஷ, ராட்சச கணங்களின் இணக்கம்",
-            "ai_insight": f"மணமகள்: {bride_gana}, மணமகன்: {groom_gana}"
+            "description": f"குணநலன் பொருத்தம் - மணமகள்: {bride_gana_ta}, மணமகன்: {groom_gana_ta}",
+            "description_en": f"Temperament compatibility - Bride: {bride_gana_en}, Groom: {groom_gana_en}. Same temperament ensures harmony.",
+            "remedy": "சாந்தி பூஜை செய்யவும்" if score < 60 else None,
+            "remedy_en": "Perform Shanti Puja to harmonize temperaments" if score < 60 else None,
         }
 
     def _calc_mahendra(self, bride_nak: int, groom_nak: int) -> Dict:
@@ -267,12 +277,15 @@ class MatchingCalculator:
         return {
             "name": "Mahendra",
             "tamil_name": "மகேந்திரம்",
-            "english_name": "Prosperity",
+            "english": "Prosperity",
             "score": score,
             "max_score": 100,
+            "matched": score >= 60,
             "status": self._get_status(score),
             "description": "செல்வம் & சந்ததி - குடும்ப வளர்ச்சி மற்றும் செழிப்பு",
-            "ai_insight": None
+            "description_en": "Wealth & Progeny - Indicates family growth, prosperity, and blessed children.",
+            "remedy": "லக்ஷ்மி பூஜை செய்யவும்" if not is_good else None,
+            "remedy_en": "Perform Lakshmi Puja for prosperity blessings" if not is_good else None,
         }
 
     def _calc_stree_deergha(self, bride_nak: int, groom_nak: int) -> Dict:
@@ -287,12 +300,15 @@ class MatchingCalculator:
         return {
             "name": "Stree Deergha",
             "tamil_name": "ஸ்திரி தீர்க்கம்",
-            "english_name": "Longevity",
+            "english": "Longevity",
             "score": round(score),
             "max_score": 100,
+            "matched": score >= 60,
             "status": self._get_status(score),
             "description": "நீடித்த மகிழ்ச்சி - மனைவியின் நீண்ட ஆயுளும் சுமங்கலித்வமும்",
-            "ai_insight": None
+            "description_en": "Lasting happiness - Indicates wife's longevity, good health, and auspicious married life.",
+            "remedy": "பார்வதி பூஜை செய்யவும்" if not is_good else None,
+            "remedy_en": "Perform Parvati Puja for marital bliss" if not is_good else None,
         }
 
     def _calc_yoni(self, bride_nak: int, groom_nak: int) -> Dict:
@@ -317,12 +333,15 @@ class MatchingCalculator:
         return {
             "name": "Yoni",
             "tamil_name": "யோனி",
-            "english_name": "Physical",
+            "english": "Physical Compatibility",
             "score": score,
             "max_score": 100,
+            "matched": score >= 60,
             "status": self._get_status(score),
-            "description": "உடல் & உணர்வு இணக்கம் - தம்பதிகளின் உடல் மற்றும் மன ஒற்றுமை",
-            "ai_insight": f"மணமகள் யோனி: {bride_animal}, மணமகன் யோனி: {groom_animal}"
+            "description": f"உடல் இணக்கம் - மணமகள்: {bride_animal}, மணமகன்: {groom_animal}",
+            "description_en": f"Physical compatibility - Bride: {bride_animal}, Groom: {groom_animal}.",
+            "remedy": "சுப தினத்தில் விரதம் இருக்கவும்" if score < 60 else None,
+            "remedy_en": "Observe fast on auspicious days" if score < 60 else None,
         }
 
     def _calc_rasi(self, bride_rasi: int, groom_rasi: int) -> Dict:
@@ -341,12 +360,15 @@ class MatchingCalculator:
         return {
             "name": "Rasi",
             "tamil_name": "ராசி",
-            "english_name": "Mental",
+            "english": "Mental Compatibility",
             "score": score,
             "max_score": 100,
+            "matched": score >= 60,
             "status": self._get_status(score),
             "description": "மன இணக்கம் - சந்திரனின் ராசி அடிப்படையிலான மன பொருத்தம்",
-            "ai_insight": None
+            "description_en": "Mental compatibility based on Moon signs. Harmonious thinking.",
+            "remedy": "சந்திர பூஜை செய்யவும்" if score < 60 else None,
+            "remedy_en": "Perform Chandra Puja on Mondays" if score < 60 else None,
         }
 
     def _calc_rasi_adhipathi(self, bride_rasi: int, groom_rasi: int) -> Dict:
@@ -378,12 +400,15 @@ class MatchingCalculator:
         return {
             "name": "Rasi Adhipathi",
             "tamil_name": "ராசி அதிபதி",
-            "english_name": "Lord Compatibility",
+            "english": "Sign Lord Compatibility",
             "score": score,
             "max_score": 100,
+            "matched": score >= 60,
             "status": self._get_status(score),
             "description": "குடும்ப நல்வாழ்வு - ராசி அதிபதிகளின் நட்பு பொருத்தம்",
-            "ai_insight": None
+            "description_en": "Family wellbeing - Compatibility of ruling planets of both signs.",
+            "remedy": "நவக்கிரக பூஜை செய்யவும்" if score < 60 else None,
+            "remedy_en": "Perform Navagraha Puja" if score < 60 else None,
         }
 
     def _calc_vasiyam(self, bride_rasi: int, groom_rasi: int) -> Dict:
@@ -418,12 +443,15 @@ class MatchingCalculator:
         return {
             "name": "Vasiyam",
             "tamil_name": "வசியம்",
-            "english_name": "Attraction",
+            "english": "Mutual Attraction",
             "score": score,
             "max_score": 100,
+            "matched": score >= 60,
             "status": self._get_status(score),
             "description": "ஈர்ப்பு & கவர்ச்சி - தம்பதிகளுக்கிடையே ஈர்ப்பு சக்தி",
-            "ai_insight": None
+            "description_en": "Attraction & Magnetism - Mutual attraction between the couple.",
+            "remedy": "காமதேனு பூஜை செய்யவும்" if score < 60 else None,
+            "remedy_en": "Perform couple prayers together" if score < 60 else None,
         }
 
     def _calc_rajju(self, bride_nak: int, groom_nak: int) -> Dict:
@@ -440,12 +468,15 @@ class MatchingCalculator:
         return {
             "name": "Rajju",
             "tamil_name": "ரஜ்ஜு",
-            "english_name": "Mangalya",
+            "english": "Mangalya Balam",
             "score": score,
             "max_score": 100,
+            "matched": score >= 60,
             "status": "critical" if score < 50 else self._get_status(score),
             "description": "மங்கல பலம் - மிக முக்கியம், கணவனின் நீண்ட ஆயுளை குறிக்கிறது",
-            "ai_insight": "ரஜ்ஜு தோஷம் - பரிகாரம் அவசியம்" if score < 50 else None
+            "description_en": "Mangalya strength - CRITICAL. Indicates husband's longevity and marital bliss.",
+            "remedy": "நவக்கிரக ஹோமம் செய்யவும்" if score < 50 else None,
+            "remedy_en": "Perform Navagraha Homam - essential remedy" if score < 50 else None,
         }
 
     def _calc_vedha(self, bride_nak: int, groom_nak: int) -> Dict:
@@ -459,12 +490,15 @@ class MatchingCalculator:
         return {
             "name": "Vedha",
             "tamil_name": "வேதை",
-            "english_name": "Obstruction",
+            "english": "Obstacle Free",
             "score": score,
             "max_score": 100,
+            "matched": score >= 60,
             "status": self._get_status(score),
             "description": "தடைகள் நீக்கம் - வாழ்க்கையில் தடைகள் இல்லாமல் இருப்பது",
-            "ai_insight": "வேதை தோஷம் உள்ளது" if is_vedha else None
+            "description_en": "Obstacle-free life - Ensures life without major hurdles.",
+            "remedy": "சாந்தி பூஜை செய்யவும்" if is_vedha else None,
+            "remedy_en": "Perform Shanti Puja to remove obstacles" if is_vedha else None,
         }
 
     def _get_gana(self, nakshatra_idx: int) -> str:
@@ -547,18 +581,36 @@ class MatchingCalculator:
             return 50
         return sum(p["score"] for p in relevant) / len(relevant)
 
-    def _generate_verdict(self, score: float, poruthams: List[Dict], doshas: List[Dict]) -> str:
-        """Generate AI verdict"""
+    def _generate_verdict(self, score: float, poruthams: List[Dict], doshas: List[Dict]) -> Dict:
+        """Generate AI verdict with bilingual support"""
         critical = [p for p in poruthams if p["status"] == "critical"]
-        dosha_issues = [d for d in doshas if not d["is_compatible"]]
 
         if score >= 70 and not critical:
-            return "நல்ல பொருத்தம் - திருமணத்திற்கு சிறந்தது"
+            return {
+                "verdict": "நல்ல பொருத்தம் - திருமணத்திற்கு சிறந்தது",
+                "verdict_en": "Good Match - Excellent for marriage",
+                "explanation": "அனைத்து முக்கிய பொருத்தங்களும் சாதகமாக உள்ளன.",
+                "explanation_en": "All important poruthams are favorable.",
+                "recommendation": "positive"
+            }
         elif score >= 50:
-            issues = ", ".join([p["tamil_name"] for p in critical])
-            return f"சாதாரண பொருத்தம் - {issues} கவனிக்கவும்"
+            issues_ta = ", ".join([p["tamil_name"] for p in critical])
+            issues_en = ", ".join([p.get("english", p["name"]) for p in critical])
+            return {
+                "verdict": f"சாதாரண பொருத்தம் - {issues_ta} கவனிக்கவும்",
+                "verdict_en": f"Moderate Match - Attention needed for {issues_en}",
+                "explanation": "சில பொருத்தங்களில் கவனம் தேவை.",
+                "explanation_en": "Some poruthams need attention with remedies.",
+                "recommendation": "moderate"
+            }
         else:
-            return "குறைவான பொருத்தம் - ஜோதிடரை கலந்தாலோசிக்கவும்"
+            return {
+                "verdict": "குறைவான பொருத்தம் - ஜோதிடரை கலந்தாலோசிக்கவும்",
+                "verdict_en": "Low Match - Consult an astrologer",
+                "explanation": "பல பொருத்தங்களில் குறைபாடு உள்ளது.",
+                "explanation_en": "Multiple poruthams have issues. Remedies recommended.",
+                "recommendation": "caution"
+            }
 
     def _generate_recommendations(self, poruthams: List[Dict], doshas: List[Dict]) -> List[str]:
         """Generate recommendations"""

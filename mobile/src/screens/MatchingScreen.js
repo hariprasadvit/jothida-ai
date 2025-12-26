@@ -11,6 +11,7 @@ import {
   Animated,
   Easing,
   Modal,
+  FlatList,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -21,6 +22,8 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { mobileAPI, CITY_COORDINATES } from '../services/api';
 import AppHeader from '../components/AppHeader';
+import { searchCities, POPULAR_CITIES } from '../data/cities';
+import * as Haptics from 'expo-haptics';
 
 const rasis = [
   { english: 'Mesha', tamil: 'மேஷம்' },
@@ -295,6 +298,20 @@ const AnimatedPoruthamItem = ({ porutham, index, isExpanded, onPress, statusStyl
     }).start();
   }, [isExpanded]);
 
+  // Get display values based on language
+  const displayName = language === 'ta'
+    ? porutham.tamil_name || porutham.name
+    : porutham.english || porutham.name;
+  const displayDesc = language === 'ta'
+    ? porutham.description
+    : porutham.description_en || porutham.description;
+  const displayRemedy = language === 'ta'
+    ? porutham.remedy
+    : porutham.remedy_en || porutham.remedy;
+  const subName = language === 'ta'
+    ? porutham.english || porutham.name
+    : porutham.tamil_name;
+
   return (
     <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
       <TouchableOpacity
@@ -309,8 +326,8 @@ const AnimatedPoruthamItem = ({ porutham, index, isExpanded, onPress, statusStyl
               size={18}
               color={porutham.matched ? '#16a34a' : '#dc2626'}
             />
-            <Text style={styles.poruthamName}>{language === 'ta' ? porutham.name : (porutham.english || porutham.name)}</Text>
-            {language !== 'ta' && porutham.name && <Text style={styles.poruthamEnglish}>({porutham.name})</Text>}
+            <Text style={styles.poruthamName}>{displayName}</Text>
+            {subName && <Text style={styles.poruthamEnglish}>({subName})</Text>}
           </View>
           <View style={styles.poruthamRight}>
             <Text style={[styles.poruthamScore, { color: statusStyle.text }]}>{porutham.score}%</Text>
@@ -322,11 +339,11 @@ const AnimatedPoruthamItem = ({ porutham, index, isExpanded, onPress, statusStyl
 
         {isExpanded && (
           <View style={styles.poruthamExpanded}>
-            <Text style={styles.poruthamDesc}>{language === 'ta' ? porutham.description : (porutham.description_en || porutham.description)}</Text>
-            {porutham.remedy && (
+            <Text style={styles.poruthamDesc}>{displayDesc}</Text>
+            {displayRemedy && (
               <View style={styles.remedyBox}>
                 <Ionicons name="sparkles" size={12} color="#ea580c" />
-                <Text style={styles.remedyText}>{t('remedy')}: {language === 'ta' ? porutham.remedy : (porutham.remedy_en || porutham.remedy)}</Text>
+                <Text style={styles.remedyText}>{t('remedy')}: {displayRemedy}</Text>
               </View>
             )}
           </View>
@@ -372,6 +389,14 @@ export default function MatchingScreen() {
   const [showBrideTimePicker, setShowBrideTimePicker] = useState(false);
   const [groomTime, setGroomTime] = useState(new Date(2000, 0, 1, 6, 0));
   const [brideTime, setBrideTime] = useState(new Date(2000, 0, 1, 6, 0));
+
+  // Location picker states
+  const [showGroomLocationPicker, setShowGroomLocationPicker] = useState(false);
+  const [showBrideLocationPicker, setShowBrideLocationPicker] = useState(false);
+  const [locationSearchText, setLocationSearchText] = useState('');
+  const [filteredPlaces, setFilteredPlaces] = useState(POPULAR_CITIES);
+  const [selectedGroomPlace, setSelectedGroomPlace] = useState(null);
+  const [selectedBridePlace, setSelectedBridePlace] = useState(null);
 
   const formatDate = (date) => {
     const year = date.getFullYear();
@@ -430,7 +455,46 @@ export default function MatchingScreen() {
     }
   }, [userProfile]);
 
+  // Search cities effect
+  useEffect(() => {
+    if (showGroomLocationPicker || showBrideLocationPicker) {
+      const timer = setTimeout(() => {
+        if (locationSearchText.trim()) {
+          const results = searchCities(locationSearchText);
+          setFilteredPlaces(results);
+        } else {
+          setFilteredPlaces(POPULAR_CITIES);
+        }
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [locationSearchText, showGroomLocationPicker, showBrideLocationPicker]);
+
+  const handleSelectGroomPlace = (place) => {
+    Haptics.selectionAsync();
+    setSelectedGroomPlace(place);
+    setGroomData({ ...groomData, birthPlace: place.nameEn });
+    setShowGroomLocationPicker(false);
+    setLocationSearchText('');
+  };
+
+  const handleSelectBridePlace = (place) => {
+    Haptics.selectionAsync();
+    setSelectedBridePlace(place);
+    setBrideData({ ...brideData, birthPlace: place.nameEn });
+    setShowBrideLocationPicker(false);
+    setLocationSearchText('');
+  };
+
+  const handlePoruthamPress = (index) => {
+    Haptics.selectionAsync();
+    setExpandedPorutham(expandedPorutham === index ? null : index);
+  };
+
   const handleCalculate = async () => {
+    // Haptic feedback on button press
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
     setStep('loading');
     setError(null);
 
@@ -462,6 +526,8 @@ export default function MatchingScreen() {
       const result = await mobileAPI.calculateMatching(payload);
       setMatchResult(result);
       setStep('result');
+      // Success haptic feedback
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
       console.error('Matching error:', err);
       setError(t('matchingError'));
@@ -580,7 +646,7 @@ export default function MatchingScreen() {
                 <DateTimePicker
                   value={groomDate}
                   mode="date"
-                  display="default"
+                  display="spinner"
                   onChange={handleGroomDateChange}
                   maximumDate={new Date()}
                   minimumDate={new Date(1920, 0, 1)}
@@ -591,7 +657,7 @@ export default function MatchingScreen() {
                 <DateTimePicker
                   value={groomTime}
                   mode="time"
-                  display="default"
+                  display="spinner"
                   onChange={handleGroomTimeChange}
                   is24Hour={true}
                 />
@@ -599,12 +665,16 @@ export default function MatchingScreen() {
 
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>{t('birthPlace')} *</Text>
-                <TextInput
-                  style={styles.input}
-                  value={groomData.birthPlace}
-                  onChangeText={(text) => setGroomData({ ...groomData, birthPlace: text })}
-                  placeholder={t('enterBirthPlace') || 'Enter birth place'}
-                />
+                <TouchableOpacity
+                  style={styles.locationPickerButton}
+                  onPress={() => setShowGroomLocationPicker(true)}
+                >
+                  <Ionicons name="location-outline" size={18} color="#2563eb" />
+                  <Text style={groomData.birthPlace ? styles.locationPickerText : styles.locationPickerPlaceholder}>
+                    {selectedGroomPlace ? (language === 'ta' ? selectedGroomPlace.name : selectedGroomPlace.nameEn) : groomData.birthPlace || t('enterBirthPlace')}
+                  </Text>
+                  <Ionicons name="chevron-down" size={18} color="#6b7280" />
+                </TouchableOpacity>
               </View>
 
               <View style={styles.inputGroup}>
@@ -692,7 +762,7 @@ export default function MatchingScreen() {
                 <DateTimePicker
                   value={brideDate}
                   mode="date"
-                  display="default"
+                  display="spinner"
                   onChange={handleBrideDateChange}
                   maximumDate={new Date()}
                   minimumDate={new Date(1920, 0, 1)}
@@ -703,7 +773,7 @@ export default function MatchingScreen() {
                 <DateTimePicker
                   value={brideTime}
                   mode="time"
-                  display="default"
+                  display="spinner"
                   onChange={handleBrideTimeChange}
                   is24Hour={true}
                 />
@@ -711,12 +781,16 @@ export default function MatchingScreen() {
 
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>{t('birthPlace')} *</Text>
-                <TextInput
-                  style={[styles.input, styles.brideInput]}
-                  value={brideData.birthPlace}
-                  onChangeText={(text) => setBrideData({ ...brideData, birthPlace: text })}
-                  placeholder={t('enterBirthPlace') || 'Enter birth place'}
-                />
+                <TouchableOpacity
+                  style={[styles.locationPickerButton, styles.brideLocationPicker]}
+                  onPress={() => setShowBrideLocationPicker(true)}
+                >
+                  <Ionicons name="location-outline" size={18} color="#db2777" />
+                  <Text style={brideData.birthPlace ? styles.locationPickerText : styles.locationPickerPlaceholder}>
+                    {selectedBridePlace ? (language === 'ta' ? selectedBridePlace.name : selectedBridePlace.nameEn) : brideData.birthPlace || t('enterBirthPlace')}
+                  </Text>
+                  <Ionicons name="chevron-down" size={18} color="#6b7280" />
+                </TouchableOpacity>
               </View>
 
               <View style={styles.inputGroup}>
@@ -882,6 +956,113 @@ export default function MatchingScreen() {
               </Modal>
             </>
           )}
+
+          {/* Location Picker Modals */}
+          <Modal
+            visible={showGroomLocationPicker}
+            animationType="slide"
+            transparent
+          >
+            <View style={styles.locationModalOverlay}>
+              <View style={styles.locationModalContent}>
+                <View style={styles.locationModalHeader}>
+                  <TouchableOpacity onPress={() => { setShowGroomLocationPicker(false); setLocationSearchText(''); }}>
+                    <Ionicons name="arrow-back" size={24} color="#6b7280" />
+                  </TouchableOpacity>
+                  <Text style={styles.locationModalTitle}>{t('selectBirthPlace')} - {t('groomDetails')}</Text>
+                  <View style={{ width: 24 }} />
+                </View>
+
+                <View style={styles.searchContainer}>
+                  <Ionicons name="search" size={20} color="#2563eb" />
+                  <TextInput
+                    style={styles.searchInput}
+                    value={locationSearchText}
+                    onChangeText={setLocationSearchText}
+                    placeholder={t('searchCityPlaceholder') || 'Search city...'}
+                    placeholderTextColor="#9ca3af"
+                    autoCapitalize="none"
+                  />
+                  {locationSearchText.length > 0 && (
+                    <TouchableOpacity onPress={() => setLocationSearchText('')}>
+                      <Ionicons name="close-circle" size={20} color="#9ca3af" />
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                <FlatList
+                  data={filteredPlaces}
+                  keyExtractor={(item, index) => `groom-${item.nameEn}-${index}`}
+                  style={styles.placesList}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={styles.placeItem}
+                      onPress={() => handleSelectGroomPlace(item)}
+                    >
+                      <Ionicons name="location" size={20} color="#2563eb" />
+                      <View style={styles.placeInfo}>
+                        <Text style={styles.placeName}>{language === 'ta' ? item.name : item.nameEn}</Text>
+                        <Text style={styles.placeState}>{item.state || item.country}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  )}
+                />
+              </View>
+            </View>
+          </Modal>
+
+          <Modal
+            visible={showBrideLocationPicker}
+            animationType="slide"
+            transparent
+          >
+            <View style={styles.locationModalOverlay}>
+              <View style={styles.locationModalContent}>
+                <View style={styles.locationModalHeader}>
+                  <TouchableOpacity onPress={() => { setShowBrideLocationPicker(false); setLocationSearchText(''); }}>
+                    <Ionicons name="arrow-back" size={24} color="#6b7280" />
+                  </TouchableOpacity>
+                  <Text style={styles.locationModalTitle}>{t('selectBirthPlace')} - {t('brideDetails')}</Text>
+                  <View style={{ width: 24 }} />
+                </View>
+
+                <View style={styles.searchContainer}>
+                  <Ionicons name="search" size={20} color="#db2777" />
+                  <TextInput
+                    style={styles.searchInput}
+                    value={locationSearchText}
+                    onChangeText={setLocationSearchText}
+                    placeholder={t('searchCityPlaceholder') || 'Search city...'}
+                    placeholderTextColor="#9ca3af"
+                    autoCapitalize="none"
+                  />
+                  {locationSearchText.length > 0 && (
+                    <TouchableOpacity onPress={() => setLocationSearchText('')}>
+                      <Ionicons name="close-circle" size={20} color="#9ca3af" />
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                <FlatList
+                  data={filteredPlaces}
+                  keyExtractor={(item, index) => `bride-${item.nameEn}-${index}`}
+                  style={styles.placesList}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={styles.placeItem}
+                      onPress={() => handleSelectBridePlace(item)}
+                    >
+                      <Ionicons name="location" size={20} color="#db2777" />
+                      <View style={styles.placeInfo}>
+                        <Text style={styles.placeName}>{language === 'ta' ? item.name : item.nameEn}</Text>
+                        <Text style={styles.placeState}>{item.state || item.country}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  )}
+                />
+              </View>
+            </View>
+          </Modal>
         </LinearGradient>
       </View>
     );
@@ -975,9 +1156,15 @@ export default function MatchingScreen() {
               <Ionicons name="sparkles" size={16} color={overallScore >= 70 ? '#16a34a' : '#d97706'} />
               <View style={{ flex: 1 }}>
                 <Text style={[styles.verdictTitle, { color: overallScore >= 70 ? '#15803d' : '#a16207' }]}>
-                  {t('aiVerdict')}: {overallScore >= 70 ? t('goodMatch') : t('needsAttention')}
+                  {t('aiVerdict')}: {language === 'ta'
+                    ? (matchResult.ai_verdict?.verdict || (overallScore >= 70 ? t('goodMatch') : t('needsAttention')))
+                    : (matchResult.ai_verdict?.verdict_en || (overallScore >= 70 ? t('goodMatch') : t('needsAttention')))}
                 </Text>
-                <Text style={styles.verdictText}>{matchResult.ai_verdict?.explanation || t('detailedAnalysisBelow')}</Text>
+                <Text style={styles.verdictText}>
+                  {language === 'ta'
+                    ? (matchResult.ai_verdict?.explanation || t('detailedAnalysisBelow'))
+                    : (matchResult.ai_verdict?.explanation_en || matchResult.ai_verdict?.explanation || t('detailedAnalysisBelow'))}
+                </Text>
               </View>
             </View>
           </AnimatedCard>
@@ -998,7 +1185,7 @@ export default function MatchingScreen() {
                   porutham={p}
                   index={i}
                   isExpanded={isExpanded}
-                  onPress={() => setExpandedPorutham(isExpanded ? null : i)}
+                  onPress={() => handlePoruthamPress(i)}
                   statusStyle={statusStyle}
                   language={language}
                   t={t}
@@ -1506,5 +1693,99 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#374151',
+  },
+  // Location picker styles
+  locationPickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#e8d5c4',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: '#fef6ed',
+    gap: 8,
+  },
+  brideLocationPicker: {
+    borderColor: '#e8d5c4',
+  },
+  locationPickerText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#6b5644',
+    fontWeight: '600',
+  },
+  locationPickerPlaceholder: {
+    flex: 1,
+    fontSize: 14,
+    color: '#b8997a',
+    fontWeight: '600',
+  },
+  locationModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  locationModalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '80%',
+  },
+  locationModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  locationModalTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    margin: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: '#fef6ed',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e8d5c4',
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: '#374151',
+  },
+  placesList: {
+    maxHeight: 400,
+  },
+  placeItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+    gap: 12,
+  },
+  placeInfo: {
+    flex: 1,
+  },
+  placeName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  placeState: {
+    fontSize: 12,
+    color: '#9ca3af',
+    marginTop: 2,
   },
 });

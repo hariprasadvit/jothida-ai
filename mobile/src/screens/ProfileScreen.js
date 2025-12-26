@@ -27,6 +27,7 @@ import { generateComprehensivePDFHTML } from '../services/reportGenerator';
 import AppHeader from '../components/AppHeader';
 import { searchCities, POPULAR_CITIES } from '../data/cities';
 import * as FileSystem from 'expo-file-system/legacy';
+import * as Haptics from 'expo-haptics';
 
 // Tamil to translation key mappings for ProfileScreen
 const TAMIL_PLANET_MAP = {
@@ -709,7 +710,7 @@ const EditBirthDetailsModal = ({ visible, onClose, onSave, currentProfile, t, ge
                     <DateTimePicker
                       value={getDateValue()}
                       mode="date"
-                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                      display="spinner"
                       onChange={handleDateChange}
                     />
                   )}
@@ -750,7 +751,7 @@ const EditBirthDetailsModal = ({ visible, onClose, onSave, currentProfile, t, ge
                     <DateTimePicker
                       value={getTimeValue()}
                       mode="time"
-                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                      display="spinner"
                       onChange={handleTimeChange}
                       is24Hour={false}
                     />
@@ -1172,6 +1173,7 @@ const profileSwitcherStyles = StyleSheet.create({
 
 // Add Profile Modal Component
 const AddProfileModal = ({ visible, onClose, onSave, t, getMonthName, loading }) => {
+  const insets = useSafeAreaInsets();
   const [formData, setFormData] = useState({
     name: '',
     gender: '',
@@ -1484,7 +1486,7 @@ const AddProfileModal = ({ visible, onClose, onSave, t, getMonthName, loading })
                     <DateTimePicker
                       value={formData.birthDate || new Date()}
                       mode="date"
-                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                      display="spinner"
                       onChange={handleDateChange}
                     />
                   )}
@@ -1529,7 +1531,7 @@ const AddProfileModal = ({ visible, onClose, onSave, t, getMonthName, loading })
                     <DateTimePicker
                       value={formData.birthTime || new Date()}
                       mode="time"
-                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                      display="spinner"
                       onChange={handleTimeChange}
                       is24Hour={false}
                     />
@@ -1557,7 +1559,7 @@ const AddProfileModal = ({ visible, onClose, onSave, t, getMonthName, loading })
           </ScrollView>
 
           {/* Action Buttons */}
-          <View style={addProfileStyles.actions}>
+          <View style={[addProfileStyles.actions, { paddingBottom: Math.max(16, insets.bottom + 8) }]}>
             <TouchableOpacity style={addProfileStyles.cancelBtn} onPress={onClose}>
               <Text style={addProfileStyles.cancelText}>{t('cancel')}</Text>
             </TouchableOpacity>
@@ -2150,6 +2152,9 @@ export default function ProfileScreen({ navigation }) {
   };
 
   const generatePDF = async () => {
+    // Haptic feedback on button press
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
     if (!userProfile) {
       Alert.alert(t('error'), t('noChartData'));
       return;
@@ -2163,7 +2168,7 @@ export default function ProfileScreen({ navigation }) {
         birthDate: userProfile.birthDate,
         birthTime: userProfile.birthTime,
         birthPlace: userProfile.birthPlace,
-      });
+      }, language);
 
       const fileName = `Jathagam_Report_${userProfile.name.replace(/\s+/g, '_')}.pdf`;
 
@@ -2189,12 +2194,14 @@ export default function ProfileScreen({ navigation }) {
           });
 
           if (await Sharing.isAvailableAsync()) {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             await Sharing.shareAsync(fileUri, {
               mimeType: 'application/pdf',
               dialogTitle: t('downloadPDF'),
               UTI: 'com.adobe.pdf'
             });
           } else {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             Alert.alert(t('pdfSuccess'), t('pdfCreated') + ': ' + fileUri);
           }
         } else {
