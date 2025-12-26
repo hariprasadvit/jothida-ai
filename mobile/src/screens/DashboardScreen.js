@@ -120,7 +120,7 @@ const TAMIL_TIME_PERIOD_MAP = {
 const TAMIL_MOOD_MAP = {
   'சுறுசுறுப்பு': 'Active', 'அமைதி': 'Calm', 'உற்சாகம்': 'Energetic',
   'சோர்வு': 'Tired', 'படைப்பாற்றல்': 'Creative', 'உணர்வுபூர்வமான': 'Emotional',
-  'நிலையான': 'Stable', 'மாறுபடும்': 'Variable',
+  'நிலையான': 'Stable', 'மாறுபடும்': 'Variable', 'சமநிலை': 'Balanced',
 };
 
 // Tamil Life Trend direction to translation key mapping
@@ -2120,7 +2120,7 @@ export default function DashboardScreen({ navigation }) {
             </View>
             <View style={styles.timeContainer}>
               <Text style={styles.currentTime}>
-                {currentTime.toLocaleTimeString('ta-IN', { hour: '2-digit', minute: '2-digit' })}
+                {currentTime.toLocaleTimeString(language === 'ta' ? 'ta-IN' : language === 'kn' ? 'kn-IN' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
               </Text>
               <View style={[styles.periodBadge, { backgroundColor: period.bg }]}>
                 <Text style={[styles.periodText, { color: period.color }]}>{period.label}</Text>

@@ -965,7 +965,8 @@ const editModalStyles = StyleSheet.create({
 });
 
 // Profile Switcher Modal Component
-const ProfileSwitcherModal = ({ visible, onClose, profiles, selectedId, onSwitch, onAddNew, onDelete, t }) => {
+const ProfileSwitcherModal = ({ visible, onClose, profiles, selectedId, onSwitch, onAddNew, onDelete, t, language }) => {
+  const insets = useSafeAreaInsets();
   const handleDelete = (profile) => {
     if (profiles.length === 1) {
       Alert.alert(t('error'), t('cannotDeleteOnlyProfile') || 'Cannot delete the only profile');
@@ -1023,7 +1024,7 @@ const ProfileSwitcherModal = ({ visible, onClose, profiles, selectedId, onSwitch
                 <View style={profileSwitcherStyles.profileInfo}>
                   <Text style={profileSwitcherStyles.profileName}>{profile.name}</Text>
                   <Text style={profileSwitcherStyles.profileDetails}>
-                    {profile.rasi || '-'} • {profile.nakshatra || '-'}
+                    {translateRasiName(profile.rasi, language, t) || '-'} • {translateNakshatraName(profile.nakshatra, language, t) || '-'}
                   </Text>
                   {profile.birthDate && (
                     <Text style={profileSwitcherStyles.profileBirthDate}>{profile.birthDate}</Text>
@@ -1047,7 +1048,7 @@ const ProfileSwitcherModal = ({ visible, onClose, profiles, selectedId, onSwitch
           </ScrollView>
 
           <TouchableOpacity
-            style={profileSwitcherStyles.addBtn}
+            style={[profileSwitcherStyles.addBtn, { paddingBottom: Math.max(16, insets.bottom + 16) }]}
             onPress={() => {
               onClose();
               onAddNew();
@@ -2534,11 +2535,11 @@ export default function ProfileScreen({ navigation }) {
                   {userProfile.rasi && (
                     <View style={styles.rasiBadge}>
                       <Text style={styles.rasiSymbolText}>{rasiSymbol}</Text>
-                      <Text style={styles.rasiText}>{userProfile.rasi}</Text>
+                      <Text style={styles.rasiText}>{translateRasiName(userProfile.rasi, language, t)}</Text>
                     </View>
                   )}
                   {userProfile.nakshatra && (
-                    <Text style={styles.nakshatraText}>• {userProfile.nakshatra}</Text>
+                    <Text style={styles.nakshatraText}>• {translateNakshatraName(userProfile.nakshatra, language, t)}</Text>
                   )}
                 </View>
               </View>
@@ -2839,6 +2840,7 @@ export default function ProfileScreen({ navigation }) {
         }}
         onDelete={handleDeleteProfile}
         t={t}
+        language={language}
       />
 
       {/* Add Profile Modal */}
